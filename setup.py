@@ -29,6 +29,6 @@ setup(
     keywords="ophelos api sdk debt management payments",
     project_urls={
         "Bug Reports": "https://github.com/tomasz-oph/ophelos-python-sdk/issues",
-        "Source": "https://github.com/tomasz-oph/ophelos-python-sdk"
+        "Source": "https://github.com/tomasz-oph/ophelos-python-sdk",
     },
-) 
+)

@@ -1,0 +1,40 @@
+[flake8]
+max-line-length = 120
+max-complexity = 15
+exclude = 
+    .git,
+    __pycache__,
+    build,
+    dist,
+    *.egg-info,
+    venv,
+    .venv,
+    .tox,
+    .pytest_cache,
+    .mypy_cache
+ignore = 
+    # E203: whitespace before ':' (conflicts with black)
+    E203,
+    # W503: line break before binary operator (conflicts with black)
+    W503,
+    # W504: line break after binary operator (conflicts with W503)
+    W504,
+    # E501: line too long (handled by max-line-length)
+    E501,
+    # W291: trailing whitespace (handled by formatters)
+    W291,
+    # W292: no newline at end of file (handled by formatters)
+    W292,
+    # W293: blank line contains whitespace (handled by formatters)
+    W293
+per-file-ignores =
+    # Tests can have longer lines and more complex assertions
+    tests/*.py:E501,C901,F401,F841,E128
+    # Examples may have unused variables for demonstration
+    examples/*.py:F401,F841
+    # Init files can have many imports
+    __init__.py:F401
+    # Resource files may have unused imports for future use
+    resources/*.py:F401
+    # Main modules may have imports for API compatibility
+    *.py:F401 

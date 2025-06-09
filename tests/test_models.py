@@ -6,9 +6,17 @@ import pytest
 from datetime import datetime, date
 
 from ophelos.models import (
-    Debt, Customer, Payment, Invoice, Organisation,
-    DebtStatus, PaymentStatus, Currency, ContactDetailType,
-    PaginatedResponse, WebhookEvent
+    Debt,
+    Customer,
+    Payment,
+    Invoice,
+    Organisation,
+    DebtStatus,
+    PaymentStatus,
+    Currency,
+    ContactDetailType,
+    PaginatedResponse,
+    WebhookEvent,
 )
 
 
@@ -18,7 +26,7 @@ class TestDebtModel:
     def test_debt_creation(self, sample_debt_data):
         """Test debt model creation with valid data."""
         debt = Debt(**sample_debt_data)
-        
+
         assert debt.id == sample_debt_data["id"]
         assert debt.total_amount == sample_debt_data["total_amount"]
         assert debt.status == DebtStatus.PREPARED
@@ -44,9 +52,9 @@ class TestDebtModel:
             "customer_id": "cust_123",
             "organisation_id": "org_123",
             "created_at": datetime.now(),
-            "updated_at": datetime.now()
+            "updated_at": datetime.now(),
         }
-        
+
         debt = Debt(**minimal_data)
         assert debt.id == "debt_123"
         assert debt.account_number is None
@@ -60,7 +68,7 @@ class TestCustomerModel:
     def test_customer_creation(self, sample_customer_data):
         """Test customer model creation with valid data."""
         customer = Customer(**sample_customer_data)
-        
+
         assert customer.id == sample_customer_data["id"]
         assert customer.first_name == sample_customer_data["first_name"]
         assert customer.last_name == sample_customer_data["last_name"]
@@ -73,9 +81,9 @@ class TestCustomerModel:
             "object": "customer",
             "organisation_id": "org_123",
             "created_at": datetime.now(),
-            "updated_at": datetime.now()
+            "updated_at": datetime.now(),
         }
-        
+
         customer = Customer(**minimal_data)
         assert customer.id == "cust_123"
         assert customer.first_name is None
@@ -89,7 +97,7 @@ class TestPaymentModel:
     def test_payment_creation(self, sample_payment_data):
         """Test payment model creation with valid data."""
         payment = Payment(**sample_payment_data)
-        
+
         assert payment.id == sample_payment_data["id"]
         assert payment.amount == sample_payment_data["amount"]
         assert payment.status == PaymentStatus.SUCCEEDED
@@ -127,7 +135,7 @@ class TestPaginatedResponse:
     def test_empty_paginated_response(self):
         """Test empty paginated response."""
         response = PaginatedResponse(data=[])
-        
+
         assert response.object == "list"
         assert response.data == []
         assert response.has_more is False
@@ -139,9 +147,9 @@ class TestPaginatedResponse:
             "object": "list",
             "data": [sample_debt_data],
             "has_more": True,
-            "total_count": 10
+            "total_count": 10,
         }
-        
+
         response = PaginatedResponse(**response_data)
         assert len(response.data) == 1
         assert response.has_more is True
@@ -154,7 +162,7 @@ class TestWebhookEvent:
     def test_webhook_event_creation(self, sample_webhook_event):
         """Test webhook event creation."""
         event = WebhookEvent(**sample_webhook_event)
-        
+
         assert event.id == sample_webhook_event["id"]
         assert event.type == sample_webhook_event["type"]
         assert event.data == sample_webhook_event["data"]
@@ -164,13 +172,13 @@ class TestWebhookEvent:
         """Test common webhook event types."""
         event_types = [
             "debt.created",
-            "debt.updated", 
+            "debt.updated",
             "debt.closed",
             "payment.succeeded",
             "payment.failed",
-            "customer.created"
+            "customer.created",
         ]
-        
+
         for event_type in event_types:
             event_data = {
                 "id": "evt_123",
@@ -178,9 +186,9 @@ class TestWebhookEvent:
                 "type": event_type,
                 "created_at": datetime.now().isoformat(),
                 "livemode": False,
-                "data": {"test": "data"}
+                "data": {"test": "data"},
             }
-            
+
             event = WebhookEvent(**event_data)
             assert event.type == event_type
 
@@ -191,10 +199,10 @@ class TestModelSerialization:
     def test_debt_json_serialization(self, sample_debt_data):
         """Test debt model JSON serialization."""
         debt = Debt(**sample_debt_data)
-        
+
         # Convert to dict (similar to JSON serialization)
         debt_dict = debt.model_dump()
-        
+
         assert debt_dict["id"] == sample_debt_data["id"]
         assert debt_dict["total_amount"] == sample_debt_data["total_amount"]
         assert debt_dict["status"] == sample_debt_data["status"]
@@ -210,12 +218,12 @@ class TestModelSerialization:
             "organisation_id": "org_123",
             "created_at": datetime.now(),
             "updated_at": datetime.now(),
-            "unknown_field": "should_be_accepted"  # Extra field
+            "unknown_field": "should_be_accepted",  # Extra field
         }
-        
+
         # Should not raise an error due to extra="allow" in BaseOphelosModel
         debt = Debt(**debt_data)
         assert debt.id == "debt_123"
         # Extra field should be accessible
-        assert hasattr(debt, 'unknown_field')
-        assert debt.unknown_field == "should_be_accepted" 
+        assert hasattr(debt, "unknown_field")
+        assert debt.unknown_field == "should_be_accepted"

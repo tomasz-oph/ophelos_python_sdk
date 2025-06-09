@@ -15,11 +15,7 @@ from ophelos.http_client import HTTPClient
 @pytest.fixture
 def mock_auth_response():
     """Mock OAuth2 token response."""
-    return {
-        "access_token": "mock_access_token_12345",
-        "token_type": "Bearer",
-        "expires_in": 3600
-    }
+    return {"access_token": "mock_access_token_12345", "token_type": "Bearer", "expires_in": 3600}
 
 
 @pytest.fixture
@@ -55,12 +51,9 @@ def sample_debt_data():
         "start_at": date.today().isoformat(),
         "customer_id": "cust_123456789",
         "organisation_id": "org_123456789",
-        "metadata": {
-            "case_id": "12345",
-            "original_creditor": "Test Corp"
-        },
+        "metadata": {"case_id": "12345", "original_creditor": "Test Corp"},
         "created_at": datetime.now().isoformat(),
-        "updated_at": datetime.now().isoformat()
+        "updated_at": datetime.now().isoformat(),
     }
 
 
@@ -76,11 +69,9 @@ def sample_customer_data():
         "country_code": "GB",
         "postal_code": "SW1A 1AA",
         "organisation_id": "org_123456789",
-        "metadata": {
-            "external_id": "customer_001"
-        },
+        "metadata": {"external_id": "customer_001"},
         "created_at": datetime.now().isoformat(),
-        "updated_at": datetime.now().isoformat()
+        "updated_at": datetime.now().isoformat(),
     }
 
 
@@ -99,23 +90,16 @@ def sample_payment_data():
         "debt_id": "debt_123456789",
         "organisation_id": "org_123456789",
         "customer_id": "cust_123456789",
-        "metadata": {
-            "external_ref": "EXT-123"
-        },
+        "metadata": {"external_ref": "EXT-123"},
         "created_at": datetime.now().isoformat(),
-        "updated_at": datetime.now().isoformat()
+        "updated_at": datetime.now().isoformat(),
     }
 
 
 @pytest.fixture
 def sample_paginated_response():
     """Sample paginated response structure."""
-    return {
-        "object": "list",
-        "data": [],
-        "has_more": False,
-        "total_count": 0
-    }
+    return {"object": "list", "data": [], "has_more": False, "total_count": 0}
 
 
 @pytest.fixture
@@ -131,8 +115,8 @@ def sample_webhook_event():
             "id": "debt_123456789",
             "object": "debt",
             "status": "prepared",
-            "total_amount": 10000
-        }
+            "total_amount": 10000,
+        },
     }
 
 
@@ -143,15 +127,16 @@ def test_client_config():
         "client_id": "test_client_id",
         "client_secret": "test_client_secret",
         "audience": "test_audience",
-        "environment": "staging"
+        "environment": "staging",
     }
 
 
 @pytest.fixture
 def ophelos_client(test_client_config, mock_authenticator, mock_http_client):
     """Mock Ophelos client for testing."""
-    with patch('ophelos.client.OAuth2Authenticator', return_value=mock_authenticator), \
-         patch('ophelos.client.HTTPClient', return_value=mock_http_client):
+    with patch("ophelos.client.OAuth2Authenticator", return_value=mock_authenticator), patch(
+        "ophelos.client.HTTPClient", return_value=mock_http_client
+    ):
         return OphelosClient(**test_client_config)
 
 
@@ -168,4 +153,4 @@ def mock_requests_session():
     session.put.return_value = response
     session.patch.return_value = response
     session.delete.return_value = response
-    return session 
+    return session

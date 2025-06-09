@@ -17,7 +17,7 @@ from .tenants import TenantsResource
 __all__ = [
     "BaseResource",
     "DebtsResource",
-    "CustomersResource", 
+    "CustomersResource",
     "OrganisationsResource",
     "PaymentsResource",
     "InvoicesResource",
@@ -26,4 +26,4 @@ __all__ = [
     "CommunicationsResource",
     "PayoutsResource",
     "TenantsResource",
-] 
+]

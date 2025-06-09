@@ -21,7 +21,7 @@ class TestOAuth2Authenticator:
             "client_id": "test_client_id",
             "client_secret": "test_client_secret",
             "audience": "test_audience",
-            "environment": "staging"
+            "environment": "staging",
         }
 
     @pytest.fixture
@@ -40,14 +40,11 @@ class TestOAuth2Authenticator:
     def test_production_environment_url(self):
         """Test production environment uses correct URL."""
         auth = OAuth2Authenticator(
-            client_id="test",
-            client_secret="test",
-            audience="test",
-            environment="production"
+            client_id="test", client_secret="test", audience="test", environment="production"
         )
         assert "ophelos.eu.auth0.com" in auth.token_url
 
-    @patch('requests.post')
+    @patch("requests.post")
     def test_successful_token_fetch(self, mock_post, authenticator, mock_auth_response):
         """Test successful token fetch."""
         # Mock successful response
@@ -70,7 +67,7 @@ class TestOAuth2Authenticator:
         assert call_args[1]["data"]["client_secret"] == "test_client_secret"
         assert call_args[1]["data"]["audience"] == "test_audience"
 
-    @patch('requests.post')
+    @patch("requests.post")
     def test_token_reuse_when_valid(self, mock_post, authenticator, mock_auth_response):
         """Test that valid tokens are reused."""
         # Mock successful response
@@ -81,7 +78,7 @@ class TestOAuth2Authenticator:
 
         # First call
         token1 = authenticator.get_access_token()
-        
+
         # Second call should reuse token
         token2 = authenticator.get_access_token()
 
@@ -89,7 +86,7 @@ class TestOAuth2Authenticator:
         # Should only call the API once
         assert mock_post.call_count == 1
 
-    @patch('requests.post')
+    @patch("requests.post")
     def test_token_refresh_when_expired(self, mock_post, authenticator, mock_auth_response):
         """Test token refresh when expired."""
         # Mock successful response
@@ -111,7 +108,7 @@ class TestOAuth2Authenticator:
         # Should call the API twice
         assert mock_post.call_count == 2
 
-    @patch('requests.post')
+    @patch("requests.post")
     def test_http_error_handling(self, mock_post, authenticator):
         """Test handling of HTTP errors."""
         # Mock HTTP error
@@ -123,7 +120,7 @@ class TestOAuth2Authenticator:
         assert "Failed to request access token" in str(exc_info.value)
         assert "Network error" in str(exc_info.value)
 
-    @patch('requests.post')
+    @patch("requests.post")
     def test_invalid_json_response(self, mock_post, authenticator):
         """Test handling of invalid JSON response."""
         # Mock response with invalid JSON
@@ -138,7 +135,7 @@ class TestOAuth2Authenticator:
 
         assert "Invalid token response format" in str(exc_info.value)
 
-    @patch('requests.post')
+    @patch("requests.post")
     def test_missing_access_token_in_response(self, mock_post, authenticator):
         """Test handling of response without access token."""
         # Mock response without access_token
@@ -154,8 +151,9 @@ class TestOAuth2Authenticator:
 
     def test_get_auth_headers(self, authenticator, mock_auth_response):
         """Test getting authentication headers."""
-        with patch.object(authenticator, 'get_access_token', 
-                         return_value=mock_auth_response["access_token"]):
+        with patch.object(
+            authenticator, "get_access_token", return_value=mock_auth_response["access_token"]
+        ):
             headers = authenticator.get_auth_headers()
 
         expected_header = f"Bearer {mock_auth_response['access_token']}"
@@ -188,14 +186,14 @@ class TestOAuth2Authenticator:
         # Should be considered valid
         assert authenticator._is_token_valid()
 
-    @patch('requests.post')
+    @patch("requests.post")
     def test_default_expires_in_handling(self, mock_post, authenticator):
         """Test handling of missing expires_in in response."""
         # Mock response without expires_in
         mock_response = Mock()
         mock_response.json.return_value = {
             "access_token": "test_token",
-            "token_type": "Bearer"
+            "token_type": "Bearer",
             # Missing expires_in
         }
         mock_response.raise_for_status.return_value = None
@@ -206,4 +204,4 @@ class TestOAuth2Authenticator:
         assert token == "test_token"
         # Should default to 1 hour (3600 seconds)
         expected_expiry = time.time() + 3600
-        assert abs(authenticator._token_expires_at - expected_expiry) < 10 
+        assert abs(authenticator._token_expires_at - expected_expiry) < 10

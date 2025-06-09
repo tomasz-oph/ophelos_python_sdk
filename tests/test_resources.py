@@ -40,11 +40,7 @@ class TestBaseResource:
     def test_build_list_params(self, debts_resource):
         """Test building list parameters."""
         params = debts_resource._build_list_params(
-            limit=10,
-            after="debt_123",
-            before="debt_456",
-            expand=["customer"],
-            extra_param="value"
+            limit=10, after="debt_123", before="debt_456", expand=["customer"], extra_param="value"
         )
 
         expected = {
@@ -52,24 +48,21 @@ class TestBaseResource:
             "after": "debt_123",
             "before": "debt_456",
             "expand[0]": "customer",
-            "extra_param": "value"
+            "extra_param": "value",
         }
         assert params == expected
 
     def test_build_search_params(self, debts_resource):
         """Test building search parameters."""
         params = debts_resource._build_search_params(
-            query="status:paying",
-            limit=5,
-            expand=["customer"],
-            org_id="org_123"
+            query="status:paying", limit=5, expand=["customer"], org_id="org_123"
         )
 
         expected = {
             "query": "status:paying",
             "limit": 5,
             "expand[0]": "customer",
-            "org_id": "org_123"
+            "org_id": "org_123",
         }
         assert params == expected
 
@@ -87,7 +80,9 @@ class TestDebtsResource:
         """Create debts resource for testing."""
         return DebtsResource(mock_http_client)
 
-    def test_list_debts(self, debts_resource, mock_http_client, sample_debt_data, sample_paginated_response):
+    def test_list_debts(
+        self, debts_resource, mock_http_client, sample_debt_data, sample_paginated_response
+    ):
         """Test listing debts."""
         # Mock response - keep data as raw dicts, not parsed objects
         mock_response = sample_paginated_response.copy()
@@ -97,15 +92,16 @@ class TestDebtsResource:
         result = debts_resource.list(limit=10, expand=["customer"])
 
         mock_http_client.get.assert_called_once_with(
-            "debts",
-            params={"limit": 10, "expand[0]": "customer"}
+            "debts", params={"limit": 10, "expand[0]": "customer"}
         )
         assert isinstance(result, PaginatedResponse)
         assert len(result.data) == 1
         # First item should be parsed as Debt
         assert isinstance(result.data[0], Debt)
 
-    def test_search_debts(self, debts_resource, mock_http_client, sample_debt_data, sample_paginated_response):
+    def test_search_debts(
+        self, debts_resource, mock_http_client, sample_debt_data, sample_paginated_response
+    ):
         """Test searching debts."""
         mock_response = sample_paginated_response.copy()
         mock_response["data"] = [sample_debt_data]
@@ -114,8 +110,7 @@ class TestDebtsResource:
         result = debts_resource.search("status:paying", limit=5)
 
         mock_http_client.get.assert_called_once_with(
-            "debts/search",
-            params={"query": "status:paying", "limit": 5}
+            "debts/search", params={"query": "status:paying", "limit": 5}
         )
         assert isinstance(result, PaginatedResponse)
         assert len(result.data) == 1
@@ -128,8 +123,7 @@ class TestDebtsResource:
         result = debts_resource.get("debt_123", expand=["customer"])
 
         mock_http_client.get.assert_called_once_with(
-            "debts/debt_123",
-            params={"expand[0]": "customer"}
+            "debts/debt_123", params={"expand[0]": "customer"}
         )
         assert isinstance(result, Debt)
         assert result.id == sample_debt_data["id"]
@@ -139,7 +133,7 @@ class TestDebtsResource:
         create_data = {
             "customer_id": "cust_123",
             "organisation_id": "org_123",
-            "total_amount": 10000
+            "total_amount": 10000,
         }
         mock_http_client.post.return_value = sample_debt_data
 
@@ -195,7 +189,9 @@ class TestDebtsResource:
         result = debts_resource.dispute("debt_123", dispute_data)
         mock_http_client.post.assert_called_with("debts/debt_123/dispute", data=dispute_data)
 
-    def test_debt_payments_operations(self, debts_resource, mock_http_client, sample_payment_data, sample_paginated_response):
+    def test_debt_payments_operations(
+        self, debts_resource, mock_http_client, sample_payment_data, sample_paginated_response
+    ):
         """Test debt payment operations."""
         # Test list payments
         mock_response = sample_paginated_response.copy()
@@ -203,10 +199,7 @@ class TestDebtsResource:
         mock_http_client.get.return_value = mock_response
 
         result = debts_resource.list_payments("debt_123", limit=5)
-        mock_http_client.get.assert_called_with(
-            "debts/debt_123/payments",
-            params={"limit": 5}
-        )
+        mock_http_client.get.assert_called_with("debts/debt_123/payments", params={"limit": 5})
         assert isinstance(result, PaginatedResponse)
         assert len(result.data) == 1
         assert isinstance(result.data[0], Payment)
@@ -249,7 +242,9 @@ class TestCustomersResource:
         """Create customers resource for testing."""
         return CustomersResource(mock_http_client)
 
-    def test_list_customers(self, customers_resource, mock_http_client, sample_customer_data, sample_paginated_response):
+    def test_list_customers(
+        self, customers_resource, mock_http_client, sample_customer_data, sample_paginated_response
+    ):
         """Test listing customers."""
         mock_response = sample_paginated_response.copy()
         mock_response["data"] = [sample_customer_data]
@@ -257,15 +252,14 @@ class TestCustomersResource:
 
         result = customers_resource.list(limit=10)
 
-        mock_http_client.get.assert_called_once_with(
-            "customers",
-            params={"limit": 10}
-        )
+        mock_http_client.get.assert_called_once_with("customers", params={"limit": 10})
         assert isinstance(result, PaginatedResponse)
         assert len(result.data) == 1
         assert isinstance(result.data[0], Customer)
 
-    def test_search_customers(self, customers_resource, mock_http_client, sample_customer_data, sample_paginated_response):
+    def test_search_customers(
+        self, customers_resource, mock_http_client, sample_customer_data, sample_paginated_response
+    ):
         """Test searching customers."""
         mock_response = sample_paginated_response.copy()
         mock_response["data"] = [sample_customer_data]
@@ -274,8 +268,7 @@ class TestCustomersResource:
         result = customers_resource.search("email:john@example.com")
 
         mock_http_client.get.assert_called_once_with(
-            "customers/search",
-            params={"query": "email:john@example.com"}
+            "customers/search", params={"query": "email:john@example.com"}
         )
         assert isinstance(result, PaginatedResponse)
         assert len(result.data) == 1
@@ -293,11 +286,7 @@ class TestCustomersResource:
 
     def test_create_customer(self, customers_resource, mock_http_client, sample_customer_data):
         """Test creating a customer."""
-        create_data = {
-            "first_name": "John",
-            "last_name": "Doe",
-            "organisation_id": "org_123"
-        }
+        create_data = {"first_name": "John", "last_name": "Doe", "organisation_id": "org_123"}
         mock_http_client.post.return_value = sample_customer_data
 
         result = customers_resource.create(create_data)
@@ -329,7 +318,9 @@ class TestPaymentsResource:
         """Create payments resource for testing."""
         return PaymentsResource(mock_http_client)
 
-    def test_list_payments(self, payments_resource, mock_http_client, sample_payment_data, sample_paginated_response):
+    def test_list_payments(
+        self, payments_resource, mock_http_client, sample_payment_data, sample_paginated_response
+    ):
         """Test listing payments."""
         mock_response = sample_paginated_response.copy()
         mock_response["data"] = [sample_payment_data]
@@ -337,15 +328,14 @@ class TestPaymentsResource:
 
         result = payments_resource.list(limit=20)
 
-        mock_http_client.get.assert_called_once_with(
-            "payments",
-            params={"limit": 20}
-        )
+        mock_http_client.get.assert_called_once_with("payments", params={"limit": 20})
         assert isinstance(result, PaginatedResponse)
         assert len(result.data) == 1
         assert isinstance(result.data[0], Payment)
 
-    def test_search_payments(self, payments_resource, mock_http_client, sample_payment_data, sample_paginated_response):
+    def test_search_payments(
+        self, payments_resource, mock_http_client, sample_payment_data, sample_paginated_response
+    ):
         """Test searching payments."""
         mock_response = sample_paginated_response.copy()
         mock_response["data"] = [sample_payment_data]
@@ -354,8 +344,7 @@ class TestPaymentsResource:
         result = payments_resource.search("status:succeeded")
 
         mock_http_client.get.assert_called_once_with(
-            "payments/search",
-            params={"query": "status:succeeded"}
+            "payments/search", params={"query": "status:succeeded"}
         )
         assert isinstance(result, PaginatedResponse)
         assert len(result.data) == 1
@@ -410,13 +399,11 @@ class TestResourceErrorHandling:
                     "customer_id": "cust_123",
                     "organisation_id": "org_123",
                     "created_at": "2024-01-15T10:00:00Z",
-                    "updated_at": "2024-01-15T10:00:00Z"
+                    "updated_at": "2024-01-15T10:00:00Z",
                 },
-                {  # Invalid debt data
-                    "invalid": "data"
-                }
+                {"invalid": "data"},  # Invalid debt data
             ],
-            "has_more": False
+            "has_more": False,
         }
         mock_http_client.get.return_value = response_data
 
@@ -428,4 +415,4 @@ class TestResourceErrorHandling:
         assert isinstance(result.data[0], Debt)
         # Second item should remain as raw dict
         assert isinstance(result.data[1], dict)
-        assert result.data[1] == {"invalid": "data"} 
+        assert result.data[1] == {"invalid": "data"}

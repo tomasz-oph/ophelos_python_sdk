@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field, validator
 
 class BaseOphelosModel(BaseModel):
     """Base model for all Ophelos API resources."""
-    
+
     class Config:
         extra = "allow"
         use_enum_values = True
@@ -24,6 +24,7 @@ class BaseOphelosModel(BaseModel):
 
 class DebtStatus(str, Enum):
     """Debt status enumeration."""
+
     PREPARED = "prepared"
     ANALYZING = "analyzing"
     CONTACTED = "contacted"
@@ -49,6 +50,7 @@ class DebtStatus(str, Enum):
 
 class PaymentStatus(str, Enum):
     """Payment status enumeration."""
+
     PENDING = "pending"
     PROCESSING = "processing"
     SUCCEEDED = "succeeded"
@@ -61,6 +63,7 @@ class PaymentStatus(str, Enum):
 
 class ContactDetailType(str, Enum):
     """Contact detail type enumeration."""
+
     EMAIL = "email"
     PHONE = "phone"
     MOBILE = "mobile"
@@ -69,6 +72,7 @@ class ContactDetailType(str, Enum):
 
 class Currency(str, Enum):
     """Currency enumeration."""
+
     GBP = "GBP"
     EUR = "EUR"
     USD = "USD"
@@ -76,6 +80,7 @@ class Currency(str, Enum):
 
 class ContactDetail(BaseOphelosModel):
     """Contact detail model."""
+
     id: str
     object: str = "contact_detail"
     type: ContactDetailType
@@ -89,6 +94,7 @@ class ContactDetail(BaseOphelosModel):
 
 class Customer(BaseOphelosModel):
     """Customer model."""
+
     id: str
     object: str = "customer"
     first_name: Optional[str] = None
@@ -107,6 +113,7 @@ class Customer(BaseOphelosModel):
 
 class Organisation(BaseOphelosModel):
     """Organisation model."""
+
     id: str
     object: str = "organisation"
     name: str
@@ -121,6 +128,7 @@ class Organisation(BaseOphelosModel):
 
 class LineItem(BaseOphelosModel):
     """Line item model."""
+
     id: str
     object: str = "line_item"
     kind: str
@@ -136,6 +144,7 @@ class LineItem(BaseOphelosModel):
 
 class Invoice(BaseOphelosModel):
     """Invoice model."""
+
     id: str
     object: str = "invoice"
     reference: Optional[str] = None
@@ -154,6 +163,7 @@ class Invoice(BaseOphelosModel):
 
 class Payment(BaseOphelosModel):
     """Payment model."""
+
     id: str
     object: str = "payment"
     amount: int  # Amount in cents
@@ -172,6 +182,7 @@ class Payment(BaseOphelosModel):
 
 class PaymentPlan(BaseOphelosModel):
     """Payment plan model."""
+
     id: str
     object: str = "payment_plan"
     status: str
@@ -190,6 +201,7 @@ class PaymentPlan(BaseOphelosModel):
 
 class Debt(BaseOphelosModel):
     """Debt model."""
+
     id: str
     object: str = "debt"
     account_number: Optional[str] = None
@@ -216,6 +228,7 @@ class Debt(BaseOphelosModel):
 
 class Communication(BaseOphelosModel):
     """Communication model."""
+
     id: str
     object: str = "communication"
     type: str
@@ -237,6 +250,7 @@ class Communication(BaseOphelosModel):
 
 class Webhook(BaseOphelosModel):
     """Webhook model."""
+
     id: str
     object: str = "webhook"
     url: str
@@ -251,6 +265,7 @@ class Webhook(BaseOphelosModel):
 
 class WebhookEvent(BaseOphelosModel):
     """Webhook event model."""
+
     id: str
     object: str = "event"
     type: str
@@ -261,6 +276,7 @@ class WebhookEvent(BaseOphelosModel):
 
 class PaginatedResponse(BaseOphelosModel):
     """Paginated response model."""
+
     object: str = "list"
     data: List[Union[Dict[str, Any], BaseOphelosModel]]
     has_more: bool = False
@@ -269,6 +285,7 @@ class PaginatedResponse(BaseOphelosModel):
 
 class Tenant(BaseOphelosModel):
     """Tenant model."""
+
     id: str
     object: str = "tenant"
     name: str
@@ -280,6 +297,7 @@ class Tenant(BaseOphelosModel):
 
 class Payout(BaseOphelosModel):
     """Payout model."""
+
     id: str
     object: str = "payout"
     amount: int  # Amount in cents
@@ -289,4 +307,4 @@ class Payout(BaseOphelosModel):
     organisation_id: str
     metadata: Optional[Dict[str, Any]] = None
     created_at: datetime
-    updated_at: datetime 
+    updated_at: datetime

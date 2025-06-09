@@ -46,7 +46,7 @@ __all__ = [
     "OphelosClient",
     # Exceptions
     "OphelosError",
-    "OphelosAPIError", 
+    "OphelosAPIError",
     "AuthenticationError",
     "ValidationError",
     "NotFoundError",
@@ -61,7 +61,7 @@ __all__ = [
     "BaseOphelosModel",
     "Debt",
     "Customer",
-    "Organisation", 
+    "Organisation",
     "Payment",
     "PaymentPlan",
     "Invoice",
@@ -77,4 +77,4 @@ __all__ = [
     "PaymentStatus",
     "ContactDetailType",
     "Currency",
-] 
+]

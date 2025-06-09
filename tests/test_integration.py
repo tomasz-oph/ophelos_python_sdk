@@ -15,12 +15,14 @@ from ophelos.exceptions import OphelosAPIError, AuthenticationError
 
 # Skip integration tests if no credentials are provided
 integration_skip = pytest.mark.skipif(
-    not all([
-        os.getenv("OPHELOS_CLIENT_ID"),
-        os.getenv("OPHELOS_CLIENT_SECRET"),
-        os.getenv("OPHELOS_AUDIENCE")
-    ]),
-    reason="Integration tests require OPHELOS_CLIENT_ID, OPHELOS_CLIENT_SECRET, and OPHELOS_AUDIENCE environment variables"
+    not all(
+        [
+            os.getenv("OPHELOS_CLIENT_ID"),
+            os.getenv("OPHELOS_CLIENT_SECRET"),
+            os.getenv("OPHELOS_AUDIENCE"),
+        ]
+    ),
+    reason="Integration tests require OPHELOS_CLIENT_ID, OPHELOS_CLIENT_SECRET, and OPHELOS_AUDIENCE environment variables",
 )
 
 
@@ -31,7 +33,7 @@ def ophelos_client():
         client_id=os.getenv("OPHELOS_CLIENT_ID"),
         client_secret=os.getenv("OPHELOS_CLIENT_SECRET"),
         audience=os.getenv("OPHELOS_AUDIENCE"),
-        environment="staging"  # Always use staging for tests
+        environment="staging",  # Always use staging for tests
     )
 
 
@@ -51,9 +53,9 @@ class TestIntegrationAuth:
             client_id="invalid_client_id",
             client_secret="invalid_client_secret",
             audience="invalid_audience",
-            environment="staging"
+            environment="staging",
         )
-        
+
         with pytest.raises(AuthenticationError):
             client.test_connection()
 
@@ -65,7 +67,7 @@ class TestIntegrationTenants:
     def test_get_my_tenant(self, ophelos_client):
         """Test getting current tenant information."""
         tenant = ophelos_client.tenants.get_me()
-        
+
         assert tenant.id is not None
         assert tenant.object == "tenant"
         assert tenant.name is not None
@@ -78,25 +80,25 @@ class TestIntegrationOrganisations:
     def test_list_organisations(self, ophelos_client):
         """Test listing organisations."""
         organisations = ophelos_client.organisations.list(limit=5)
-        
+
         assert organisations.object == "list"
         assert isinstance(organisations.data, list)
         # May be empty for new accounts
-        
+
         if organisations.data:
             org = organisations.data[0]
-            assert hasattr(org, 'id')
-            assert hasattr(org, 'name')
+            assert hasattr(org, "id")
+            assert hasattr(org, "name")
 
 
-@integration_skip 
+@integration_skip
 class TestIntegrationCustomers:
     """Integration tests for customer operations."""
 
     def test_list_customers(self, ophelos_client):
         """Test listing customers."""
         customers = ophelos_client.customers.list(limit=5)
-        
+
         assert customers.object == "list"
         assert isinstance(customers.data, list)
 
@@ -108,7 +110,7 @@ class TestIntegrationDebts:
     def test_list_debts(self, ophelos_client):
         """Test listing debts."""
         debts = ophelos_client.debts.list(limit=5)
-        
+
         assert debts.object == "list"
         assert isinstance(debts.data, list)
 
@@ -118,7 +120,7 @@ class TestIntegrationDebts:
         results = ophelos_client.debts.search(
             f"reference_code:NONEXISTENT_{datetime.now().timestamp()}"
         )
-        
+
         assert results.object == "list"
         assert len(results.data) == 0
 
@@ -130,7 +132,7 @@ class TestIntegrationPayments:
     def test_list_payments(self, ophelos_client):
         """Test listing payments."""
         payments = ophelos_client.payments.list(limit=5)
-        
+
         assert payments.object == "list"
         assert isinstance(payments.data, list)
 
@@ -140,7 +142,7 @@ class TestIntegrationPayments:
         results = ophelos_client.payments.search(
             f"transaction_ref:NONEXISTENT_{datetime.now().timestamp()}"
         )
-        
+
         assert results.object == "list"
         assert len(results.data) == 0
 
@@ -152,7 +154,7 @@ class TestIntegrationWebhooks:
     def test_list_webhooks(self, ophelos_client):
         """Test listing webhooks."""
         webhooks = ophelos_client.webhooks.list(limit=5)
-        
+
         assert webhooks.object == "list"
         assert isinstance(webhooks.data, list)
 
@@ -179,7 +181,7 @@ class TestIntegrationErrorHandling:
         """Test handling of 404 errors."""
         with pytest.raises(OphelosAPIError) as exc_info:
             ophelos_client.debts.get("debt_nonexistent_12345")
-        
+
         # Should be a 404 error
         assert exc_info.value.status_code == 404
 
@@ -203,7 +205,7 @@ class TestIntegrationHelpers:
         """Decorator to skip tests that require test data to exist."""
         return pytest.mark.skipif(
             os.getenv("OPHELOS_SKIP_DATA_TESTS", "false").lower() == "true",
-            reason="Test requires existing data - set OPHELOS_SKIP_DATA_TESTS=false to run"
+            reason="Test requires existing data - set OPHELOS_SKIP_DATA_TESTS=false to run",
         )
 
 
@@ -224,4 +226,4 @@ To run integration tests:
 
 4. To run only integration tests:
    pytest tests/test_integration.py -m integration -v
-""" 
+"""
