@@ -2,7 +2,7 @@
 Base resource class for Ophelos API resources.
 """
 
-from typing import Optional, Dict, Any, List, Union, Type, TypeVar, cast
+from typing import Optional, Dict, Any, List, Union, Type, TypeVar, cast, Generator
 from ..http_client import HTTPClient
 from ..models import BaseOphelosModel, PaginatedResponse
 
@@ -171,3 +171,123 @@ class BaseResource:
             response_data["data"] = parsed_items
 
         return PaginatedResponse(**response_data)
+
+    def iterate(
+        self,
+        limit_per_page: int = 50,
+        max_pages: Optional[int] = None,
+        expand: Optional[List[str]] = None,
+        **kwargs: Any,
+    ) -> Generator[Any, None, None]:
+        """
+        Generator that yields individual objects with automatic pagination.
+
+        This method provides memory-efficient iteration over large datasets
+        by fetching pages on-demand and yielding individual objects.
+
+        Args:
+            limit_per_page: Number of items per page (default: 50)
+            max_pages: Maximum number of pages to fetch (None = unlimited)
+            expand: List of fields to expand
+            **kwargs: Additional query parameters for filtering
+
+        Yields:
+            Individual model objects
+
+        Example:
+            # Process first 200 items (4 pages of 50)
+            for item in resource.iterate(limit_per_page=50, max_pages=4):
+                process_item(item)
+
+            # Process all items with specific filters
+            for item in resource.iterate(expand=["related"], status="active"):
+                process_item(item)
+        """
+        after_cursor = None
+        pages_fetched = 0
+
+        while True:
+            # Check page limit
+            if max_pages and pages_fetched >= max_pages:
+                break
+
+            # Fetch current page
+            page = self.list(
+                limit=limit_per_page,
+                after=after_cursor,
+                before=None,
+                expand=expand,
+                **kwargs
+            )
+
+            pages_fetched += 1
+
+            # Yield individual items
+            for item in page.data:
+                yield item
+
+            # Check if we have more pages
+            if not page.has_more or not page.data:
+                break
+
+            # Set cursor for next page
+            after_cursor = page.data[-1].id
+
+    def iterate_search(
+        self,
+        query: str,
+        limit_per_page: int = 50,
+        max_pages: Optional[int] = None,
+        expand: Optional[List[str]] = None,
+        **kwargs: Any,
+    ) -> Generator[Any, None, None]:
+        """
+        Generator that yields individual objects from search results with pagination.
+
+        Note: This method requires the resource to implement a 'search' method.
+
+        Args:
+            query: Search query string
+            limit_per_page: Number of items per page (default: 50)
+            max_pages: Maximum number of pages to fetch (None = unlimited)
+            expand: List of fields to expand
+            **kwargs: Additional query parameters
+
+        Yields:
+            Individual model objects matching the search criteria
+
+        Raises:
+            AttributeError: If the resource doesn't implement search functionality
+
+        Example:
+            # Search for specific items
+            for item in resource.iterate_search("status:active", max_pages=5):
+                process_item(item)
+        """
+        if not hasattr(self, 'search'):
+            raise AttributeError(f"{self.__class__.__name__} does not support search functionality")
+
+        pages_fetched = 0
+
+        while True:
+            # Check page limit
+            if max_pages and pages_fetched >= max_pages:
+                break
+
+            # Fetch current page of search results
+            page = self.search(
+                query=query,
+                limit=limit_per_page,
+                expand=expand,
+                **kwargs
+            )
+
+            pages_fetched += 1
+
+            # Yield individual items
+            for item in page.data:
+                yield item
+
+            # Check if we have more pages
+            if not page.has_more or not page.data:
+                break
