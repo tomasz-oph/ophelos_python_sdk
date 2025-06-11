@@ -3,7 +3,7 @@ Authentication module for OAuth2 client credentials flow.
 """
 
 import time
-from typing import Optional, Dict, Any
+from typing import Optional, Dict
 import requests
 from .exceptions import AuthenticationError
 
@@ -12,7 +12,7 @@ class OAuth2Authenticator:
     """Handles OAuth2 client credentials authentication for Ophelos API."""
 
     def __init__(
-        self, client_id: str, client_secret: str, audience: str, environment: str = "staging"
+        self, client_id: str, client_secret: str, audience: str, environment: str = "development"
     ):
         """
         Initialize OAuth2 authenticator.
@@ -35,8 +35,10 @@ class OAuth2Authenticator:
         # Auth0 URLs based on environment
         if environment == "production":
             self.token_url = "https://ophelos.eu.auth0.com/oauth/token"
-        else:
+        elif environment == "development":
             self.token_url = "https://ophelos-dev.eu.auth0.com/oauth/token"
+        else:
+            self.token_url = "https://ophelos-staging.eu.auth0.com/oauth/token"
 
     def get_access_token(self) -> str:
         """

@@ -39,39 +39,76 @@ def mock_http_client():
 @pytest.fixture
 def sample_debt_data():
     """Sample debt data for testing."""
+    created_at = datetime.now().isoformat()
+    updated_at = datetime.now().isoformat()
     return {
         "id": "debt_123456789",
         "object": "debt",
         "account_number": "ACC-001",
         "reference_code": "REF-001",
-        "total_amount": 10000,
         "currency": "GBP",
-        "status": "prepared",
+        "status": {
+            "value": "prepared",
+            "whodunnit": "system",
+            "context": None,
+            "reason": None,
+            "updated_at": updated_at,
+        },
         "kind": "purchased",
         "start_at": date.today().isoformat(),
-        "customer_id": "cust_123456789",
-        "organisation_id": "org_123456789",
+        "customer": "cust_123456789",
+        "organisation": "org_123456789",
+        "summary": {
+            "amount_total": 10000,
+            "amount_paid": 0,
+            "amount_remaining": 10000,
+            "breakdown": {
+                "principal": 10000,
+                "interest": 0,
+                "fees": 0,
+                "discounts": 0,
+                "charges": 0,
+                "value_added_tax": 0,
+                "miscellaneous": 0,
+                "refunds": 0,
+            },
+            "history": [],
+            "created_at": created_at,
+            "updated_at": updated_at,
+        },
+        "invoices": [],
+        "line_items": [],
+        "payments": [],
+        "payment_plans": [],
+        "tags": [],
+        "configurations": {},
+        "calculated_configurations": {},
+        "originator": None,
         "metadata": {"case_id": "12345", "original_creditor": "Test Corp"},
-        "created_at": datetime.now().isoformat(),
-        "updated_at": datetime.now().isoformat(),
+        "created_at": created_at,
+        "updated_at": updated_at,
     }
 
 
 @pytest.fixture
 def sample_customer_data():
     """Sample customer data for testing."""
+    created_at = datetime.now().isoformat()
+    updated_at = datetime.now().isoformat()
     return {
         "id": "cust_123456789",
         "object": "customer",
+        "kind": "unknown",
+        "full_name": "John Doe",
         "first_name": "John",
         "last_name": "Doe",
-        "full_name": "John Doe",
-        "country_code": "GB",
-        "postal_code": "SW1A 1AA",
-        "organisation_id": "org_123456789",
+        "preferred_locale": "en",
+        "date_of_birth": None,
+        "contact_details": ["ccd_123456789"],  # List of contact detail IDs
+        "debts": ["debt_123456789"],  # List of debt IDs
+        "created_at": created_at,
+        "updated_at": updated_at,
         "metadata": {"external_id": "customer_001"},
-        "created_at": datetime.now().isoformat(),
-        "updated_at": datetime.now().isoformat(),
     }
 
 
@@ -87,9 +124,7 @@ def sample_payment_data():
         "payment_provider": "stripe",
         "transaction_ref": "txn_12345",
         "transaction_at": datetime.now().isoformat(),
-        "debt_id": "debt_123456789",
-        "organisation_id": "org_123456789",
-        "customer_id": "cust_123456789",
+        "debt": "debt_123456789",
         "metadata": {"external_ref": "EXT-123"},
         "created_at": datetime.now().isoformat(),
         "updated_at": datetime.now().isoformat(),
@@ -105,17 +140,24 @@ def sample_paginated_response():
 @pytest.fixture
 def sample_webhook_event():
     """Sample webhook event data."""
+    created_at = datetime.now().isoformat()
     return {
         "id": "evt_123456789",
         "object": "event",
         "type": "debt.created",
-        "created_at": datetime.now().isoformat(),
+        "created_at": created_at,
         "livemode": False,
         "data": {
             "id": "debt_123456789",
             "object": "debt",
-            "status": "prepared",
-            "total_amount": 10000,
+            "status": {
+                "value": "prepared",
+                "whodunnit": "system",
+                "context": None,
+                "reason": None,
+                "updated_at": created_at,
+            },
+            "summary": {"amount_total": 10000, "amount_paid": 0, "amount_remaining": 10000},
         },
     }
 

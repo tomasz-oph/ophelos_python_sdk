@@ -54,7 +54,7 @@ class OphelosClient:
                 client_id="your_client_id",
                 client_secret="your_client_secret",
                 audience="your_audience",
-                environment="staging"
+                environment="development"
             )
             ```
         """

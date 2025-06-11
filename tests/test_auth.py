@@ -21,7 +21,7 @@ class TestOAuth2Authenticator:
             "client_id": "test_client_id",
             "client_secret": "test_client_secret",
             "audience": "test_audience",
-            "environment": "staging",
+            "environment": "development",
         }
 
     @pytest.fixture
@@ -34,7 +34,7 @@ class TestOAuth2Authenticator:
         assert authenticator.client_id == "test_client_id"
         assert authenticator.client_secret == "test_client_secret"
         assert authenticator.audience == "test_audience"
-        assert authenticator.environment == "staging"
+        assert authenticator.environment == "development"
         assert "ophelos-dev" in authenticator.token_url
 
     def test_production_environment_url(self):

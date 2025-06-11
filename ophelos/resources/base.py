@@ -162,13 +162,24 @@ class BaseResource:
 
         if model_class:
             parsed_items = []
-            for item in items:
+            for i, item in enumerate(items):
                 try:
-                    parsed_items.append(model_class(**item))
-                except Exception:
+                    if isinstance(item, dict):
+                        parsed_items.append(model_class(**item))
+                    else:
+                        # Already a model object
+                        parsed_items.append(item)
+                except Exception as e:
+                    # Better error handling - print debug info
+                    print(f"Warning: Failed to parse item {i} to {model_class.__name__}: {e}")
+                    print(f"Item data: {item}")
                     # Fallback to raw data if parsing fails
                     parsed_items.append(item)
-            response_data["data"] = parsed_items
+
+            # Create a new response dict with parsed items
+            parsed_response = response_data.copy()
+            parsed_response["data"] = parsed_items
+            return PaginatedResponse(**parsed_response)
 
         return PaginatedResponse(**response_data)
 
@@ -194,6 +205,9 @@ class BaseResource:
         Yields:
             Individual model objects
 
+        Raises:
+            AttributeError: If the resource doesn't implement list functionality
+
         Example:
             # Process first 200 items (4 pages of 50)
             for item in resource.iterate(limit_per_page=50, max_pages=4):
@@ -203,6 +217,9 @@ class BaseResource:
             for item in resource.iterate(expand=["related"], status="active"):
                 process_item(item)
         """
+        if not hasattr(self, "list"):
+            raise AttributeError(f"{self.__class__.__name__} does not support list functionality")
+
         after_cursor = None
         pages_fetched = 0
 
@@ -211,13 +228,10 @@ class BaseResource:
             if max_pages and pages_fetched >= max_pages:
                 break
 
-            # Fetch current page
-            page = self.list(
-                limit=limit_per_page,
-                after=after_cursor,
-                before=None,
-                expand=expand,
-                **kwargs
+            # Fetch current page - using getattr to satisfy type checker
+            list_method = getattr(self, "list")
+            page = list_method(
+                limit=limit_per_page, after=after_cursor, before=None, expand=expand, **kwargs
             )
 
             pages_fetched += 1
@@ -231,7 +245,13 @@ class BaseResource:
                 break
 
             # Set cursor for next page
-            after_cursor = page.data[-1].id
+            last_item = page.data[-1]
+            if hasattr(last_item, "id"):
+                after_cursor = last_item.id
+            elif isinstance(last_item, dict):
+                after_cursor = last_item.get("id")
+            else:
+                break  # Can't get ID, stop iteration
 
     def iterate_search(
         self,
@@ -264,7 +284,7 @@ class BaseResource:
             for item in resource.iterate_search("status:active", max_pages=5):
                 process_item(item)
         """
-        if not hasattr(self, 'search'):
+        if not hasattr(self, "search"):
             raise AttributeError(f"{self.__class__.__name__} does not support search functionality")
 
         pages_fetched = 0
@@ -274,13 +294,9 @@ class BaseResource:
             if max_pages and pages_fetched >= max_pages:
                 break
 
-            # Fetch current page of search results
-            page = self.search(
-                query=query,
-                limit=limit_per_page,
-                expand=expand,
-                **kwargs
-            )
+            # Fetch current page of search results - using getattr to satisfy type checker
+            search_method = getattr(self, "search")
+            page = search_method(query=query, limit=limit_per_page, expand=expand, **kwargs)
 
             pages_fetched += 1
 

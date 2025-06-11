@@ -234,8 +234,6 @@ class DebtsResource(BaseResource):
         """
         return self.http_client.get(f"debts/{debt_id}/summary")
 
-
-
     # Payment operations for debts
     def list_payments(
         self,
