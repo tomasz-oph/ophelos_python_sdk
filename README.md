@@ -26,7 +26,7 @@ pip install -e .
 ## Quick Start
 
 ```python
-from ophelos import OphelosClient
+from ophelos_sdk import OphelosClient
 
 # Initialize client with your credentials
 client = OphelosClient(
@@ -153,7 +153,8 @@ customers = client.customers.search("email:john@example.com")
 
 # Update customer
 customer = client.customers.update("cust_123", {
-    "phone": "+447700900123"
+    "preferred_locale": "en-GB",
+    "metadata": {"updated_reason": "customer request"}
 })
 ```
 
@@ -174,7 +175,7 @@ payments = client.debts.payments.list("debt_123")
 ### Error Handling
 
 ```python
-from ophelos.exceptions import OphelosAPIError, AuthenticationError
+from ophelos_sdk.exceptions import OphelosAPIError, AuthenticationError
 
 try:
     debt = client.debts.get("invalid_debt_id")
@@ -187,7 +188,7 @@ except AuthenticationError as e:
 ### Webhook Handling
 
 ```python
-from ophelos.webhooks import WebhookHandler
+from ophelos_sdk.webhooks import WebhookHandler
 
 # Initialize webhook handler
 webhook_handler = WebhookHandler("your_webhook_secret")
@@ -244,8 +245,8 @@ pip install -e ".[dev]"
 pytest
 
 # Run linting
-flake8 ophelos/
-mypy ophelos/
+flake8 ophelos_sdk/
+mypy ophelos_sdk/
 ```
 
 ## Support

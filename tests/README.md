@@ -6,7 +6,19 @@ This directory contains comprehensive tests for the Ophelos Python SDK.
 
 ### Unit Tests
 
-- **`test_models.py`** - Tests for Pydantic models (Debt, Customer, Payment, etc.)
+#### Model Tests (`tests/models/`)
+- **`test_debt.py`** - Tests for Debt model and DebtStatus enum
+- **`test_customer.py`** - Tests for Customer model
+- **`test_payment.py`** - Tests for Payment model and PaymentStatus enum
+- **`test_invoice.py`** - Tests for Invoice model
+- **`test_contact_detail.py`** - Tests for ContactDetail model
+- **`test_communication.py`** - Tests for Communication and CommunicationTemplate models
+- **`test_enumerations.py`** - Tests for Currency and ContactDetailType enums
+- **`test_pagination.py`** - Tests for PaginatedResponse model
+- **`test_webhook.py`** - Tests for WebhookEvent model
+- **`test_serialization.py`** - Tests for model serialization and deserialization
+
+#### Core Tests (`tests/`)
 - **`test_auth.py`** - Tests for OAuth2 authentication functionality
 - **`test_http_client.py`** - Tests for HTTP client with error handling and retries
 - **`test_webhooks.py`** - Tests for webhook signature validation and parsing
@@ -30,10 +42,13 @@ This directory contains comprehensive tests for the Ophelos Python SDK.
 python -m pytest
 
 # Run tests with coverage
-python -m pytest --cov=ophelos
+python -m pytest --cov=ophelos_sdk
 
 # Run only specific test file
-python -m pytest tests/test_models.py -v
+python -m pytest tests/models/test_debt.py -v
+
+# Run all model tests
+python -m pytest tests/models/ -v
 ```
 
 ### Using the Test Runner Script
@@ -107,8 +122,15 @@ The test suite is designed to run in CI environments:
 
 When adding new features:
 
-1. Add unit tests for new models in `test_models.py`
+1. Add unit tests for new models in `tests/models/test_<model_name>.py`
 2. Add resource tests in `test_resources.py`
 3. Add integration tests in `test_integration.py` if needed
 4. Update fixtures in `conftest.py` as required
-5. Ensure coverage stays above 85% 
+5. Ensure coverage stays above 85%
+
+### Test Organization
+
+- **Model tests**: Place in `tests/models/` directory, one file per model
+- **Core functionality tests**: Place in `tests/` root directory
+- **Integration tests**: Keep in `test_integration.py`
+- **Shared fixtures**: Add to `conftest.py` 

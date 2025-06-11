@@ -46,6 +46,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **BREAKING CHANGE**: Package renamed from `ophelos` to `ophelos_sdk` for better namespace management
+- Import statements now use `from ophelos_sdk import OphelosClient` instead of `from ophelos import OphelosClient`
+- All module imports updated to use `ophelos_sdk.*` namespace
+
 ### Planned
 - Async client support
 - Enhanced error messages with suggestion

@@ -33,7 +33,7 @@ pip install -e .
 ### 1. Initialize the Client
 
 ```python
-from ophelos import OphelosClient
+from ophelos_sdk import OphelosClient
 
 # For staging environment (default)
 client = OphelosClient(
@@ -69,7 +69,7 @@ print(f"Found {len(debts.data)} debts")
 
 # Get a specific debt
 debt = client.debts.get("debt_123456789", expand=["customer", "payments"])
-print(f"Debt amount: {debt.total_amount} {debt.currency}")
+print(f"Debt amount: {debt.summary.amount_total} {debt.currency}")
 
 # Search debts
 results = client.debts.search("status:paying", limit=20)
@@ -78,11 +78,12 @@ for debt in results.data:
 
 # Create a new debt
 new_debt = client.debts.create({
-    "customer_id": "cust_123456789",
-    "organisation_id": "org_123456789",
-    "total_amount": 10000,  # Amount in cents
+    "customer": "cust_123456789",
+    "organisation": "org_123456789",
     "currency": "GBP",
-    "reference_code": "REF-001"
+    "reference_code": "REF-001",
+    "kind": "purchased",
+    "metadata": {"case_id": "12345"}
 })
 
 # Update debt metadata
@@ -113,15 +114,15 @@ results = client.customers.search("email:john@example.com")
 new_customer = client.customers.create({
     "first_name": "John",
     "last_name": "Doe",
-    "organisation_id": "org_123456789",
-    "country_code": "GB",
-    "postal_code": "SW1A 1AA"
+    "kind": "individual",
+    "preferred_locale": "en",
+    "metadata": {"organisation_id": "org_123456789"}
 })
 
 # Update customer information
 updated_customer = client.customers.update("cust_123456789", {
-    "phone": "+447700900123",
-    "preferred_locale": "en-GB"
+    "preferred_locale": "en-GB",
+    "metadata": {"updated_by": "system"}
 })
 ```
 
@@ -169,7 +170,7 @@ updated_org = client.organisations.update("org_123456789", {
 ### 6. Webhook Handling
 
 ```python
-from ophelos import WebhookHandler, construct_event
+from ophelos_sdk import WebhookHandler, construct_event
 
 # Initialize webhook handler
 webhook_handler = WebhookHandler("your_webhook_secret")
@@ -210,7 +211,7 @@ def handle_webhook_simple(request):
 ## Error Handling
 
 ```python
-from ophelos import (
+from ophelos_sdk import (
     OphelosError, OphelosAPIError, AuthenticationError,
     ValidationError, NotFoundError, RateLimitError
 )
@@ -246,7 +247,7 @@ export OPHELOS_ENVIRONMENT="staging"
 
 ```python
 import os
-from ophelos import OphelosClient
+from ophelos_sdk import OphelosClient
 
 client = OphelosClient(
     client_id=os.getenv("OPHELOS_CLIENT_ID"),
@@ -310,7 +311,7 @@ debt_ids = ["debt_001", "debt_002", "debt_003"]
 for debt_id in debt_ids:
     try:
         debt = client.debts.get(debt_id)
-        if debt.status == "prepared":
+        if debt.status.value == "prepared":
             client.debts.ready(debt_id)
             print(f"Marked {debt_id} as ready")
     except Exception as e:
