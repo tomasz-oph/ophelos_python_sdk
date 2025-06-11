@@ -5,7 +5,7 @@ Unit tests for webhook event model.
 import pytest
 from datetime import datetime
 
-from ophelos.models import WebhookEvent
+from ophelos_sdk.models import WebhookEvent
 
 
 class TestWebhookEvent:

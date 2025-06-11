@@ -5,7 +5,7 @@ Unit tests for Payment model.
 import pytest
 from datetime import datetime
 
-from ophelos.models import Payment, PaymentStatus
+from ophelos_sdk.models import Payment, PaymentStatus
 
 
 class TestPaymentModel:

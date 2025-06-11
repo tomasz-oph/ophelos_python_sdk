@@ -12,7 +12,7 @@ This example demonstrates all pagination approaches available in the SDK:
 
 import os
 from typing import Dict, Any
-from ophelos import OphelosClient
+from ophelos_sdk import OphelosClient
 
 
 def setup_client():

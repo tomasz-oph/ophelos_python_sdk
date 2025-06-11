@@ -9,9 +9,9 @@ import hashlib
 import time
 from unittest.mock import patch
 
-from ophelos.webhooks import WebhookHandler, construct_event
-from ophelos.models import WebhookEvent
-from ophelos.exceptions import OphelosError
+from ophelos_sdk.webhooks import WebhookHandler, construct_event
+from ophelos_sdk.models import WebhookEvent
+from ophelos_sdk.exceptions import OphelosError
 
 
 class TestWebhookHandler:

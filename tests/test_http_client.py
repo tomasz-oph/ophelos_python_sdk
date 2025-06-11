@@ -6,9 +6,9 @@ import pytest
 from unittest.mock import Mock, patch
 import requests
 
-from ophelos.http_client import HTTPClient
-from ophelos.auth import OAuth2Authenticator
-from ophelos.exceptions import (
+from ophelos_sdk.http_client import HTTPClient
+from ophelos_sdk.auth import OAuth2Authenticator
+from ophelos_sdk.exceptions import (
     OphelosAPIError,
     AuthenticationError,
     ValidationError,

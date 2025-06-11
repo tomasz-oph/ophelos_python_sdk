@@ -5,7 +5,7 @@ Unit tests for Debt model and DebtStatus enum.
 import pytest
 from datetime import datetime
 
-from ophelos.models import Debt, DebtStatus
+from ophelos_sdk.models import Debt, DebtStatus
 
 
 class TestDebtModel:

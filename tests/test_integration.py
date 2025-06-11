@@ -9,8 +9,8 @@ import pytest
 import os
 from datetime import datetime, date
 
-from ophelos import OphelosClient
-from ophelos.exceptions import OphelosAPIError, AuthenticationError
+from ophelos_sdk import OphelosClient
+from ophelos_sdk.exceptions import OphelosAPIError, AuthenticationError
 
 
 # Skip integration tests (uncomment the first line to enable them when credentials are available)

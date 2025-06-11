@@ -60,11 +60,11 @@ docs = [
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["ophelos*"]
+include = ["ophelos_sdk*"]
 exclude = ["tests*", "examples*"]
 
 [tool.setuptools.package-data]
-ophelos = ["py.typed"]
+ophelos_sdk = ["py.typed"]
 
 [tool.black]
 line-length = 100
@@ -117,7 +117,7 @@ minversion = "7.0"
 addopts = [
     "--strict-markers",
     "--strict-config",
-    "--cov=ophelos",
+    "--cov=ophelos_sdk",
     "--cov-report=term-missing",
     "--cov-report=html",
     "--cov-report=xml",
@@ -130,7 +130,7 @@ markers = [
 ]
 
 [tool.coverage.run]
-source = ["ophelos"]
+source = ["ophelos_sdk"]
 omit = [
     "*/tests/*",
     "*/examples/*",

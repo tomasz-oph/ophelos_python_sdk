@@ -4,7 +4,7 @@ Unit tests for enumeration types.
 
 import pytest
 
-from ophelos.models import Currency, ContactDetailType
+from ophelos_sdk.models import Currency, ContactDetailType
 
 
 class TestEnumerations:

@@ -4,7 +4,7 @@ Unit tests for paginated response model.
 
 import pytest
 
-from ophelos.models import PaginatedResponse
+from ophelos_sdk.models import PaginatedResponse
 
 
 class TestPaginatedResponse:

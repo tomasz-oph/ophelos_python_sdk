@@ -3,9 +3,9 @@ include LICENSE
 include CHANGELOG.md
 include requirements.txt
 include pyproject.toml
-recursive-include ophelos *.py
+recursive-include ophelos_sdk *.py
 recursive-include examples *.py
-include ophelos/py.typed
+include ophelos_sdk/py.typed
 exclude .gitignore
 exclude .pre-commit-config.yaml
 recursive-exclude * __pycache__

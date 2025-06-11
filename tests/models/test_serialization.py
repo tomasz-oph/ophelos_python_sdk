@@ -5,7 +5,7 @@ Unit tests for model serialization and deserialization.
 import pytest
 from datetime import datetime
 
-from ophelos.models import Debt
+from ophelos_sdk.models import Debt
 
 
 class TestModelSerialization:

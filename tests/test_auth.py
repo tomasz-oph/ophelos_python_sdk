@@ -7,8 +7,8 @@ import time
 from unittest.mock import Mock, patch
 import requests
 
-from ophelos.auth import OAuth2Authenticator
-from ophelos.exceptions import AuthenticationError
+from ophelos_sdk.auth import OAuth2Authenticator
+from ophelos_sdk.exceptions import AuthenticationError
 
 
 class TestOAuth2Authenticator:

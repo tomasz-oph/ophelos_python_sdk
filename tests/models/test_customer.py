@@ -5,7 +5,7 @@ Unit tests for Customer model.
 import pytest
 from datetime import datetime
 
-from ophelos.models import Customer
+from ophelos_sdk.models import Customer
 
 
 class TestCustomerModel:

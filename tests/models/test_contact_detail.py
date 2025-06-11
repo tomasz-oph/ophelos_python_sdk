@@ -5,7 +5,7 @@ Unit tests for ContactDetail model.
 import pytest
 from datetime import datetime
 
-from ophelos.models import ContactDetail, ContactDetailType
+from ophelos_sdk.models import ContactDetail, ContactDetailType
 
 
 class TestContactDetailModel:

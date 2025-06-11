@@ -7,9 +7,9 @@ from unittest.mock import Mock, MagicMock, patch
 from datetime import datetime, date
 import json
 
-from ophelos import OphelosClient
-from ophelos.auth import OAuth2Authenticator
-from ophelos.http_client import HTTPClient
+from ophelos_sdk import OphelosClient
+from ophelos_sdk.auth import OAuth2Authenticator
+from ophelos_sdk.http_client import HTTPClient
 
 
 @pytest.fixture
@@ -176,8 +176,8 @@ def test_client_config():
 @pytest.fixture
 def ophelos_client(test_client_config, mock_authenticator, mock_http_client):
     """Mock Ophelos client for testing."""
-    with patch("ophelos.client.OAuth2Authenticator", return_value=mock_authenticator), patch(
-        "ophelos.client.HTTPClient", return_value=mock_http_client
+    with patch("ophelos_sdk.client.OAuth2Authenticator", return_value=mock_authenticator), patch(
+        "ophelos_sdk.client.HTTPClient", return_value=mock_http_client
     ):
         return OphelosClient(**test_client_config)
 

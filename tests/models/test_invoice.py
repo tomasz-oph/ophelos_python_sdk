@@ -5,7 +5,7 @@ Unit tests for Invoice model.
 import pytest
 from datetime import datetime, date
 
-from ophelos.models import Invoice, Debt, Currency
+from ophelos_sdk.models import Invoice, Debt, Currency
 
 
 class TestUpdatedInvoiceModel:
