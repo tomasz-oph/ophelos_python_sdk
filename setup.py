@@ -14,7 +14,7 @@ setup(
     description="Python SDK for the Ophelos API",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/tomasz-oph/ophelos-python-sdk",
+    url="https://github.com/tomasz-oph/ophelos_python_sdk",
     packages=find_packages(),
     classifiers=[
         "Intended Audience :: Developers",
@@ -28,7 +28,7 @@ setup(
     install_requires=requirements,
     keywords="ophelos api sdk debt management payments",
     project_urls={
-        "Bug Reports": "https://github.com/tomasz-oph/ophelos-python-sdk/issues",
-        "Source": "https://github.com/tomasz-oph/ophelos-python-sdk",
+        "Bug Reports": "https://github.com/tomasz-oph/ophelos_python_sdk/issues",
+        "Source": "https://github.com/tomasz-oph/ophelos_python_sdk",
     },
 )

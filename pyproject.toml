@@ -52,11 +52,11 @@ docs = [
 ]
 
 [project.urls]
-"Homepage" = "https://ophelos.com"
-"Documentation" = "https://docs.ophelos.com"
-"Repository" = "https://github.com/tomasz-oph/ophelos-python-sdk"
-"Bug Reports" = "https://github.com/tomasz-oph/ophelos-python-sdk/issues"
-"Changelog" = "https://github.com/tomasz-oph/ophelos-python-sdk/blob/main/CHANGELOG.md"
+"Homepage" = "https://github.com/tomasz-oph/ophelos_python_sdk"
+"Documentation" = "https://github.com/tomasz-oph/ophelos_python_sdk"
+"Repository" = "https://github.com/tomasz-oph/ophelos_python_sdk"
+"Bug Reports" = "https://github.com/tomasz-oph/ophelos_python_sdk/issues"
+"Changelog" = "https://github.com/tomasz-oph/ophelos_python_sdk/blob/main/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
 where = ["."]

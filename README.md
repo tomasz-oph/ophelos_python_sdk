@@ -251,10 +251,9 @@ mypy ophelos_sdk/
 
 ## Support
 
-- **Documentation**: [https://docs.ophelos.com](https://docs.ophelos.com)
-- **API Reference**: [https://api.ophelos.com/docs](https://api.ophelos.com/docs)
-- **Support Email**: intrum-support@ophelos.com
-- **Issues**: [GitHub Issues](https://github.com/ophelos/ophelos-python-sdk/issues)
+- **API Reference**: [https://api.ophelos.com](https://api.ophelos.com)
+- **Support Email**: support@ophelos.com
+- **Issues**: [GitHub Issues](https://github.com/tomasz-oph/ophelos_python_sdk/issues)
 
 ## License
 

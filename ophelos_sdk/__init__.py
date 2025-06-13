@@ -40,7 +40,7 @@ from .models import (
 
 __version__ = "1.0.0"
 __author__ = "Ophelos"
-__email__ = "intrum-support@ophelos.com"
+__email__ = "support@ophelos.com"
 
 __all__ = [
     "OphelosClient",
