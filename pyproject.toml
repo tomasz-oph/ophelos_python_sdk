@@ -6,9 +6,9 @@ build-backend = "setuptools.build_meta"
 name = "ophelos-sdk"
 version = "1.0.0"
 authors = [
-    {name = "Ophelos", email = "intrum-support@ophelos.com"},
+    {name = "Ophelos", email = "support@ophelos.com"},
 ]
-description = "Official Python SDK for the Ophelos API"
+description = "Python SDK for the Ophelos API"
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.8"
@@ -54,9 +54,9 @@ docs = [
 [project.urls]
 "Homepage" = "https://ophelos.com"
 "Documentation" = "https://docs.ophelos.com"
-"Repository" = "https://github.com/ophelos/ophelos-python-sdk"
-"Bug Reports" = "https://github.com/ophelos/ophelos-python-sdk/issues"
-"Changelog" = "https://github.com/ophelos/ophelos-python-sdk/blob/main/CHANGELOG.md"
+"Repository" = "https://github.com/tomasz-oph/ophelos-python-sdk"
+"Bug Reports" = "https://github.com/tomasz-oph/ophelos-python-sdk/issues"
+"Changelog" = "https://github.com/tomasz-oph/ophelos-python-sdk/blob/main/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
 where = ["."]
