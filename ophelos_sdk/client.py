@@ -65,7 +65,6 @@ class OphelosClient:
             )
             ```
         """
-        # Set base URL based on environment
         if environment == "production":
             base_url = "https://api.ophelos.com"
         elif environment == "development":
@@ -73,7 +72,6 @@ class OphelosClient:
         else:  # staging (default)
             base_url = "https://api.ophelos.dev"
 
-        # Initialize authenticator and HTTP client
         self.authenticator = OAuth2Authenticator(
             client_id=client_id,
             client_secret=client_secret,
@@ -88,8 +86,6 @@ class OphelosClient:
             max_retries=max_retries,
             tenant_id=tenant_id,
         )
-
-        # Initialize resource managers
         self.debts = DebtsResource(self.http_client)
         self.customers = CustomersResource(self.http_client)
         self.organisations = OrganisationsResource(self.http_client)

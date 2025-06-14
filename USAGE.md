@@ -9,7 +9,7 @@ This guide shows how to install and use the Ophelos SDK from the local distribut
 Install directly from the built wheel file:
 
 ```bash
-pip install dist/ophelos_sdk-1.0.1-py3-none-any.whl
+pip install dist/ophelos_sdk-1.0.2-py3-none-any.whl
 ```
 
 ### Option 2: Install from Source Distribution
@@ -17,7 +17,7 @@ pip install dist/ophelos_sdk-1.0.1-py3-none-any.whl
 Install from the source distribution:
 
 ```bash
-pip install dist/ophelos-sdk-1.0.1.tar.gz
+pip install dist/ophelos-sdk-1.0.2.tar.gz
 ```
 
 ### Option 3: Development Installation

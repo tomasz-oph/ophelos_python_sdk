@@ -42,7 +42,7 @@ def safe_debt_list_example():
         return False
 
     try:
-        # Initialize client
+        
         client = setup_client()
         print(f"✅ Client initialized (environment: {client.authenticator.environment})")
 
@@ -53,7 +53,7 @@ def safe_debt_list_example():
             return False
         print("✅ Connection successful")
 
-        # Get debts list with model objects
+
         print("\n--- Fetching Debts (with Model Objects) ---")
         debts_page = client.debts.list(limit=3, expand=["customer", "organisation"])
 

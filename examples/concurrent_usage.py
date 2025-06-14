@@ -133,7 +133,7 @@ def example_concurrent_specific_resources():
     print("🚀 Example 1: Concurrent API calls for specific resources")
     print("=" * 60)
 
-    # Initialize client once - will be shared across all threads
+
     client = setup_client()
 
     # Force token fetch with first call (optional - will happen automatically anyway)

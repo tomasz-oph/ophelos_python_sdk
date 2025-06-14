@@ -72,7 +72,6 @@ class OAuth2Authenticator:
         if not self._access_token or not self._token_expires_at:
             return False
 
-        # Add 60 second buffer before expiration
         return time.time() < (self._token_expires_at - 60)
 
     def _fetch_new_token(self) -> str:
@@ -113,11 +112,9 @@ class OAuth2Authenticator:
                 f"Invalid token response format: {str(e)}", response_data={"text": response.text}
             )
 
-        # Validate required fields
         if "access_token" not in token_data:
             raise AuthenticationError("Missing access_token in response", response_data=token_data)
 
-        # Store token and expiration time
         self._access_token = token_data["access_token"]
         expires_in = token_data.get("expires_in", 3600)  # Default to 1 hour
         self._token_expires_at = time.time() + expires_in

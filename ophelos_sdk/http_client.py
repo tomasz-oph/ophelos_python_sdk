@@ -85,17 +85,14 @@ class HTTPClient:
         request_headers = {
             "Content-Type": "application/json",
             "Accept": "application/json",
-            "User-Agent": "ophelos-python-sdk/1.0.1",
+            "User-Agent": "ophelos-python-sdk/1.0.2",
         }
 
-        # Add authentication headers
         request_headers.update(self.authenticator.get_auth_headers())
 
-        # Add tenant ID header if specified
         if self.tenant_id:
             request_headers["OPHELOS_TENANT_ID"] = self.tenant_id
 
-        # Add custom headers
         if headers:
             request_headers.update(headers)
 
@@ -116,7 +113,6 @@ class HTTPClient:
         """
         try:
             json_data = response.json() if response.content else {}
-            # Ensure we always return a dict
             response_data = json_data if isinstance(json_data, dict) else {"data": json_data}
         except ValueError:
             response_data = {"message": response.text}
@@ -124,9 +120,7 @@ class HTTPClient:
         if response.status_code >= 400:
             message = response_data.get("message", f"HTTP {response.status_code}")
 
-            # Map status codes to specific exceptions
             if response.status_code == 401:
-                # Invalidate token on auth error
                 self.authenticator.invalidate_token()
                 raise AuthenticationError(message, response_data=response_data)
             elif response.status_code == 403:

@@ -17,7 +17,7 @@ class TestThreadSafety:
 
     def test_concurrent_token_access(self):
         """Test that multiple threads can access tokens safely."""
-        # Create a mock client
+
         client = OphelosClient(
             client_id="test_client",
             client_secret="test_secret",
@@ -33,7 +33,7 @@ class TestThreadSafety:
             with fetch_lock:
                 fetch_count["count"] += 1
                 time.sleep(0.1)  # Simulate network delay
-                # Return a real-looking token
+    
                 client.authenticator._access_token = f"mock_token_{fetch_count['count']}"
                 client.authenticator._token_expires_at = time.time() + 3600
                 return client.authenticator._access_token

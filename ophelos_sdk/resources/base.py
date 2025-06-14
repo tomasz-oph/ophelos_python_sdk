@@ -67,10 +67,7 @@ class BaseResource:
         if before:
             params["before"] = before
 
-        # Add expand parameters
         params.update(self._build_expand_params(expand))
-
-        # Add additional parameters
         params.update(kwargs)
 
         return params
@@ -99,10 +96,7 @@ class BaseResource:
         if limit is not None:
             params["limit"] = limit
 
-        # Add expand parameters
         params.update(self._build_expand_params(expand))
-
-        # Add additional parameters
         params.update(kwargs)
 
         return params
@@ -176,7 +170,6 @@ class BaseResource:
                     # Fallback to raw data if parsing fails
                     parsed_items.append(item)
 
-            # Create a new response dict with parsed items
             parsed_response = response_data.copy()
             parsed_response["data"] = parsed_items
             return PaginatedResponse(**parsed_response)
@@ -244,7 +237,6 @@ class BaseResource:
             if not page.has_more or not page.data:
                 break
 
-            # Set cursor for next page
             last_item = page.data[-1]
             if hasattr(last_item, "id"):
                 after_cursor = last_item.id

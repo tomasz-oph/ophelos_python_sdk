@@ -58,7 +58,7 @@ def tenant_operations(client):
     print("=" * 50)
 
     try:
-        # Get current tenant
+        
         tenant = client.tenants.get_me()
         print(f"Tenant ID: {tenant.id}")
         print(f"Tenant Name: {tenant.name}")
@@ -92,7 +92,7 @@ def debt_operations(client):
                 f"  Debt {debt.id}: {debt.status.value} - ${debt.summary.amount_total/100:.2f} ({customer_name})"
             )
 
-        # Get specific debt details
+    
         if debts.data:
             debt_id = debts.data[0].id
             print(f"\n--- Debt Details: {debt_id} ---")
@@ -162,7 +162,7 @@ def customer_operations(client):
 
             print(f"  Customer {customer_id}: {name or 'No name'}")
 
-        # Get specific customer
+    
         if customers.data:
             first_customer = customers.data[0]
             if hasattr(first_customer, "id"):
@@ -305,7 +305,7 @@ def demonstrate_best_practices(client):
     print(f"Total processed: {count} debts")
 
     print("\n--- Expanding Related Data ---")
-    # Get debt with all related data in one call
+
     debts = client.debts.list(limit=1, expand=["customer", "organisation", "payments"])
     if debts.data:
         debt = debts.data[0]
