@@ -42,7 +42,6 @@ def safe_debt_list_example():
         return False
 
     try:
-        
         client = setup_client()
         print(f"✅ Client initialized (environment: {client.authenticator.environment})")
 
@@ -53,7 +52,6 @@ def safe_debt_list_example():
             return False
         print("✅ Connection successful")
 
-
         print("\n--- Fetching Debts (with Model Objects) ---")
         debts_page = client.debts.list(limit=3, expand=["customer", "organisation"])
 
@@ -63,49 +61,7 @@ def safe_debt_list_example():
 
         # Process each debt - these should be Debt model objects
         for i, debt in enumerate(debts_page.data, 1):
-            print(f"\n━━━ Debt #{i} ━━━")
-
-            # Verify it's a model object
-            print(f"🔍 Type: {type(debt)}")
-            print(f"🔍 Has 'id' attribute: {hasattr(debt, 'id')}")
-
-            if hasattr(debt, "id"):
-                # ✅ It's a proper model object
-                print(f"✅ ID: {debt.id}")
-                print(f"✅ Amount: ${debt.summary.amount_total / 100:.2f}")
-                print(f"✅ Status: {debt.status.value} (type: {type(debt.status.value)})")
-                print(f"✅ Created: {debt.created_at}")
-
-                # Type-safe enum comparisons
-                if debt.status.value == DebtStatus.PAYING:
-                    print("  🟢 This debt is currently being paid")
-                elif debt.status.value == DebtStatus.PAID:
-                    print("  🎉 This debt has been fully paid")
-
-                # Safe customer access
-                if debt.customer:
-                    if isinstance(debt.customer, str):
-                        print(f"  👤 Customer ID: {debt.customer}")
-                    else:
-                        print(f"  👤 Customer: {debt.customer.full_name or 'Unknown'}")
-                    print(f"  👤 Customer type: {type(debt.customer)}")
-
-                # Safe organisation access
-                if debt.organisation:
-                    if isinstance(debt.organisation, str):
-                        print(f"  🏢 Organisation ID: {debt.organisation}")
-                    else:
-                        print(f"  🏢 Organisation: {debt.organisation.name}")
-
-            else:
-                # ❌ It's still a dictionary (shouldn't happen with fixed parsing)
-                print(f"❌ Unexpected: Got dictionary instead of model object")
-                print(f"❌ Content: {debt}")
-
-                # Fallback dictionary access
-                if isinstance(debt, dict):
-                    print(f"📋 ID (dict): {debt.get('id', 'N/A')}")
-                    print(f"📋 Status (dict): {debt.get('status', 'N/A')}")
+            _process_debt(debt, i)
 
         return True
 
@@ -122,9 +78,67 @@ def safe_debt_list_example():
     except Exception as e:
         print(f"❌ Unexpected error: {e}")
         import traceback
-
         traceback.print_exc()
         return False
+
+
+def _process_debt(debt, index):
+    """Process a single debt object to reduce complexity."""
+    print(f"\n━━━ Debt #{index} ━━━")
+
+    # Verify it's a model object
+    print(f"🔍 Type: {type(debt)}")
+    print(f"🔍 Has 'id' attribute: {hasattr(debt, 'id')}")
+
+    if hasattr(debt, "id"):
+        _print_debt_details(debt)
+    else:
+        _handle_dict_debt(debt)
+
+
+def _print_debt_details(debt):
+    """Print details for a proper debt model object."""
+    print(f"✅ ID: {debt.id}")
+    print(f"✅ Amount: ${debt.summary.amount_total / 100:.2f}")
+    print(f"✅ Status: {debt.status.value} (type: {type(debt.status.value)})")
+    print(f"✅ Created: {debt.created_at}")
+
+    # Type-safe enum comparisons
+    if debt.status.value == DebtStatus.PAYING:
+        print("  🟢 This debt is currently being paid")
+    elif debt.status.value == DebtStatus.PAID:
+        print("  🎉 This debt has been fully paid")
+
+    _print_debt_relations(debt)
+
+
+def _print_debt_relations(debt):
+    """Print debt customer and organisation relations."""
+    # Safe customer access
+    if debt.customer:
+        if isinstance(debt.customer, str):
+            print(f"  👤 Customer ID: {debt.customer}")
+        else:
+            print(f"  👤 Customer: {debt.customer.full_name or 'Unknown'}")
+        print(f"  👤 Customer type: {type(debt.customer)}")
+
+    # Safe organisation access
+    if debt.organisation:
+        if isinstance(debt.organisation, str):
+            print(f"  🏢 Organisation ID: {debt.organisation}")
+        else:
+            print(f"  🏢 Organisation: {debt.organisation.name}")
+
+
+def _handle_dict_debt(debt):
+    """Handle the case where debt is still a dictionary."""
+    print("❌ Unexpected: Got dictionary instead of model object")
+    print(f"❌ Content: {debt}")
+
+    # Fallback dictionary access
+    if isinstance(debt, dict):
+        print(f"📋 ID (dict): {debt.get('id', 'N/A')}")
+        print(f"📋 Status (dict): {debt.get('status', 'N/A')}")
 
 
 def pagination_with_models():
@@ -142,7 +156,7 @@ def pagination_with_models():
             count += 1
             # debt is automatically a Debt model object
             print(
-                f"  {count}. Debt {debt.id}: ${debt.summary.amount_total/100:.2f} ({debt.status.value})"
+                f"  {count}. Debt {debt.id}: ${debt.summary.amount_total / 100:.2f} ({debt.status.value})"
             )
 
             if count >= 3:  # Limit output for demo

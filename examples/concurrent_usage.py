@@ -133,7 +133,6 @@ def example_concurrent_specific_resources():
     print("🚀 Example 1: Concurrent API calls for specific resources")
     print("=" * 60)
 
-
     client = setup_client()
 
     # Force token fetch with first call (optional - will happen automatically anyway)
@@ -188,7 +187,7 @@ def example_concurrent_specific_resources():
 
     end_time = time.time()
 
-    print(f"\n📊 Results Summary:")
+    print("\n📊 Results Summary:")
     print(f"   ✅ Debts fetched: {len(results['debts'])}")
     print(f"   ✅ Customers fetched: {len(results['customers'])}")
     print(f"   ❌ Errors: {len(results['errors'])}")
@@ -211,7 +210,7 @@ def example_concurrent_list_operations():
     results = list_resources_concurrently(client)
     end_time = time.time()
 
-    print(f"\n📊 List Results Summary:")
+    print("\n📊 List Results Summary:")
     for resource_name, data in results.items():
         if hasattr(data, "data") and hasattr(data.data, "__len__"):
             print(f"   ✅ {resource_name}: {len(data.data)} items")

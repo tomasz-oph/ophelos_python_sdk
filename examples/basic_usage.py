@@ -89,17 +89,16 @@ def debt_operations(client):
                 else:
                     customer_name = debt.customer.full_name or "N/A"
             print(
-                f"  Debt {debt.id}: {debt.status.value} - ${debt.summary.amount_total/100:.2f} ({customer_name})"
+                f"  Debt {debt.id}: {debt.status.value} - ${debt.summary.amount_total / 100:.2f} ({customer_name})"
             )
 
-    
         if debts.data:
             debt_id = debts.data[0].id
             print(f"\n--- Debt Details: {debt_id} ---")
             debt = client.debts.get(debt_id, expand=["customer", "organisation", "payments"])
 
             print(f"Status: {debt.status.value}")
-            print(f"Amount: ${debt.summary.amount_total/100:.2f}")
+            print(f"Amount: ${debt.summary.amount_total / 100:.2f}")
             print(f"Currency: {debt.currency or 'N/A'}")
             print(f"Account Number: {debt.account_number or 'N/A'}")
 
@@ -124,7 +123,7 @@ def debt_operations(client):
             search_results = client.debts.search("status:paying", limit=3)
             print(f"Found {len(search_results.data)} paying debts")
             for debt in search_results.data:
-                print(f"  Paying debt {debt.id}: ${debt.summary.amount_total/100:.2f}")
+                print(f"  Paying debt {debt.id}: ${debt.summary.amount_total / 100:.2f}")
         except Exception as e:
             print(f"Search not available: {e}")
 
@@ -162,7 +161,6 @@ def customer_operations(client):
 
             print(f"  Customer {customer_id}: {name or 'No name'}")
 
-    
         if customers.data:
             first_customer = customers.data[0]
             if hasattr(first_customer, "id"):
@@ -208,7 +206,7 @@ def payment_operations(client):
         print(f"Found {len(payments.data)} payments")
 
         for payment in payments.data:
-            print(f"  Payment {payment.id}: {payment.status} - ${payment.amount/100:.2f}")
+            print(f"  Payment {payment.id}: {payment.status} - ${payment.amount / 100:.2f}")
             print(f"    Transaction: {payment.transaction_at}")
 
     except Exception as e:
@@ -294,6 +292,15 @@ def demonstrate_best_practices(client):
     print("✨ BEST PRACTICES")
     print("=" * 50)
 
+    _demonstrate_generators(client)
+    _demonstrate_expanded_data(client)
+    _demonstrate_filtering(client)
+    _demonstrate_cross_resource_iterators(client)
+    _demonstrate_additional_operations(client)
+
+
+def _demonstrate_generators(client):
+    """Show generator usage for large datasets."""
     print("--- Using Generators for Large Datasets ---")
     count = 0
     for debt in client.debts.iterate(limit_per_page=10, max_pages=2):
@@ -304,8 +311,10 @@ def demonstrate_best_practices(client):
             print(f"  ... (processing {count}+ debts)")
     print(f"Total processed: {count} debts")
 
-    print("\n--- Expanding Related Data ---")
 
+def _demonstrate_expanded_data(client):
+    """Show how to expand related data."""
+    print("\n--- Expanding Related Data ---")
     debts = client.debts.list(limit=1, expand=["customer", "organisation", "payments"])
     if debts.data:
         debt = debts.data[0]
@@ -314,14 +323,19 @@ def demonstrate_best_practices(client):
         print(f"  Organisation loaded: {debt.organisation is not None}")
         print(f"  Payments loaded: {debt.payments is not None}")
 
+
+def _demonstrate_filtering(client):
+    """Show filtering and searching."""
     print("\n--- Filtering and Searching ---")
-    # Use filters to get specific data
     try:
         paying_debts = client.debts.search("status:paying", limit=3)
         print(f"Found {len(paying_debts.data)} paying debts")
     except Exception:
         print("Search filtering not available")
 
+
+def _demonstrate_cross_resource_iterators(client):
+    """Show consistent iterator API across resources."""
     print("\n--- Cross-Resource Iterators ---")
     print("All resources support the same iterator API:")
     resources = [
@@ -342,6 +356,20 @@ def demonstrate_best_practices(client):
                     break
         except Exception as e:
             print(f"  {name}: No data available")
+
+
+def _demonstrate_additional_operations(client):
+    """Show additional debt operations."""
+    print("\n--- Additional Debt Operations ---")
+    print("--- Filtering and Searching ---")
+    try:
+        all_debts = client.debts.list(limit=100, expand=["customer", "organisation", "payments"])
+        print(f"Total debts after filters: {len(all_debts)} (showing first {min(5, len(all_debts))})")
+        for debt in all_debts[:5]:
+            print(f"  Debt {debt.id}: {debt.status.value} - ${debt.summary.amount_total / 100:.2f}")
+            print(f"    Balance: ${debt.balance_amount / 100:.2f}")
+    except Exception as e:
+        print(f"❌ Debt filtering error: {e}")
 
 
 def main():

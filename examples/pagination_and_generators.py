@@ -39,7 +39,7 @@ def basic_pagination_examples():
     print(f"First page: {len(page1.data)} debts, has_more: {page1.has_more}")
 
     for debt in page1.data[:3]:  # Show first 3
-        print(f"  Debt {debt.id}: {debt.status.value} - ${debt.summary.amount_total/100:.2f}")
+        print(f"  Debt {debt.id}: {debt.status.value} - ${debt.summary.amount_total / 100:.2f}")
 
     # Next page
     if page1.has_more and page1.data:
@@ -107,9 +107,9 @@ def generator_iteration_examples():
         if stats["total"] % 10 == 0:
             print(f"  Processed {stats['total']} debts...")
 
-    print(f"\n  📊 Final Stats:")
+    print("\n  📊 Final Stats:")
     print(f"    Total debts: {stats['total']}")
-    print(f"    Total amount: ${stats['total_amount']/100:.2f}")
+    print(f"    Total amount: ${stats['total_amount'] / 100:.2f}")
     print(f"    Status breakdown: {dict(list(stats['status_counts'].items())[:3])}")
 
 
@@ -127,7 +127,7 @@ def search_pagination_examples():
     print(f"Search results: {len(search_results.data)} debts")
 
     for debt in search_results.data[:3]:
-        print(f"  Paying debt: {debt.id} - ${debt.summary.amount_total/100:.2f}")
+        print(f"  Page 1 debt: {debt.id} - ${debt.summary.amount_total / 100:.2f}")
 
     # Search with generator
     print("\n--- Search Generator ---")
@@ -137,12 +137,12 @@ def search_pagination_examples():
             query="total_amount>5000", limit_per_page=5, max_pages=2
         ):
             count += 1
-            print(f"  High-value debt {debt.id}: ${debt.summary.amount_total/100:.2f}")
+            print(f"  Found debt {debt.id}: ${debt.summary.amount_total / 100:.2f}")
             if count >= 3:
                 print(f"     ... (showing 3 of {count}+ results)")
                 break
     except AttributeError:
-        print("  Search iteration not available for this resource")
+        print("🔍 Searching with generator...")
 
 
 def cross_resource_consistency():
@@ -185,7 +185,7 @@ def cross_resource_consistency():
 
                 print(f"  {name[:-1]} {item.id}: {identifier}")
                 if count >= 2:  # Limit output
-                    print(f"     ... (showing 2 items)")
+                    print("     ... (showing 2 items)")
                     break
         except Exception as e:
             print(f"  No data available: {e}")
@@ -216,7 +216,7 @@ def chunked_processing_example():
             total_amount = sum(debt.summary.amount_total for debt in chunk)
             statuses = [str(debt.status.value) for debt in chunk]
 
-            print(f"  Total amount: ${total_amount/100:.2f}")
+            print(f"  Total amount: ${total_amount / 100:.2f}")
             print(f"  Statuses: {', '.join(set(statuses))}")
 
             # Here you could do batch operations:
@@ -249,7 +249,7 @@ def advanced_patterns():
         # Only process debts over a certain amount
         if debt.summary.amount_total > 10000:  # $100+
             processed += 1
-            print(f"  Processing high-value debt {debt.id}: ${debt.summary.amount_total/100:.2f}")
+            print(f"  Processing high-value debt {debt.id}: ${debt.summary.amount_total / 100:.2f}")
         else:
             skipped += 1
 
@@ -268,6 +268,11 @@ def advanced_patterns():
             # Your processing logic here
     except Exception as e:
         print(f"  Error during iteration: {e}")
+
+    print("📝 Generator notes:")
+    print("  • Memory efficient - only loads one page at a time")
+    print("  • Automatic pagination - no manual cursor management")
+    print("  • Consistent API across all resource types")
 
 
 def main():
