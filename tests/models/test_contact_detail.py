@@ -58,4 +58,4 @@ class TestContactDetailModel:
         assert contact_detail.usage is None
         assert contact_detail.source is None
         assert contact_detail.status is None
-        assert contact_detail.metadata is None 
+        assert contact_detail.metadata is None

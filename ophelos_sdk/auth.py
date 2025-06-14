@@ -3,7 +3,8 @@ Authentication module for OAuth2 client credentials flow.
 """
 
 import time
-from typing import Optional, Dict
+import threading
+from typing import Optional, Dict, cast
 import requests
 from .exceptions import AuthenticationError
 
@@ -31,6 +32,7 @@ class OAuth2Authenticator:
         # Token storage
         self._access_token: Optional[str] = None
         self._token_expires_at: Optional[float] = None
+        self._token_lock = threading.RLock()  # Thread safety for token operations (reentrant)
 
         # Auth0 URLs based on environment
         if environment == "production":
@@ -43,6 +45,7 @@ class OAuth2Authenticator:
     def get_access_token(self) -> str:
         """
         Get a valid access token, refreshing if necessary.
+        Thread-safe implementation that ensures only one token fetch happens at a time.
 
         Returns:
             Valid access token
@@ -50,11 +53,19 @@ class OAuth2Authenticator:
         Raises:
             AuthenticationError: If authentication fails
         """
+        # Quick check without lock first (optimization for common case)
         if self._is_token_valid():
-            assert self._access_token is not None  # This is guaranteed by _is_token_valid
-            return self._access_token
+            return cast(str, self._access_token)  # _is_token_valid() guarantees this is not None
 
-        return self._fetch_new_token()
+        # Use lock for token fetching to prevent race conditions
+        with self._token_lock:
+            # Double-check pattern: another thread might have fetched token while we waited
+            if self._is_token_valid():
+                return cast(
+                    str, self._access_token
+                )  # _is_token_valid() guarantees this is not None
+
+            return self._fetch_new_token()
 
     def _is_token_valid(self) -> bool:
         """Check if current token is valid and not expired."""
@@ -111,7 +122,6 @@ class OAuth2Authenticator:
         expires_in = token_data.get("expires_in", 3600)  # Default to 1 hour
         self._token_expires_at = time.time() + expires_in
 
-        assert self._access_token is not None  # We just set it above
         return self._access_token
 
     def get_auth_headers(self) -> Dict[str, str]:

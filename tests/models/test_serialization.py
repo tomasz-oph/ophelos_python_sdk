@@ -49,4 +49,4 @@ class TestModelSerialization:
         assert debt.id == "debt_123"
         # Extra field should be accessible
         assert hasattr(debt, "unknown_field")
-        assert debt.unknown_field == "should_be_accepted" 
+        assert debt.unknown_field == "should_be_accepted"

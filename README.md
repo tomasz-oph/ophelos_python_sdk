@@ -62,11 +62,13 @@ client.debts.ready(debt.id)
 
 - **Complete API Coverage**: All Ophelos API endpoints supported
 - **Type Safety**: Full type hints and Pydantic models
-- **Authentication**: Automatic OAuth2 token management
+- **Authentication**: Automatic OAuth2 token management with thread-safe token caching
+- **Multi-Tenant Support**: Automatic tenant header injection for multi-tenant applications
 - **Error Handling**: Comprehensive error handling with custom exceptions
 - **Pagination**: Built-in pagination support
 - **Search**: Advanced search functionality
 - **Webhooks**: Webhook event handling and validation
+- **Concurrent Safe**: Thread-safe for use with concurrent request patterns
 
 ## API Resources
 
@@ -122,6 +124,43 @@ client = OphelosClient(
     client_secret="your_client_secret",
     audience="your_audience", 
     environment="development"
+)
+```
+
+### Multi-Tenant Support
+
+For multi-tenant applications, you can specify a `tenant_id` to automatically include the `OPHELOS_TENANT_ID` header in all API requests:
+
+```python
+# Initialize client with tenant ID
+client = OphelosClient(
+    client_id="your_client_id",
+    client_secret="your_client_secret",
+    audience="your_audience",
+    environment="production",
+    tenant_id="tenant_123"  # Automatically adds OPHELOS_TENANT_ID header
+)
+
+# All requests will include the tenant header
+customer = client.customers.create({
+    "first_name": "John",
+    "last_name": "Doe"
+})
+# ^ This request includes: OPHELOS_TENANT_ID: tenant_123
+
+# You can also create different clients for different tenants
+tenant_a_client = OphelosClient(
+    client_id="your_client_id",
+    client_secret="your_client_secret",
+    audience="your_audience",
+    tenant_id="tenant_a"
+)
+
+tenant_b_client = OphelosClient(
+    client_id="your_client_id", 
+    client_secret="your_client_secret",
+    audience="your_audience",
+    tenant_id="tenant_b"
 )
 ```
 
@@ -207,6 +246,47 @@ except Exception as e:
     print(f"Webhook validation failed: {e}")
 ```
 
+### Concurrent Usage with Multi-Tenant Support
+
+```python
+from concurrent.futures import ThreadPoolExecutor
+from ophelos_sdk import OphelosClient
+
+# Create tenant-specific clients
+clients = {
+    "tenant_a": OphelosClient(
+        client_id="your_client_id",
+        client_secret="your_client_secret",
+        audience="your_audience",
+        tenant_id="tenant_a"
+    ),
+    "tenant_b": OphelosClient(
+        client_id="your_client_id",
+        client_secret="your_client_secret", 
+        audience="your_audience",
+        tenant_id="tenant_b"
+    )
+}
+
+def process_tenant_debts(tenant_id):
+    """Process debts for a specific tenant concurrently."""
+    client = clients[tenant_id]
+    # All requests automatically include OPHELOS_TENANT_ID header
+    debts = client.debts.list(limit=50)
+    return f"Processed {len(debts.data)} debts for {tenant_id}"
+
+# Process multiple tenants concurrently
+with ThreadPoolExecutor(max_workers=5) as executor:
+    futures = [
+        executor.submit(process_tenant_debts, "tenant_a"),
+        executor.submit(process_tenant_debts, "tenant_b")
+    ]
+    
+    for future in futures:
+        result = future.result()
+        print(result)
+```
+
 ## API Reference
 
 ### Client Configuration
@@ -217,10 +297,20 @@ OphelosClient(
     client_secret: str, 
     audience: str,
     environment: str = "staging",  # "development", "staging", or "production"
+    tenant_id: Optional[str] = None,  # For multi-tenant applications
     timeout: int = 30,
     max_retries: int = 3
 )
 ```
+
+**Parameters:**
+- `client_id`: OAuth2 client identifier
+- `client_secret`: OAuth2 client secret
+- `audience`: API audience/identifier
+- `environment`: Target environment (`"development"`, `"staging"`, or `"production"`)
+- `tenant_id`: Optional tenant identifier for multi-tenant applications (adds `OPHELOS_TENANT_ID` header)
+- `timeout`: Request timeout in seconds
+- `max_retries`: Maximum number of retries for failed requests
 
 ### Resource Managers
 

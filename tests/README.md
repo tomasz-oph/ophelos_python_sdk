@@ -20,9 +20,11 @@ This directory contains comprehensive tests for the Ophelos Python SDK.
 
 #### Core Tests (`tests/`)
 - **`test_auth.py`** - Tests for OAuth2 authentication functionality
-- **`test_http_client.py`** - Tests for HTTP client with error handling and retries
+- **`test_client.py`** - Tests for OphelosClient initialization and tenant_id support
+- **`test_http_client.py`** - Tests for HTTP client with error handling, retries, and tenant headers
 - **`test_webhooks.py`** - Tests for webhook signature validation and parsing
 - **`test_resources.py`** - Tests for API resource managers (debts, customers, payments, etc.)
+- **`test_thread_safety.py`** - Tests for concurrent usage and thread-safe authentication
 
 ### Integration Tests
 
@@ -49,6 +51,15 @@ python -m pytest tests/models/test_debt.py -v
 
 # Run all model tests
 python -m pytest tests/models/ -v
+
+# Run client and authentication tests
+python -m pytest tests/test_client.py tests/test_auth.py -v
+
+# Run thread safety tests
+python -m pytest tests/test_thread_safety.py -v
+
+# Run HTTP client tests (includes tenant header tests)
+python -m pytest tests/test_http_client.py -v
 ```
 
 ### Using the Test Runner Script
@@ -87,10 +98,12 @@ Integration tests will be skipped if credentials are not provided.
 The test suite aims for high coverage across all modules:
 
 - **Models**: 100% - All Pydantic models and enums
-- **Authentication**: 100% - OAuth2 flow with token management
-- **HTTP Client**: 100% - Request handling and error management
+- **Authentication**: 100% - OAuth2 flow with thread-safe token management
+- **Client**: 100% - OphelosClient initialization and multi-tenant support
+- **HTTP Client**: 100% - Request handling, error management, and tenant headers
 - **Webhooks**: 100% - Signature validation and event parsing
 - **Resources**: 85%+ - API resource managers and operations
+- **Thread Safety**: 100% - Concurrent usage patterns and authentication
 
 ## Test Data
 
@@ -124,9 +137,11 @@ When adding new features:
 
 1. Add unit tests for new models in `tests/models/test_<model_name>.py`
 2. Add resource tests in `test_resources.py`
-3. Add integration tests in `test_integration.py` if needed
-4. Update fixtures in `conftest.py` as required
-5. Ensure coverage stays above 85%
+3. Add client-level tests in `test_client.py` for initialization and configuration
+4. Add thread safety tests in `test_thread_safety.py` for concurrent usage patterns
+5. Add integration tests in `test_integration.py` if needed
+6. Update fixtures in `conftest.py` as required
+7. Ensure coverage stays above 85%
 
 ### Test Organization
 

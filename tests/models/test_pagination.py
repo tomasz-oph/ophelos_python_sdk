@@ -31,4 +31,4 @@ class TestPaginatedResponse:
         response = PaginatedResponse(**response_data)
         assert len(response.data) == 1
         assert response.has_more is True
-        assert response.total_count == 10 
+        assert response.total_count == 10

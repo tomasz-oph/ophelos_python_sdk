@@ -89,4 +89,4 @@ class TestUpdatedDebtStatus:
         assert DebtStatus.PROCESS_EXHAUSTED == "process_exhausted"
 
         # Legal flow
-        assert DebtStatus.LEGAL_PROTECTION == "legal_protection" 
+        assert DebtStatus.LEGAL_PROTECTION == "legal_protection"

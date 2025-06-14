@@ -42,4 +42,4 @@ class TestWebhookEvent:
             }
 
             event = WebhookEvent(**event_data)
-            assert event.type == event_type 
+            assert event.type == event_type

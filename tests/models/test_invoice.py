@@ -83,4 +83,4 @@ class TestUpdatedInvoiceModel:
         assert invoice.due_on is None
         assert invoice.description is None
         assert invoice.line_items is None
-        assert invoice.metadata is None 
+        assert invoice.metadata is None

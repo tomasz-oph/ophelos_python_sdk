@@ -151,4 +151,4 @@ class TestUpdatedCommunicationModel:
         assert communication.contact_detail is None
         assert communication.provider_reference is None
         assert communication.delivery_method is None
-        assert communication.metadata is None 
+        assert communication.metadata is None

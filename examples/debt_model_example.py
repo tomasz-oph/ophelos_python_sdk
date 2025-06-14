@@ -21,9 +21,7 @@ def setup_client():
             "your_client_secret",
         ),
         audience=os.getenv("OPHELOS_AUDIENCE", "your_audience"),
-        environment=os.getenv(
-            "OPHELOS_ENVIRONMENT", "staging"
-        ),  # staging, development, production
+        environment=os.getenv("OPHELOS_ENVIRONMENT", "staging"),  # staging, development, production
     )
 
 

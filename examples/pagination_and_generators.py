@@ -283,7 +283,6 @@ def main():
         chunked_processing_example()
         advanced_patterns()
 
-
         print("\n" + "=" * 60)
         print("✅ All pagination examples completed successfully!")
         print("=" * 60)

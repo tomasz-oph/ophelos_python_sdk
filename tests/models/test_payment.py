@@ -25,4 +25,4 @@ class TestPaymentModel:
         assert PaymentStatus.SUCCEEDED == "succeeded"
         assert PaymentStatus.FAILED == "failed"
         assert PaymentStatus.PENDING == "pending"
-        assert PaymentStatus.DISPUTED == "disputed" 
+        assert PaymentStatus.DISPUTED == "disputed"

@@ -21,4 +21,4 @@ class TestEnumerations:
         assert ContactDetailType.EMAIL == "email"
         assert ContactDetailType.PHONE == "phone"
         assert ContactDetailType.MOBILE == "mobile"
-        assert ContactDetailType.ADDRESS == "address" 
+        assert ContactDetailType.ADDRESS == "address"

@@ -45,4 +45,4 @@ class TestCustomerModel:
         assert customer.preferred_locale is None
         assert customer.date_of_birth is None
         assert customer.contact_details is None
-        assert customer.debts is None 
+        assert customer.debts is None

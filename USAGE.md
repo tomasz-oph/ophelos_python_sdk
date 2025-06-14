@@ -58,9 +58,122 @@ client = OphelosClient(
     audience="your_audience",
     environment="development"  # Uses http://api.localhost:3000
 )
+
+# For multi-tenant applications
+client = OphelosClient(
+    client_id="your_client_id",
+    client_secret="your_client_secret",
+    audience="your_audience",
+    environment="production",
+    tenant_id="tenant_123"  # Automatically adds OPHELOS_TENANT_ID header to all requests
+)
 ```
 
-### 2. Working with Debts
+### 2. Multi-Tenant Usage Patterns
+
+For applications serving multiple tenants, you can use different approaches:
+
+#### Option A: Multiple Client Instances
+
+```python
+# Create separate clients for each tenant
+clients = {
+    "tenant_a": OphelosClient(
+        client_id="your_client_id",
+        client_secret="your_client_secret",
+        audience="your_audience",
+        tenant_id="tenant_a"
+    ),
+    "tenant_b": OphelosClient(
+        client_id="your_client_id",
+        client_secret="your_client_secret",
+        audience="your_audience",
+        tenant_id="tenant_b"
+    )
+}
+
+# Use tenant-specific client
+def get_tenant_debts(tenant_id):
+    client = clients[tenant_id]
+    return client.debts.list(limit=50)
+
+# All requests automatically include the correct OPHELOS_TENANT_ID header
+debts_a = get_tenant_debts("tenant_a")
+debts_b = get_tenant_debts("tenant_b")
+```
+
+#### Option B: Dynamic Client Creation
+
+```python
+def create_tenant_client(tenant_id):
+    return OphelosClient(
+        client_id="your_client_id",
+        client_secret="your_client_secret",
+        audience="your_audience",
+        environment="production",
+        tenant_id=tenant_id
+    )
+
+# Create client on-demand
+def process_tenant_data(tenant_id, debt_ids):
+    client = create_tenant_client(tenant_id)
+    
+    results = []
+    for debt_id in debt_ids:
+        debt = client.debts.get(debt_id)  # Includes OPHELOS_TENANT_ID: {tenant_id}
+        results.append(debt)
+    
+    return results
+```
+
+#### Option C: Concurrent Multi-Tenant Processing
+
+```python
+from concurrent.futures import ThreadPoolExecutor
+
+def process_tenant_concurrently(tenant_configs):
+    """Process multiple tenants concurrently with thread-safe authentication."""
+    
+    def process_single_tenant(tenant_config):
+        client = OphelosClient(
+            client_id="your_client_id", 
+            client_secret="your_client_secret",
+            audience="your_audience",
+            tenant_id=tenant_config["tenant_id"]
+        )
+        
+        # Process tenant data
+        debts = client.debts.list(limit=100)
+        return {
+            "tenant_id": tenant_config["tenant_id"],
+            "debt_count": len(debts.data),
+            "status": "success"
+        }
+    
+    # Process tenants concurrently - authentication is thread-safe
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        futures = [
+            executor.submit(process_single_tenant, config) 
+            for config in tenant_configs
+        ]
+        
+        results = [future.result() for future in futures]
+    
+    return results
+
+# Usage
+tenant_configs = [
+    {"tenant_id": "tenant_a"},
+    {"tenant_id": "tenant_b"},
+    {"tenant_id": "tenant_c"}
+]
+
+results = process_tenant_concurrently(tenant_configs)
+for result in results:
+    print(f"Tenant {result['tenant_id']}: {result['debt_count']} debts")
+```
+
+### 3. Working with Debts
 
 ```python
 # List debts
@@ -97,7 +210,7 @@ client.debts.pause("debt_123456789", {"reason": "customer request"})
 client.debts.resume("debt_123456789")
 ```
 
-### 3. Working with Customers
+### 4. Working with Customers
 
 ```python
 # List customers
@@ -126,7 +239,7 @@ updated_customer = client.customers.update("cust_123456789", {
 })
 ```
 
-### 4. Working with Payments
+### 5. Working with Payments
 
 ```python
 # List all payments
@@ -150,7 +263,7 @@ new_payment = client.debts.create_payment("debt_123456789", {
 debt_payments = client.debts.list_payments("debt_123456789")
 ```
 
-### 5. Working with Organisations
+### 6. Working with Organisations
 
 ```python
 # List organisations
@@ -167,7 +280,7 @@ updated_org = client.organisations.update("org_123456789", {
 })
 ```
 
-### 6. Webhook Handling
+### 7. Webhook Handling
 
 ```python
 from ophelos_sdk import WebhookHandler, construct_event
@@ -243,6 +356,7 @@ export OPHELOS_CLIENT_ID="your_client_id"
 export OPHELOS_CLIENT_SECRET="your_client_secret"
 export OPHELOS_AUDIENCE="your_audience"
 export OPHELOS_ENVIRONMENT="staging"
+export OPHELOS_TENANT_ID="tenant_123"  # Optional for multi-tenant applications
 ```
 
 ```python
@@ -253,7 +367,8 @@ client = OphelosClient(
     client_id=os.getenv("OPHELOS_CLIENT_ID"),
     client_secret=os.getenv("OPHELOS_CLIENT_SECRET"),
     audience=os.getenv("OPHELOS_AUDIENCE"),
-    environment=os.getenv("OPHELOS_ENVIRONMENT", "staging")
+    environment=os.getenv("OPHELOS_ENVIRONMENT", "staging"),
+    tenant_id=os.getenv("OPHELOS_TENANT_ID")  # Will be None if not set
 )
 ```
 
@@ -265,8 +380,23 @@ client = OphelosClient(
     client_secret="your_client_secret",
     audience="your_audience",
     environment="staging",
+    tenant_id="optional_tenant_id",  # For multi-tenant applications
     timeout=60,  # Request timeout in seconds
     max_retries=5  # Maximum retry attempts
+)
+```
+
+### Complete Configuration Reference
+
+```python
+client = OphelosClient(
+    client_id="your_client_id",           # Required: OAuth2 client ID
+    client_secret="your_client_secret",   # Required: OAuth2 client secret
+    audience="your_audience",             # Required: API audience/identifier
+    environment="production",             # Optional: "development", "staging", or "production"
+    tenant_id="tenant_123",              # Optional: For multi-tenant applications
+    timeout=30,                          # Optional: Request timeout in seconds (default: 30)
+    max_retries=3                        # Optional: Max retry attempts (default: 3)
 )
 ```
 
@@ -288,6 +418,47 @@ if debts.has_more:
 ```
 
 ## Advanced Usage
+
+### Thread-Safe Concurrent Operations
+
+The SDK is fully thread-safe and optimized for concurrent usage:
+
+```python
+from concurrent.futures import ThreadPoolExecutor
+import time
+
+# Single client instance can be safely used across multiple threads
+client = OphelosClient(
+    client_id="your_client_id",
+    client_secret="your_client_secret",
+    audience="your_audience",
+    tenant_id="tenant_123"  # Optional for multi-tenant apps
+)
+
+def fetch_debt_data(debt_id):
+    """Function to be called concurrently."""
+    debt = client.debts.get(debt_id, expand=["customer", "payments"])
+    return {
+        "debt_id": debt_id,
+        "amount": debt.summary.amount_total,
+        "customer": debt.customer.full_name if debt.customer else None,
+        "payment_count": len(debt.payments) if debt.payments else 0
+    }
+
+# Process multiple debts concurrently
+debt_ids = ["debt_001", "debt_002", "debt_003", "debt_004", "debt_005"]
+
+with ThreadPoolExecutor(max_workers=5) as executor:
+    # Submit all tasks
+    futures = [executor.submit(fetch_debt_data, debt_id) for debt_id in debt_ids]
+    
+    # Collect results
+    results = [future.result() for future in futures]
+
+# Authentication token is automatically shared across all threads
+for result in results:
+    print(f"Debt {result['debt_id']}: {result['amount']} ({result['payment_count']} payments)")
+```
 
 ### Expanding Related Resources
 
