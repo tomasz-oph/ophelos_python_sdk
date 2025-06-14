@@ -5,8 +5,10 @@ Unit tests for Ophelos SDK HTTP client.
 import pytest
 from unittest.mock import Mock, patch
 import requests
+from urllib3.util.retry import Retry
+from urllib3.response import HTTPResponse
 
-from ophelos_sdk.http_client import HTTPClient
+from ophelos_sdk.http_client import HTTPClient, JitteredRetry
 from ophelos_sdk.auth import OAuth2Authenticator
 from ophelos_sdk.exceptions import (
     OphelosAPIError,
@@ -332,3 +334,200 @@ class TestHTTPClient:
 
             call_args = mock_get.call_args
             assert call_args[1]["timeout"] == 60
+
+    def test_tenant_id_header(self, mock_authenticator):
+        """Test that OPHELOS_TENANT_ID header is added when tenant_id is set."""
+        tenant_id = "test-tenant-123"
+        client = HTTPClient(
+            authenticator=mock_authenticator, base_url="https://api.test.com", tenant_id=tenant_id
+        )
+
+        with patch("requests.Session.get") as mock_get:
+            mock_response = Mock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = {}
+            mock_response.content = b"{}"
+            mock_get.return_value = mock_response
+
+            client.get("/test")
+
+            call_args = mock_get.call_args
+            headers = call_args[1]["headers"]
+            assert "OPHELOS_TENANT_ID" in headers
+            assert headers["OPHELOS_TENANT_ID"] == tenant_id
+
+    def test_no_tenant_id_header_when_not_set(self, mock_authenticator):
+        """Test that OPHELOS_TENANT_ID header is not added when tenant_id is None."""
+        client = HTTPClient(
+            authenticator=mock_authenticator, base_url="https://api.test.com", tenant_id=None
+        )
+
+        with patch("requests.Session.get") as mock_get:
+            mock_response = Mock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = {}
+            mock_response.content = b"{}"
+            mock_get.return_value = mock_response
+
+            client.get("/test")
+
+            call_args = mock_get.call_args
+            headers = call_args[1]["headers"]
+            assert "OPHELOS_TENANT_ID" not in headers
+
+    def test_tenant_id_header_with_post_request(self, mock_authenticator):
+        """Test that OPHELOS_TENANT_ID header is added for POST requests."""
+        tenant_id = "test-tenant-456"
+        client = HTTPClient(
+            authenticator=mock_authenticator, base_url="https://api.test.com", tenant_id=tenant_id
+        )
+
+        with patch("requests.Session.post") as mock_post:
+            mock_response = Mock()
+            mock_response.status_code = 201
+            mock_response.json.return_value = {"id": "123"}
+            mock_response.content = b'{"id": "123"}'
+            mock_post.return_value = mock_response
+
+            client.post("/test", data={"name": "test"})
+
+            call_args = mock_post.call_args
+            headers = call_args[1]["headers"]
+            assert "OPHELOS_TENANT_ID" in headers
+            assert headers["OPHELOS_TENANT_ID"] == tenant_id
+
+
+class TestJitteredRetry:
+    """Test cases for JitteredRetry functionality."""
+
+    def _create_mock_response(self, status=500):
+        """Create a mock response object for retry history."""
+        response = Mock()
+        response.redirect_location = None
+        response.status = status
+        return response
+
+    def test_jittered_retry_initialization(self):
+        """Test JitteredRetry can be initialized properly."""
+        retry = JitteredRetry(
+            total=3,
+            status_forcelist=[429, 500, 502, 503, 504],
+            allowed_methods=["HEAD", "GET", "OPTIONS"],
+            backoff_factor=1,
+        )
+
+        assert retry.total == 3
+        assert retry.status_forcelist == [429, 500, 502, 503, 504]
+        assert retry.allowed_methods == ["HEAD", "GET", "OPTIONS"]
+        assert retry.backoff_factor == 1
+
+    def test_jittered_retry_inherits_from_retry(self):
+        """Test JitteredRetry properly inherits from urllib3 Retry."""
+        retry = JitteredRetry(total=3)
+        assert isinstance(retry, Retry)
+        assert isinstance(retry, JitteredRetry)
+
+    def test_jittered_backoff_adds_randomness(self):
+        """Test that jittered retry adds 0-1.5 seconds to base backoff."""
+        jittered_retry = JitteredRetry(total=3, backoff_factor=1)
+
+        # Test first retry (base: 0s, should be 0)
+        jittered_retry.history = [self._create_mock_response()]
+        jitter_time_1 = jittered_retry.get_backoff_time()
+
+        assert jitter_time_1 == 0, f"Expected 0 for first retry, got {jitter_time_1}"
+
+        # Test second retry (base: 2.0s, should be 2.0-3.5s)
+        jittered_retry.history = [self._create_mock_response(), self._create_mock_response()]
+        jitter_time_2 = jittered_retry.get_backoff_time()
+
+        assert 2.0 <= jitter_time_2 <= 3.5, f"Expected 2.0-3.5, got {jitter_time_2}"
+
+        # Test third retry (base: 4.0s, should be 4.0-5.5s)
+        jittered_retry.history = [
+            self._create_mock_response(),
+            self._create_mock_response(),
+            self._create_mock_response(),
+        ]
+        jitter_time_3 = jittered_retry.get_backoff_time()
+
+        assert 4.0 <= jitter_time_3 <= 5.5, f"Expected 4.0-5.5, got {jitter_time_3}"
+
+    def test_jitter_randomness_variation(self):
+        """Test that jitter actually produces different values."""
+        jittered_retry = JitteredRetry(total=3, backoff_factor=1)
+
+        # Use second retry attempt (history length 2) which has non-zero base backoff
+        times = []
+        for _ in range(10):
+            # Set history for second retry (base: 2.0s, should be 2.0-3.5s)
+            jittered_retry.history = [self._create_mock_response(), self._create_mock_response()]
+            time = jittered_retry.get_backoff_time()
+            times.append(time)
+
+        # All times should be in valid range for second retry
+        for time in times:
+            assert 2.0 <= time <= 3.5, f"Time {time} outside expected range 2.0-3.5"
+
+        # Should have some variation (not all the same)
+        unique_times = set(times)
+        assert len(unique_times) > 1, "Jitter should produce varying times, got all same values"
+
+        # Check that we're getting reasonable spread
+        min_time = min(times)
+        max_time = max(times)
+        time_range = max_time - min_time
+        assert time_range > 0.1, f"Expected more variation, got range: {time_range}"
+
+    def test_zero_backoff_handling(self):
+        """Test handling of zero or negative backoff times."""
+        jittered_retry = JitteredRetry(total=3, backoff_factor=0)
+
+        # With backoff_factor=0, base backoff should be 0
+        jittered_retry.history = [self._create_mock_response()]
+        backoff_time = jittered_retry.get_backoff_time()
+
+        # Should return 0 when base backoff is 0
+        assert backoff_time == 0
+
+    def test_http_client_uses_jittered_retry(self, mock_authenticator):
+        """Test that HTTPClient uses JitteredRetry by default."""
+        client = HTTPClient(
+            authenticator=mock_authenticator, base_url="https://api.test.com", max_retries=3
+        )
+
+        # Check that the session has the adapter with JitteredRetry
+        assert hasattr(client.session, "adapters")
+
+        # Get the adapter (should be for both http and https)
+        adapters = client.session.adapters
+        assert len(adapters) >= 2  # Should have http:// and https:// adapters
+
+        # Check one of the adapters
+        adapter = next(iter(adapters.values()))
+        assert hasattr(adapter, "max_retries")
+        assert isinstance(adapter.max_retries, JitteredRetry)
+
+    def test_jitter_preserves_retry_configuration(self):
+        """Test that jitter doesn't interfere with other retry settings."""
+        jittered_retry = JitteredRetry(
+            total=5,
+            status_forcelist=[429, 500, 502, 503, 504],
+            allowed_methods=["HEAD", "GET", "OPTIONS"],
+            backoff_factor=2,  # Different backoff factor
+        )
+
+        # Verify all settings are preserved
+        assert jittered_retry.total == 5
+        assert jittered_retry.status_forcelist == [429, 500, 502, 503, 504]
+        assert jittered_retry.allowed_methods == ["HEAD", "GET", "OPTIONS"]
+        assert jittered_retry.backoff_factor == 2
+
+        # Test backoff with different factor (use second retry which has base 4.0)
+        jittered_retry.history = [self._create_mock_response(), self._create_mock_response()]
+        backoff_time = jittered_retry.get_backoff_time()
+
+        # With backoff_factor=2, second retry base is 4.0, so jittered should be 4.0-5.5
+        assert (
+            4.0 <= backoff_time <= 5.5
+        ), f"Expected 4.0-5.5 with backoff_factor=2, got {backoff_time}"

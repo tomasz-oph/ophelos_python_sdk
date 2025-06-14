@@ -33,9 +33,10 @@ class OphelosClient:
         client_id: str,
         client_secret: str,
         audience: str,
-        environment: str = "staging",
+        environment: str = "development",
         timeout: int = 30,
         max_retries: int = 3,
+        tenant_id: Optional[str] = None,
     ):
         """
         Initialize the Ophelos API client.
@@ -47,6 +48,11 @@ class OphelosClient:
             environment: "development", "staging", or "production"
             timeout: Request timeout in seconds
             max_retries: Maximum number of retries for failed requests
+            tenant_id: Optional tenant ID to include in all requests as OPHELOS_TENANT_ID header
+
+        Note:
+            Retry requests automatically use exponential backoff with jitter (0-1.5s randomness)
+            to prevent thundering herd problems when multiple clients retry simultaneously.
 
         Example:
             ```python
@@ -54,7 +60,8 @@ class OphelosClient:
                 client_id="your_client_id",
                 client_secret="your_client_secret",
                 audience="your_audience",
-                environment="development"
+                environment="development",
+                tenant_id="your_tenant_id"  # Optional: adds OPHELOS_TENANT_ID header
             )
             ```
         """
@@ -79,6 +86,7 @@ class OphelosClient:
             base_url=base_url,
             timeout=timeout,
             max_retries=max_retries,
+            tenant_id=tenant_id,
         )
 
         # Initialize resource managers

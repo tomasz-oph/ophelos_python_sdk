@@ -3,6 +3,7 @@ HTTP client for making authenticated requests to the Ophelos API.
 """
 
 import time
+import random
 from typing import Optional, Dict, Any, List, Union
 import requests
 from requests.adapters import HTTPAdapter
@@ -21,6 +22,25 @@ from .exceptions import (
 )
 
 
+class JitteredRetry(Retry):
+    """Custom retry class with exponential backoff and additive jitter."""
+
+    def get_backoff_time(self) -> float:
+        """
+        Calculate backoff time with additive jitter.
+
+        Uses standard exponential backoff plus random 0-1.5 seconds.
+        This maintains predictable base timing while preventing thundering herd.
+        """
+        backoff_time = super().get_backoff_time()
+        if backoff_time <= 0:
+            return 0
+
+        # Additive jitter: standard backoff + random 0-1.5 seconds
+        jitter_amount = random.uniform(0, 1.5)
+        return backoff_time + jitter_amount
+
+
 class HTTPClient:
     """HTTP client for making authenticated requests to Ophelos API."""
 
@@ -28,6 +48,7 @@ class HTTPClient:
         self,
         authenticator: OAuth2Authenticator,
         base_url: str,
+        tenant_id: Optional[str] = None,
         timeout: int = 30,
         max_retries: int = 3,
     ):
@@ -42,12 +63,13 @@ class HTTPClient:
         """
         self.authenticator = authenticator
         self.base_url = base_url.rstrip("/")
+        self.tenant_id = tenant_id
         self.timeout = timeout
 
-        # Configure session with retry strategy
+        # Configure session with jittered retry strategy
         self.session = requests.Session()
 
-        retry_strategy = Retry(
+        retry_strategy = JitteredRetry(
             total=max_retries,
             status_forcelist=[429, 500, 502, 503, 504],
             allowed_methods=["HEAD", "GET", "OPTIONS"],
@@ -68,6 +90,10 @@ class HTTPClient:
 
         # Add authentication headers
         request_headers.update(self.authenticator.get_auth_headers())
+
+        # Add tenant ID header if specified
+        if self.tenant_id:
+            request_headers["OPHELOS_TENANT_ID"] = self.tenant_id
 
         # Add custom headers
         if headers:
