@@ -223,9 +223,7 @@ class BaseResource:
 
             # Fetch current page - using getattr to satisfy type checker
             list_method = getattr(self, "list")
-            page = list_method(
-                limit=limit_per_page, after=after_cursor, before=None, expand=expand, **kwargs
-            )
+            page = list_method(limit=limit_per_page, after=after_cursor, before=None, expand=expand, **kwargs)
 
             pages_fetched += 1
 

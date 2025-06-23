@@ -22,6 +22,8 @@ class TestCommunicationTemplateModel:
             "id": "ct_123",
             "object": "communication_template",
             "name": "Payment Reminder Template",
+            "created_at": datetime.now().isoformat(),
+            "updated_at": datetime.now().isoformat(),
         }
 
         template = CommunicationTemplate(**template_data)
@@ -59,6 +61,8 @@ class TestUpdatedCommunicationModel:
                 "id": "ct_456",
                 "object": "communication_template",
                 "name": "Final Notice Template",
+                "created_at": datetime.now().isoformat(),
+                "updated_at": datetime.now().isoformat(),
             },
             "status": "sent",
             "provider": "email_service",

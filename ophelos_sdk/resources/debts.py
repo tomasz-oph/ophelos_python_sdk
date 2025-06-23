@@ -4,7 +4,7 @@ Debts resource manager for Ophelos API.
 
 from typing import Optional, Dict, Any, List, Union
 from .base import BaseResource
-from ..models import Debt, Payment, PaginatedResponse
+from ..models import Debt, Payment, PaginatedResponse, BaseOphelosModel
 
 
 class DebtsResource(BaseResource):
@@ -73,43 +73,53 @@ class DebtsResource(BaseResource):
         response_data = self.http_client.get(f"debts/{debt_id}", params=params)
         return self._parse_model_response(response_data, Debt)
 
-    def create(self, data: Dict[str, Any], expand: Optional[List[str]] = None) -> Debt:
+    def create(self, data: Union[Dict[str, Any], Debt], expand: Optional[List[str]] = None) -> Debt:
         """
         Create a new debt.
 
         Args:
-            data: Debt data
+            data: Debt data (dictionary) or Debt model instance
             expand: List of fields to expand
 
         Returns:
             Created debt instance
         """
+        # Prepare data (handles both dict and model instances)
+        if hasattr(data, "to_api_body"):
+            api_data = data.to_api_body()
+        else:
+            api_data = data
+
         if expand:
             params = self._build_expand_params(expand)
-            response_data = self.http_client.post("debts", data=data, params=params)
+            response_data = self.http_client.post("debts", data=api_data, params=params)
         else:
-            response_data = self.http_client.post("debts", data=data)
+            response_data = self.http_client.post("debts", data=api_data)
         return self._parse_model_response(response_data, Debt)
 
-    def update(
-        self, debt_id: str, data: Dict[str, Any], expand: Optional[List[str]] = None
-    ) -> Debt:
+    def update(self, debt_id: str, data: Union[Dict[str, Any], Debt], expand: Optional[List[str]] = None) -> Debt:
         """
         Update a debt.
 
         Args:
             debt_id: Debt ID
-            data: Updated debt data
+            data: Updated debt data (dictionary) or Debt model instance
             expand: List of fields to expand
 
         Returns:
             Updated debt instance
         """
+        # Prepare data (handles both dict and model instances)
+        if hasattr(data, "to_api_body"):
+            api_data = data.to_api_body()
+        else:
+            api_data = data
+
         if expand:
             params = self._build_expand_params(expand)
-            response_data = self.http_client.put(f"debts/{debt_id}", data=data, params=params)
+            response_data = self.http_client.put(f"debts/{debt_id}", data=api_data, params=params)
         else:
-            response_data = self.http_client.put(f"debts/{debt_id}", data=data)
+            response_data = self.http_client.put(f"debts/{debt_id}", data=api_data)
         return self._parse_model_response(response_data, Debt)
 
     def delete(self, debt_id: str) -> Dict[str, Any]:
@@ -286,31 +296,33 @@ class DebtsResource(BaseResource):
         return self._parse_list_response(response_data, Payment)
 
     def create_payment(
-        self, debt_id: str, data: Dict[str, Any], expand: Optional[List[str]] = None
+        self, debt_id: str, data: Union[Dict[str, Any], Payment], expand: Optional[List[str]] = None
     ) -> Payment:
         """
         Create a payment for a debt.
 
         Args:
             debt_id: Debt ID
-            data: Payment data
+            data: Payment data (dictionary) or Payment model instance
             expand: List of fields to expand
 
         Returns:
             Created payment instance
         """
+        # Prepare data (handles both dict and model instances)
+        if hasattr(data, "to_api_body"):
+            api_data = data.to_api_body()
+        else:
+            api_data = data
+
         if expand:
             params = self._build_expand_params(expand)
-            response_data = self.http_client.post(
-                f"debts/{debt_id}/payments", data=data, params=params
-            )
+            response_data = self.http_client.post(f"debts/{debt_id}/payments", data=api_data, params=params)
         else:
-            response_data = self.http_client.post(f"debts/{debt_id}/payments", data=data)
+            response_data = self.http_client.post(f"debts/{debt_id}/payments", data=api_data)
         return self._parse_model_response(response_data, Payment)
 
-    def get_payment(
-        self, debt_id: str, payment_id: str, expand: Optional[List[str]] = None
-    ) -> Payment:
+    def get_payment(self, debt_id: str, payment_id: str, expand: Optional[List[str]] = None) -> Payment:
         """
         Get a specific payment for a debt.
 
@@ -324,9 +336,7 @@ class DebtsResource(BaseResource):
         """
         if expand:
             params = self._build_expand_params(expand)
-            response_data = self.http_client.get(
-                f"debts/{debt_id}/payments/{payment_id}", params=params
-            )
+            response_data = self.http_client.get(f"debts/{debt_id}/payments/{payment_id}", params=params)
         else:
             response_data = self.http_client.get(f"debts/{debt_id}/payments/{payment_id}")
         return self._parse_model_response(response_data, Payment)
@@ -335,7 +345,7 @@ class DebtsResource(BaseResource):
         self,
         debt_id: str,
         payment_id: str,
-        data: Dict[str, Any],
+        data: Union[Dict[str, Any], Payment],
         expand: Optional[List[str]] = None,
     ) -> Payment:
         """
@@ -344,16 +354,20 @@ class DebtsResource(BaseResource):
         Args:
             debt_id: Debt ID
             payment_id: Payment ID
-            data: Updated payment data
+            data: Updated payment data (dictionary) or Payment model instance
             expand: List of fields to expand
 
         Returns:
             Updated payment instance
         """
+        # Prepare data (handles both dict and model instances)
+        if hasattr(data, "to_api_body"):
+            api_data = data.to_api_body()
+        else:
+            api_data = data
+
         params = self._build_expand_params(expand)
-        response_data = self.http_client.patch(
-            f"debts/{debt_id}/payments/{payment_id}", data=data, params=params
-        )
+        response_data = self.http_client.patch(f"debts/{debt_id}/payments/{payment_id}", data=api_data, params=params)
         return self._parse_model_response(response_data, Payment)
 
     def list_contact_details(
@@ -379,9 +393,7 @@ class DebtsResource(BaseResource):
         Returns:
             Paginated list of contact details
         """
-        params = self._build_list_params(
-            limit=limit, after=after, before=before, expand=expand, **kwargs
-        )
+        params = self._build_list_params(limit=limit, after=after, before=before, expand=expand, **kwargs)
         response_data = self.http_client.get(f"debts/{debt_id}/contact-details", params=params)
         return self._parse_list_response(response_data)
 

@@ -39,9 +39,7 @@ class TestOAuth2Authenticator:
 
     def test_production_environment_url(self):
         """Test production environment uses correct URL."""
-        auth = OAuth2Authenticator(
-            client_id="test", client_secret="test", audience="test", environment="production"
-        )
+        auth = OAuth2Authenticator(client_id="test", client_secret="test", audience="test", environment="production")
         assert "ophelos.eu.auth0.com" in auth.token_url
 
     @patch("requests.post")
@@ -151,9 +149,7 @@ class TestOAuth2Authenticator:
 
     def test_get_auth_headers(self, authenticator, mock_auth_response):
         """Test getting authentication headers."""
-        with patch.object(
-            authenticator, "get_access_token", return_value=mock_auth_response["access_token"]
-        ):
+        with patch.object(authenticator, "get_access_token", return_value=mock_auth_response["access_token"]):
             headers = authenticator.get_auth_headers()
 
         expected_header = f"Bearer {mock_auth_response['access_token']}"

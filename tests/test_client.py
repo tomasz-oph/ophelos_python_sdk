@@ -25,9 +25,7 @@ class TestOphelosClient:
 
     @patch("ophelos_sdk.client.OAuth2Authenticator")
     @patch("ophelos_sdk.client.HTTPClient")
-    def test_client_initialization_without_tenant_id(
-        self, mock_http_client, mock_authenticator, client_config
-    ):
+    def test_client_initialization_without_tenant_id(self, mock_http_client, mock_authenticator, client_config):
         """Test client initialization without tenant_id."""
         mock_auth_instance = Mock(spec=OAuth2Authenticator)
         mock_authenticator.return_value = mock_auth_instance
@@ -61,9 +59,7 @@ class TestOphelosClient:
 
     @patch("ophelos_sdk.client.OAuth2Authenticator")
     @patch("ophelos_sdk.client.HTTPClient")
-    def test_client_initialization_with_tenant_id(
-        self, mock_http_client, mock_authenticator, client_config
-    ):
+    def test_client_initialization_with_tenant_id(self, mock_http_client, mock_authenticator, client_config):
         """Test client initialization with tenant_id."""
         mock_auth_instance = Mock(spec=OAuth2Authenticator)
         mock_authenticator.return_value = mock_auth_instance
@@ -115,9 +111,7 @@ class TestOphelosClient:
 
     @patch("ophelos_sdk.client.OAuth2Authenticator")
     @patch("ophelos_sdk.client.HTTPClient")
-    def test_client_custom_timeout_and_retries(
-        self, mock_http_client, mock_authenticator, client_config
-    ):
+    def test_client_custom_timeout_and_retries(self, mock_http_client, mock_authenticator, client_config):
         """Test client with custom timeout and retry settings."""
         mock_auth_instance = Mock(spec=OAuth2Authenticator)
         mock_authenticator.return_value = mock_auth_instance
@@ -138,9 +132,7 @@ class TestOphelosClient:
 
     @patch("ophelos_sdk.client.OAuth2Authenticator")
     @patch("ophelos_sdk.client.HTTPClient")
-    def test_tenant_id_passed_to_all_requests(
-        self, mock_http_client, mock_authenticator, client_config
-    ):
+    def test_tenant_id_passed_to_all_requests(self, mock_http_client, mock_authenticator, client_config):
         """Test that tenant_id is passed through to HTTP client for all resource operations."""
         mock_auth_instance = Mock(spec=OAuth2Authenticator)
         mock_authenticator.return_value = mock_auth_instance

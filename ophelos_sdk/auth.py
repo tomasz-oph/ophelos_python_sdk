@@ -12,9 +12,7 @@ from .exceptions import AuthenticationError
 class OAuth2Authenticator:
     """Handles OAuth2 client credentials authentication for Ophelos API."""
 
-    def __init__(
-        self, client_id: str, client_secret: str, audience: str, environment: str = "development"
-    ):
+    def __init__(self, client_id: str, client_secret: str, audience: str, environment: str = "development"):
         """
         Initialize OAuth2 authenticator.
 
@@ -61,9 +59,7 @@ class OAuth2Authenticator:
         with self._token_lock:
             # Double-check pattern: another thread might have fetched token while we waited
             if self._is_token_valid():
-                return cast(
-                    str, self._access_token
-                )  # _is_token_valid() guarantees this is not None
+                return cast(str, self._access_token)  # _is_token_valid() guarantees this is not None
 
             return self._fetch_new_token()
 
@@ -108,9 +104,7 @@ class OAuth2Authenticator:
         try:
             token_data = response.json()
         except ValueError as e:
-            raise AuthenticationError(
-                f"Invalid token response format: {str(e)}", response_data={"text": response.text}
-            )
+            raise AuthenticationError(f"Invalid token response format: {str(e)}", response_data={"text": response.text})
 
         if "access_token" not in token_data:
             raise AuthenticationError("Missing access_token in response", response_data=token_data)

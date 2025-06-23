@@ -1,7 +1,7 @@
 """
 Ophelos Python SDK
 
-Official Python SDK for the Ophelos API - a comprehensive debt management platform.
+Python SDK for the Ophelos API - a comprehensive debt management platform.
 """
 
 from .client import OphelosClient

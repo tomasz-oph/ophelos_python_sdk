@@ -23,9 +23,7 @@ def mock_authenticator(mock_auth_response):
     """Mock OAuth2 authenticator."""
     authenticator = Mock(spec=OAuth2Authenticator)
     authenticator.get_access_token.return_value = mock_auth_response["access_token"]
-    authenticator.get_auth_headers.return_value = {
-        "Authorization": f"Bearer {mock_auth_response['access_token']}"
-    }
+    authenticator.get_auth_headers.return_value = {"Authorization": f"Bearer {mock_auth_response['access_token']}"}
     return authenticator
 
 

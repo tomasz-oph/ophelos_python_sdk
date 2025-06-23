@@ -33,7 +33,7 @@ class TestThreadSafety:
             with fetch_lock:
                 fetch_count["count"] += 1
                 time.sleep(0.1)  # Simulate network delay
-    
+
                 client.authenticator._access_token = f"mock_token_{fetch_count['count']}"
                 client.authenticator._token_expires_at = time.time() + 3600
                 return client.authenticator._access_token
@@ -137,9 +137,7 @@ class TestThreadSafety:
 
         # Should have refreshed exactly once more (total 2 fetches)
         assert fetch_count["count"] == 2, f"Expected 2 token fetches, got {fetch_count['count']}"
-        assert all(
-            token == "long_lived_token" for token in tokens
-        ), "All threads should get the new token"
+        assert all(token == "long_lived_token" for token in tokens), "All threads should get the new token"
         assert len(set(tokens)) == 1, "All threads should get the same refreshed token"
 
     def test_auth_headers_thread_safety(self):
@@ -171,21 +169,15 @@ class TestThreadSafety:
 
         # Verify all threads got valid headers
         assert len(results) == 20, "All threads should complete"
-        assert all(
-            "Authorization" in headers for headers in results
-        ), "All headers should have Authorization"
+        assert all("Authorization" in headers for headers in results), "All headers should have Authorization"
 
         # All should have the same token
         auth_values = [headers["Authorization"] for headers in results]
         unique_auth_values = set(auth_values)
 
         assert fetch_count["count"] == 1, f"Expected 1 token fetch, got {fetch_count['count']}"
-        assert (
-            len(unique_auth_values) == 1
-        ), f"Expected 1 unique auth header, got {len(unique_auth_values)}"
-        assert all(
-            auth.startswith("Bearer ") for auth in auth_values
-        ), "All should be Bearer tokens"
+        assert len(unique_auth_values) == 1, f"Expected 1 unique auth header, got {len(unique_auth_values)}"
+        assert all(auth.startswith("Bearer ") for auth in auth_values), "All should be Bearer tokens"
 
     def test_invalidate_token_thread_safety(self):
         """Test that token invalidation works correctly with concurrent access."""
@@ -224,7 +216,5 @@ class TestThreadSafety:
 
         # Should have fetched a new token exactly once
         assert fetch_count["count"] == 2, f"Expected 2 total fetches, got {fetch_count['count']}"
-        assert all(
-            token == "invalidation_token_2" for token in tokens
-        ), "All threads should get the new token"
+        assert all(token == "invalidation_token_2" for token in tokens), "All threads should get the new token"
         assert len(set(tokens)) == 1, "All threads should get the same new token"

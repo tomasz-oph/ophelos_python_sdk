@@ -176,6 +176,8 @@ for result in results:
 ### 3. Working with Debts
 
 ```python
+from ophelos_sdk.models import Debt
+
 # List debts
 debts = client.debts.list(limit=10)
 print(f"Found {len(debts.data)} debts")
@@ -189,7 +191,7 @@ results = client.debts.search("status:paying", limit=20)
 for debt in results.data:
     print(f"Debt {debt.id}: {debt.status}")
 
-# Create a new debt
+# Option 1: Create a new debt using dictionary
 new_debt = client.debts.create({
     "customer": "cust_123456789",
     "organisation": "org_123456789",
@@ -199,10 +201,38 @@ new_debt = client.debts.create({
     "metadata": {"case_id": "12345"}
 })
 
-# Update debt metadata
+# Option 2: Create using model instance (recommended)
+debt_model = Debt(
+    id="temp_debt_123",  # Temporary ID for creation
+    customer="cust_123456789",  # Customer ID reference
+    organisation="org_123456789",  # Organisation ID reference
+    currency="GBP",
+    reference_code="REF-001",
+    kind="purchased",
+    tags=["urgent", "high-priority"],
+    metadata={"case_id": "12345", "source": "api"}
+)
+
+# Pass model directly - automatic API body generation
+new_debt = client.debts.create(debt_model)
+
+# Preview API body before sending (useful for debugging)
+api_body = debt_model.to_api_body()
+print(f"API body: {api_body}")
+# Server fields (id, object, created_at, updated_at) automatically excluded
+
+# Option 1: Update debt metadata using dictionary
 updated_debt = client.debts.update("debt_123456789", {
     "metadata": {"case_id": "12345", "priority": "high"}
 })
+
+# Option 2: Update using model instance
+update_model = Debt(
+    id="temp_update",
+    metadata={"case_id": "12345", "priority": "high", "updated_by": "api"},
+    tags=["high-priority", "reviewed"]
+)
+updated_debt = client.debts.update("debt_123456789", update_model)
 
 # Debt lifecycle operations
 client.debts.ready("debt_123456789")  # Mark as ready
@@ -213,6 +243,8 @@ client.debts.resume("debt_123456789")
 ### 4. Working with Customers
 
 ```python
+from ophelos_sdk.models import Customer, ContactDetail
+
 # List customers
 customers = client.customers.list(limit=10)
 
@@ -223,25 +255,74 @@ print(f"Customer: {customer.full_name}")
 # Search customers
 results = client.customers.search("email:john@example.com")
 
-# Create a new customer
+# Option 1: Create a new customer using dictionary
 new_customer = client.customers.create({
     "first_name": "John",
     "last_name": "Doe",
     "kind": "individual",
     "preferred_locale": "en",
+    "contact_details": [
+        {"type": "email", "value": "john@example.com", "primary": True},
+        {"type": "phone", "value": "+44123456789", "usage": "billing"}
+    ],
     "metadata": {"organisation_id": "org_123456789"}
 })
 
-# Update customer information
+# Option 2: Create using model instance with nested objects
+customer_model = Customer(
+    id="temp_cust_123",
+    first_name="Jane",
+    last_name="Smith",
+    kind="individual",
+    preferred_locale="en-GB",
+    contact_details=[
+        ContactDetail(
+            id="temp_cd_1",
+            type="email",
+            value="jane.smith@example.com",
+            primary=True,
+            usage="billing"
+        ),
+        ContactDetail(
+            id="temp_cd_2",
+            type="phone", 
+            value="+44987654321",
+            usage="notifications"
+        )
+    ],
+    metadata={"organisation_id": "org_123456789", "source": "api"}
+)
+
+# Create customer - nested contact details handled automatically
+new_customer = client.customers.create(customer_model)
+
+# See what gets sent to API
+api_body = customer_model.to_api_body()
+print(f"API body: {api_body}")
+# contact_details included as full objects (not ID references)
+# Server fields automatically excluded from nested objects
+
+# Option 1: Update customer information using dictionary
 updated_customer = client.customers.update("cust_123456789", {
     "preferred_locale": "en-GB",
     "metadata": {"updated_by": "system"}
 })
+
+# Option 2: Update using model instance
+update_model = Customer(
+    id="temp_update",
+    preferred_locale="en-GB",
+    metadata={"updated_by": "system", "last_contact": "2024-01-15"}
+)
+updated_customer = client.customers.update("cust_123456789", update_model)
 ```
 
 ### 5. Working with Payments
 
 ```python
+from ophelos_sdk.models import Payment
+from datetime import datetime
+
 # List all payments
 payments = client.payments.list(limit=20)
 
@@ -252,12 +333,37 @@ print(f"Payment: {payment.amount} {payment.currency} - {payment.status}")
 # Search payments
 successful_payments = client.payments.search("status:succeeded")
 
-# Create a payment for a debt
+# Option 1: Create a payment for a debt using dictionary
 new_payment = client.debts.create_payment("debt_123456789", {
     "amount": 5000,  # Amount in cents
     "transaction_ref": "TXN-123",
-    "transaction_at": "2024-01-15T10:00:00Z"
+    "transaction_at": "2024-01-15T10:00:00Z",
+    "currency": "GBP"
 })
+
+# Option 2: Create payment using model instance
+payment_model = Payment(
+    id="temp_payment_123",
+    debt="debt_123456789",  # Will be excluded from API body (set by endpoint)
+    amount=5000,
+    transaction_ref="TXN-456",
+    transaction_at=datetime.now(),
+    currency="GBP",
+    metadata={
+        "source": "bank_transfer",
+        "reference": "BANK-REF-789",
+        "verified": True
+    }
+)
+
+# Create payment - 'debt' field automatically excluded from API body
+new_payment = client.debts.create_payment("debt_123456789", payment_model)
+
+# Preview what gets sent to API
+api_body = payment_model.to_api_body()
+print(f"Payment API body: {api_body}")
+# Output excludes: debt (set by endpoint), id, object, created_at, updated_at
+# Includes: amount, transaction_ref, transaction_at, currency, metadata
 
 # List payments for a specific debt
 debt_payments = client.debts.list_payments("debt_123456789")
@@ -415,6 +521,214 @@ if debts.has_more:
     # Get next page using the last item ID
     last_debt_id = debts.data[-1].id
     next_page = client.debts.list(limit=10, after=last_debt_id)
+```
+
+## Model-First API Usage
+
+The Ophelos SDK provides comprehensive Pydantic models that can be used directly with API calls, offering type safety, validation, and automatic API body generation.
+
+### Understanding Model API Bodies
+
+Each model knows which fields are appropriate for API create/update operations:
+
+```python
+from ophelos_sdk.models import Customer, Debt, Payment, ContactDetail
+
+# Create a customer model
+customer = Customer(
+    id="temp_123",  # Temporary ID (will be excluded from API body)
+    first_name="John",
+    last_name="Doe",
+    contact_details=[
+        ContactDetail(
+            id="temp_cd_1",
+            type="email",
+            value="john@example.com",
+            primary=True
+        )
+    ]
+)
+
+# Generate API body - only includes fields appropriate for creation
+api_body = customer.to_api_body()
+print(api_body)
+# Output: {
+#   "first_name": "John",
+#   "last_name": "Doe",
+#   "contact_details": [
+#     {"type": "email", "value": "john@example.com", "primary": True}
+#   ]
+# }
+
+# Server-generated fields are automatically excluded:
+# - id, object, created_at, updated_at
+```
+
+### Smart Relationship Handling
+
+The SDK handles different types of relationships intelligently:
+
+```python
+from ophelos_sdk.models import Debt, Customer
+
+# Scenario 1: Customer/Organisation references in debt creation
+# These become ID references in the API body
+debt_with_references = Debt(
+    id="temp_debt",
+    customer="cust_123",  # String ID - preserved as-is
+    organisation=existing_customer,  # Model with real ID - becomes ID reference
+    currency="GBP"
+)
+
+api_body = debt_with_references.to_api_body()
+# customer field: "cust_123" (string preserved)
+# organisation field: "org_real_id" (extracted from model.id)
+
+# Scenario 2: Nested objects in customer creation
+# These remain as full objects in the API body
+customer_with_contacts = Customer(
+    id="temp_cust",
+    first_name="Jane",
+    contact_details=[
+        ContactDetail(
+            id="temp_cd_1",
+            type="email",
+            value="jane@example.com"
+        )
+    ]
+)
+
+api_body = customer_with_contacts.to_api_body()
+# contact_details field: [{"type": "email", "value": "jane@example.com"}]
+# (full object with server fields excluded)
+```
+
+### Field Control and Validation
+
+Models define which fields can be sent in API requests:
+
+```python
+# Payment model example - debt field excluded from API body
+payment = Payment(
+    id="temp_pay",
+    debt="debt_123",  # Set for context but excluded from API body
+    amount=5000,
+    transaction_ref="TXN-123",
+    currency="GBP"
+)
+
+api_body = payment.to_api_body()
+# Only includes: amount, transaction_ref, currency, transaction_at, metadata
+# Excludes: debt (set by endpoint context), id, object, created_at, updated_at
+
+# Check what fields are included for any model
+print(f"Customer API fields: {Customer._get_api_body_fields()}")
+print(f"Debt API fields: {Debt._get_api_body_fields()}")
+print(f"Payment API fields: {Payment._get_api_body_fields()}")
+```
+
+### Model Usage Patterns
+
+#### Pattern 1: Direct Model Creation
+
+```python
+# Create and use models directly
+customer = Customer(
+    id="temp_123",
+    first_name="John",
+    last_name="Doe"
+)
+
+created_customer = client.customers.create(customer)
+print(f"Created customer: {created_customer.id}")
+```
+
+#### Pattern 2: API Body Preview
+
+```python
+# Preview what will be sent before making the API call
+debt = Debt(
+    id="temp_debt",
+    customer="cust_123",
+    organisation="org_456",
+    currency="GBP",
+    metadata={"case_id": "12345"}
+)
+
+# See the API body
+api_body = debt.to_api_body()
+print(f"Will send: {api_body}")
+
+# Then create
+created_debt = client.debts.create(debt)
+```
+
+#### Pattern 3: Model Factory Functions
+
+```python
+def create_customer_model(first_name, last_name, email, phone=None):
+    """Factory function to create customer models."""
+    contact_details = [
+        ContactDetail(
+            id=f"temp_email_{first_name.lower()}",
+            type="email",
+            value=email,
+            primary=True
+        )
+    ]
+    
+    if phone:
+        contact_details.append(
+            ContactDetail(
+                id=f"temp_phone_{first_name.lower()}",
+                type="phone",
+                value=phone,
+                usage="billing"
+            )
+        )
+    
+    return Customer(
+        id=f"temp_cust_{first_name.lower()}_{last_name.lower()}",
+        first_name=first_name,
+        last_name=last_name,
+        contact_details=contact_details
+    )
+
+# Use the factory
+customer = create_customer_model("John", "Doe", "john@example.com", "+44123456789")
+created_customer = client.customers.create(customer)
+```
+
+#### Pattern 4: Batch Operations with Models
+
+```python
+# Create multiple customers using models
+customers_data = [
+    {"first_name": "John", "last_name": "Doe", "email": "john@example.com"},
+    {"first_name": "Jane", "last_name": "Smith", "email": "jane@example.com"},
+    {"first_name": "Bob", "last_name": "Wilson", "email": "bob@example.com"}
+]
+
+created_customers = []
+for data in customers_data:
+    customer_model = Customer(
+        id=f"temp_{data['first_name'].lower()}",
+        first_name=data["first_name"],
+        last_name=data["last_name"],
+        contact_details=[
+            ContactDetail(
+                id=f"temp_email_{data['first_name'].lower()}",
+                type="email",
+                value=data["email"],
+                primary=True
+            )
+        ]
+    )
+    
+    created_customer = client.customers.create(customer_model)
+    created_customers.append(created_customer)
+
+print(f"Created {len(created_customers)} customers")
 ```
 
 ## Advanced Usage

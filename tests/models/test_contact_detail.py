@@ -59,3 +59,58 @@ class TestContactDetailModel:
         assert contact_detail.source is None
         assert contact_detail.status is None
         assert contact_detail.metadata is None
+
+    def test_contact_detail_to_api_body(self):
+        """Test contact detail to_api_body method."""
+        contact_detail = ContactDetail(
+            id="cd_123",
+            object="contact_detail",
+            type="email",
+            value="test@example.com",
+            primary=True,
+            usage="billing",
+            source="user_input",
+            status="verified",
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+            metadata={"verified_date": "2024-01-01"},
+        )
+
+        api_body = contact_detail.to_api_body()
+
+        # Server fields should be excluded
+        assert "id" not in api_body
+        assert "object" not in api_body
+        assert "created_at" not in api_body
+        assert "updated_at" not in api_body
+
+        # API body fields should be included
+        assert api_body["type"] == "email"
+        assert api_body["value"] == "test@example.com"
+        assert api_body["primary"] is True
+        assert api_body["usage"] == "billing"
+        assert api_body["source"] == "user_input"
+        assert api_body["status"] == "verified"
+        assert api_body["metadata"] == {"verified_date": "2024-01-01"}
+
+    def test_contact_detail_to_api_body_minimal(self):
+        """Test contact detail to_api_body with minimal fields."""
+        contact_detail = ContactDetail(
+            id="cd_456",
+            object="contact_detail",
+            type="phone",
+            value="+44123456789",
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+        )
+
+        api_body = contact_detail.to_api_body()
+
+        assert api_body["type"] == "phone"
+        assert api_body["value"] == "+44123456789"
+        # None values should be excluded by default
+        assert "primary" not in api_body
+        assert "usage" not in api_body
+        assert "source" not in api_body
+        assert "status" not in api_body
+        assert "metadata" not in api_body

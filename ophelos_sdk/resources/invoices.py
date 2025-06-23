@@ -23,9 +23,7 @@ class InvoicesResource(BaseResource):
             Invoice instance
         """
         params = self._build_expand_params(expand)
-        response_data = self.http_client.get(
-            f"debts/{debt_id}/invoices/{invoice_id}", params=params
-        )
+        response_data = self.http_client.get(f"debts/{debt_id}/invoices/{invoice_id}", params=params)
         return self._parse_model_response(response_data, Invoice)
 
     def create(self, debt_id: str, data: Dict[str, Any]) -> Invoice:

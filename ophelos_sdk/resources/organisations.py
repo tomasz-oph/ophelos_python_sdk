@@ -31,9 +31,7 @@ class OrganisationsResource(BaseResource):
         Returns:
             Paginated list of organisations
         """
-        params = self._build_list_params(
-            limit=limit, after=after, before=before, expand=expand, **kwargs
-        )
+        params = self._build_list_params(limit=limit, after=after, before=before, expand=expand, **kwargs)
         response_data = self.http_client.get("organisations", params=params)
         return self._parse_list_response(response_data, Organisation)
 
@@ -67,9 +65,7 @@ class OrganisationsResource(BaseResource):
         response_data = self.http_client.post("organisations", data=data, params=params)
         return self._parse_model_response(response_data, Organisation)
 
-    def update(
-        self, org_id: str, data: Dict[str, Any], expand: Optional[List[str]] = None
-    ) -> Organisation:
+    def update(self, org_id: str, data: Dict[str, Any], expand: Optional[List[str]] = None) -> Organisation:
         """
         Update an organisation.
 
@@ -85,9 +81,7 @@ class OrganisationsResource(BaseResource):
         response_data = self.http_client.patch(f"organisations/{org_id}", data=data, params=params)
         return self._parse_model_response(response_data, Organisation)
 
-    def create_contact_detail(
-        self, org_id: str, data: Dict[str, Any], **kwargs: Any
-    ) -> Dict[str, Any]:
+    def create_contact_detail(self, org_id: str, data: Dict[str, Any], **kwargs: Any) -> Dict[str, Any]:
         """
         Create a contact detail for an organisation.
 
@@ -149,9 +143,7 @@ class OrganisationsResource(BaseResource):
             Paginated response with payment data
         """
         params = self._build_search_params(query, limit, expand, **kwargs)
-        response_data = self.http_client.get(
-            f"organisations/{org_id}/payments/search", params=params
-        )
+        response_data = self.http_client.get(f"organisations/{org_id}/payments/search", params=params)
         return self._parse_list_response(response_data, Payment)
 
     def list_members(
@@ -177,9 +169,7 @@ class OrganisationsResource(BaseResource):
         Returns:
             Paginated list of organisation members
         """
-        params = self._build_list_params(
-            limit=limit, after=after, before=before, expand=expand, **kwargs
-        )
+        params = self._build_list_params(limit=limit, after=after, before=before, expand=expand, **kwargs)
         response_data = self.http_client.get(f"organisations/{org_id}/members", params=params)
         return self._parse_list_response(response_data)
 

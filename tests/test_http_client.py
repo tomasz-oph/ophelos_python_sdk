@@ -319,9 +319,7 @@ class TestHTTPClient:
 
     def test_timeout_configuration(self, mock_authenticator):
         """Test timeout configuration."""
-        client = HTTPClient(
-            authenticator=mock_authenticator, base_url="https://api.test.com", timeout=60
-        )
+        client = HTTPClient(authenticator=mock_authenticator, base_url="https://api.test.com", timeout=60)
 
         with patch("requests.Session.get") as mock_get:
             mock_response = Mock()
@@ -338,9 +336,7 @@ class TestHTTPClient:
     def test_tenant_id_header(self, mock_authenticator):
         """Test that OPHELOS_TENANT_ID header is added when tenant_id is set."""
         tenant_id = "test-tenant-123"
-        client = HTTPClient(
-            authenticator=mock_authenticator, base_url="https://api.test.com", tenant_id=tenant_id
-        )
+        client = HTTPClient(authenticator=mock_authenticator, base_url="https://api.test.com", tenant_id=tenant_id)
 
         with patch("requests.Session.get") as mock_get:
             mock_response = Mock()
@@ -358,9 +354,7 @@ class TestHTTPClient:
 
     def test_no_tenant_id_header_when_not_set(self, mock_authenticator):
         """Test that OPHELOS_TENANT_ID header is not added when tenant_id is None."""
-        client = HTTPClient(
-            authenticator=mock_authenticator, base_url="https://api.test.com", tenant_id=None
-        )
+        client = HTTPClient(authenticator=mock_authenticator, base_url="https://api.test.com", tenant_id=None)
 
         with patch("requests.Session.get") as mock_get:
             mock_response = Mock()
@@ -378,9 +372,7 @@ class TestHTTPClient:
     def test_tenant_id_header_with_post_request(self, mock_authenticator):
         """Test that OPHELOS_TENANT_ID header is added for POST requests."""
         tenant_id = "test-tenant-456"
-        client = HTTPClient(
-            authenticator=mock_authenticator, base_url="https://api.test.com", tenant_id=tenant_id
-        )
+        client = HTTPClient(authenticator=mock_authenticator, base_url="https://api.test.com", tenant_id=tenant_id)
 
         with patch("requests.Session.post") as mock_post:
             mock_response = Mock()
@@ -492,9 +484,7 @@ class TestJitteredRetry:
 
     def test_http_client_uses_jittered_retry(self, mock_authenticator):
         """Test that HTTPClient uses JitteredRetry by default."""
-        client = HTTPClient(
-            authenticator=mock_authenticator, base_url="https://api.test.com", max_retries=3
-        )
+        client = HTTPClient(authenticator=mock_authenticator, base_url="https://api.test.com", max_retries=3)
 
         # Check that the session has the adapter with JitteredRetry
         assert hasattr(client.session, "adapters")
@@ -528,6 +518,4 @@ class TestJitteredRetry:
         backoff_time = jittered_retry.get_backoff_time()
 
         # With backoff_factor=2, second retry base is 4.0, so jittered should be 4.0-5.5
-        assert (
-            4.0 <= backoff_time <= 5.5
-        ), f"Expected 4.0-5.5 with backoff_factor=2, got {backoff_time}"
+        assert 4.0 <= backoff_time <= 5.5, f"Expected 4.0-5.5 with backoff_factor=2, got {backoff_time}"

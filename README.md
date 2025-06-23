@@ -1,6 +1,6 @@
 # Ophelos Python SDK
 
-Official Python SDK for the Ophelos API - a comprehensive debt management and customer communication platform.
+Python SDK for the Ophelos API - a comprehensive debt management and customer communication platform.
 
 ## Installation
 
@@ -27,6 +27,7 @@ pip install -e .
 
 ```python
 from ophelos_sdk import OphelosClient
+from ophelos_sdk.models import Customer, Debt
 
 # Initialize client with your credentials
 client = OphelosClient(
@@ -36,21 +37,46 @@ client = OphelosClient(
     environment="staging"  # or "production"
 )
 
-# Create a customer
+# Option 1: Create using dictionaries (traditional approach)
 customer = client.customers.create({
     "first_name": "John",
     "last_name": "Doe",
-    "email": "john.doe@example.com"
+    "contact_details": [
+        {"type": "email", "value": "john.doe@example.com", "primary": True}
+    ]
 })
 
-# Create a debt
-debt = client.debts.create({
-    "customer_id": customer.id,
-    "organisation_id": "org_123",
-    "total_amount": 10000,  # Amount in cents
-    "currency": "GBP",
-    "reference_code": "DEBT-001"
-})
+# Option 2: Create using model instances (new approach)
+from ophelos_sdk.models import Customer, ContactDetail
+
+customer_model = Customer(
+    id="temp_cust_123",  # Temporary ID
+    first_name="Jane",
+    last_name="Smith",
+    contact_details=[
+        ContactDetail(
+            id="temp_cd_123",
+            type="email",
+            value="jane.smith@example.com",
+            primary=True
+        )
+    ]
+)
+
+# Pass model directly to API - automatic conversion to API body
+customer = client.customers.create(customer_model)
+
+# Create a debt using model instance
+debt_model = Debt(
+    id="temp_debt_123",
+    customer=customer.id,  # Use real customer ID
+    organisation="org_123",
+    currency="GBP",
+    reference_code="DEBT-001",
+    kind="purchased"
+)
+
+debt = client.debts.create(debt_model)
 
 # Prepare the debt for processing
 client.debts.ready(debt.id)
@@ -61,7 +87,9 @@ client.debts.ready(debt.id)
 ## Features
 
 - **Complete API Coverage**: All Ophelos API endpoints supported
-- **Type Safety**: Full type hints and Pydantic models
+- **Type Safety**: Full type hints and Pydantic models with automatic API body generation
+- **Model-First Approach**: Create and pass Pydantic model instances directly to API calls
+- **Smart Field Management**: Automatic exclusion of server-generated fields and intelligent relationship handling
 - **Authentication**: Automatic OAuth2 token management with thread-safe token caching
 - **Multi-Tenant Support**: Automatic tenant header injection for multi-tenant applications
 - **Error Handling**: Comprehensive error handling with custom exceptions
@@ -70,30 +98,102 @@ client.debts.ready(debt.id)
 - **Webhooks**: Webhook event handling and validation
 - **Concurrent Safe**: Thread-safe for use with concurrent request patterns
 
+## Model-First API Usage
+
+The Ophelos SDK supports both traditional dictionary-based API calls and a modern model-first approach using Pydantic models.
+
+### Direct Model Usage
+
+```python
+from ophelos_sdk.models import Customer, Debt, Payment, ContactDetail
+
+# Create models with type safety and validation
+customer = Customer(
+    id="temp_123",  # Temporary ID for creation
+    first_name="John",
+    last_name="Doe",
+    contact_details=[
+        ContactDetail(
+            id="temp_cd_1",
+            type="email", 
+            value="john@example.com",
+            primary=True
+        )
+    ]
+)
+
+# Pass model directly to API - automatic conversion
+created_customer = client.customers.create(customer)
+```
+
+### Smart API Body Generation
+
+Models automatically generate appropriate API request bodies:
+
+```python
+# Get the API body that would be sent
+api_body = customer.to_api_body()
+
+# Automatically excludes server-generated fields:
+# - id, object, created_at, updated_at are removed
+# - Only fields appropriate for create/update operations are included
+# - Nested models are handled intelligently
+
+print(api_body)
+# Output: {
+#   "first_name": "John",
+#   "last_name": "Doe", 
+#   "contact_details": [
+#     {"type": "email", "value": "john@example.com", "primary": True}
+#   ]
+# }
+```
+
+### Intelligent Relationship Handling
+
+The SDK handles relationships intelligently:
+
+```python
+# For debt creation, customer/organisation references become ID references
+debt = Debt(
+    id="temp_debt",
+    customer=existing_customer,  # Model instance with real ID
+    organisation="org_123",      # String ID
+    currency="GBP"
+)
+
+api_body = debt.to_api_body()
+# customer field becomes: "customer": "cust_real_id_123"
+# Other nested models remain as full objects
+
+# Create the debt
+created_debt = client.debts.create(debt)
+```
+
 ## API Resources
 
 ### Debt Management
-- Create, update, and manage debts
+- Create, update, and manage debts using dictionaries or model instances
 - Debt lifecycle operations (ready, pause, resume, withdraw)
-- Payment processing and tracking
+- Payment processing and tracking with automatic field management
 
 ### Customer Management
-- Customer CRUD operations
+- Customer CRUD operations with full model support
 - Search and filtering
-- Contact detail management
+- Contact detail management with nested model handling
 
 ### Payment Management
-- Payment creation and tracking
+- Payment creation and tracking with smart field exclusion
 - Payment plan management
-- External payment recording
+- External payment recording with automatic API body generation
 
 ### Organisation Management
 - Organisation setup and configuration
 - Contact detail management
 
 ### Invoice Management
-- Invoice creation and management
-- Line item handling
+- Invoice creation and management with model support
+- Line item handling with automatic field filtering
 
 ### Communication Management
 - Communication tracking
@@ -169,6 +269,8 @@ tenant_b_client = OphelosClient(
 ### Working with Debts
 
 ```python
+from ophelos_sdk.models import Debt
+
 # List debts with pagination
 debts = client.debts.list(limit=10)
 
@@ -178,37 +280,101 @@ results = client.debts.search("status:paying AND updated_at>=2024-01-01")
 # Get debt details with expansions
 debt = client.debts.get("debt_123", expand=["customer", "payments"])
 
-# Update debt
+# Option 1: Update using dictionary
 updated_debt = client.debts.update("debt_123", {
     "metadata": {"case_id": "12345"}
 })
+
+# Option 2: Update using model instance
+debt_model = Debt(
+    id="temp_debt_update",
+    metadata={"case_id": "12345", "priority": "high"},
+    tags=["urgent", "follow-up"]
+)
+updated_debt = client.debts.update("debt_123", debt_model)
+
+# Generate API body from model (useful for debugging)
+api_body = debt_model.to_api_body()
+print(f"API body: {api_body}")
+# Output: {'metadata': {'case_id': '12345', 'priority': 'high'}, 'tags': ['urgent', 'follow-up']}
 ```
 
 ### Working with Customers
 
 ```python
+from ophelos_sdk.models import Customer, ContactDetail
+
 # Search customers by email
 customers = client.customers.search("email:john@example.com")
 
-# Update customer
+# Option 1: Update using dictionary
 customer = client.customers.update("cust_123", {
     "preferred_locale": "en-GB",
     "metadata": {"updated_reason": "customer request"}
 })
+
+# Option 2: Update using model instance with nested objects
+customer_model = Customer(
+    id="temp_update",
+    preferred_locale="en-GB",
+    contact_details=[
+        ContactDetail(
+            id="temp_cd_1",
+            type="email",
+            value="new.email@example.com",
+            primary=True
+        ),
+        ContactDetail(
+            id="temp_cd_2", 
+            type="phone",
+            value="+44123456789",
+            usage="billing"
+        )
+    ],
+    metadata={"updated_reason": "customer request", "source": "api"}
+)
+
+customer = client.customers.update("cust_123", customer_model)
+
+# Preview what will be sent to API
+api_body = customer_model.to_api_body()
+# Automatically excludes server fields (id, object, created_at, updated_at)
+# Includes nested contact_details as full objects (not ID references)
 ```
 
 ### Working with Payments
 
 ```python
-# Create external payment
-payment = client.payments.create("debt_123", {
+from ophelos_sdk.models import Payment
+from datetime import datetime
+
+# Option 1: Create external payment using dictionary
+payment = client.debts.create_payment("debt_123", {
     "amount": 5000,
     "transaction_at": "2024-01-15T10:00:00Z",
-    "payment_provider": "bank_transfer"
+    "transaction_ref": "TXN-12345"
 })
 
+# Option 2: Create payment using model instance
+payment_model = Payment(
+    id="temp_payment",
+    debt="debt_123",  # Will be excluded from API body (set by endpoint context)
+    amount=5000,
+    transaction_at=datetime.now(),
+    transaction_ref="TXN-12345",
+    currency="GBP",
+    metadata={"source": "bank_transfer", "reference": "REF-001"}
+)
+
+payment = client.debts.create_payment("debt_123", payment_model)
+
+# See what gets sent to API
+api_body = payment_model.to_api_body()
+# Note: 'debt' field is automatically excluded as it's set by the endpoint context
+# Only includes: amount, transaction_at, transaction_ref, currency, metadata
+
 # List payments for a debt
-payments = client.debts.payments.list("debt_123")
+payments = client.debts.list_payments("debt_123")
 ```
 
 ### Error Handling

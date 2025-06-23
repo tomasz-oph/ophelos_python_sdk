@@ -31,9 +31,7 @@ class PayoutsResource(BaseResource):
         Returns:
             Paginated list of payouts
         """
-        params = self._build_list_params(
-            limit=limit, after=after, before=before, expand=expand, **kwargs
-        )
+        params = self._build_list_params(limit=limit, after=after, before=before, expand=expand, **kwargs)
         response_data = self.http_client.get("payouts", params=params)
         return self._parse_list_response(response_data, Payout)
 

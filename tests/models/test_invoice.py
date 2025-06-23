@@ -84,3 +84,72 @@ class TestUpdatedInvoiceModel:
         assert invoice.description is None
         assert invoice.line_items is None
         assert invoice.metadata is None
+
+    def test_invoice_to_api_body(self):
+        """Test invoice to_api_body method."""
+        invoice = Invoice(
+            id="inv_123",
+            object="invoice",
+            debt="debt_456",
+            currency="GBP",
+            reference="INV-2024-001",
+            status="outstanding",
+            invoiced_on=date(2024, 1, 15),
+            due_on=date(2024, 2, 15),
+            description="Test invoice",
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+            metadata={"invoice_type": "standard"},
+        )
+
+        api_body = invoice.to_api_body()
+
+        # debt should NOT be in API body (not in __api_body_fields__)
+        assert "debt" not in api_body
+        # Server fields should be excluded
+        assert "id" not in api_body
+        assert "object" not in api_body
+        assert "created_at" not in api_body
+        assert "updated_at" not in api_body
+
+        # These fields should be in the API body
+        assert api_body["reference"] == "INV-2024-001"
+        assert api_body["status"] == "outstanding"
+        assert api_body["invoiced_on"] == date(2024, 1, 15)
+        assert api_body["due_on"] == date(2024, 2, 15)
+        assert api_body["description"] == "Test invoice"
+        assert api_body["metadata"] == {"invoice_type": "standard"}
+
+    def test_line_item_to_api_body(self):
+        """Test LineItem to_api_body method."""
+        from ophelos_sdk.models import LineItem
+
+        line_item = LineItem(
+            id="li_123",
+            object="line_item",
+            debt_id="debt_456",
+            kind="debt",  # Using valid enum value
+            description="Debt amount",
+            amount=5000,
+            currency="GBP",
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+            metadata={"category": "debt"},
+        )
+
+        api_body = line_item.to_api_body()
+
+        # debt_id should NOT be in API body (not in __api_body_fields__)
+        assert "debt_id" not in api_body
+        # Server fields should be excluded
+        assert "id" not in api_body
+        assert "object" not in api_body
+        assert "created_at" not in api_body
+        assert "updated_at" not in api_body
+
+        # These fields should be in the API body
+        assert api_body["kind"] == "debt"
+        assert api_body["description"] == "Debt amount"
+        assert api_body["amount"] == 5000
+        assert api_body["currency"] == "GBP"
+        assert api_body["metadata"] == {"category": "debt"}

@@ -38,9 +38,7 @@ class TestWebhookHandler:
             timestamp = int(time.time())
 
         signed_payload = f"{timestamp}.{payload}"
-        signature = hmac.new(
-            secret.encode("utf-8"), signed_payload.encode("utf-8"), hashlib.sha256
-        ).hexdigest()
+        signature = hmac.new(secret.encode("utf-8"), signed_payload.encode("utf-8"), hashlib.sha256).hexdigest()
 
         return f"t={timestamp},v1={signature}"
 
@@ -78,10 +76,7 @@ class TestWebhookHandler:
                 webhook_handler.verify_signature(sample_payload, header)
             # The error message can be either direct format error or wrapped error
             error_msg = str(exc_info.value)
-            assert (
-                "Invalid signature header format" in error_msg
-                or "Error verifying webhook signature" in error_msg
-            )
+            assert "Invalid signature header format" in error_msg or "Error verifying webhook signature" in error_msg
 
     def test_timestamp_tolerance(self, webhook_handler, sample_payload, webhook_secret):
         """Test timestamp tolerance for replay attack prevention."""
@@ -126,9 +121,7 @@ class TestWebhookHandler:
                 webhook_handler.parse_event(payload)
             assert "Error parsing webhook payload" in str(exc_info.value)
 
-    def test_verify_and_parse_success(
-        self, webhook_handler, sample_payload, webhook_secret, sample_webhook_event
-    ):
+    def test_verify_and_parse_success(self, webhook_handler, sample_payload, webhook_secret, sample_webhook_event):
         """Test successful verification and parsing in one step."""
         signature_header = self.create_signature(sample_payload, webhook_secret)
 

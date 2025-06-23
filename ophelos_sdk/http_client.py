@@ -134,13 +134,9 @@ class HTTPClient:
             elif response.status_code == 429:
                 raise RateLimitError(message, response_data=response_data)
             elif response.status_code >= 500:
-                raise ServerError(
-                    message, status_code=response.status_code, response_data=response_data
-                )
+                raise ServerError(message, status_code=response.status_code, response_data=response_data)
             else:
-                raise OphelosAPIError(
-                    message, status_code=response.status_code, response_data=response_data
-                )
+                raise OphelosAPIError(message, status_code=response.status_code, response_data=response_data)
 
         return response_data
 
@@ -164,9 +160,7 @@ class HTTPClient:
         url = f"{self.base_url}/{path.lstrip('/')}"
         request_headers = self._prepare_headers(headers)
 
-        response = self.session.get(
-            url, params=params, headers=request_headers, timeout=self.timeout
-        )
+        response = self.session.get(url, params=params, headers=request_headers, timeout=self.timeout)
 
         return self._handle_response(response)
 
@@ -192,9 +186,7 @@ class HTTPClient:
         url = f"{self.base_url}/{path.lstrip('/')}"
         request_headers = self._prepare_headers(headers)
 
-        response = self.session.post(
-            url, json=data, params=params, headers=request_headers, timeout=self.timeout
-        )
+        response = self.session.post(url, json=data, params=params, headers=request_headers, timeout=self.timeout)
 
         return self._handle_response(response)
 
@@ -220,9 +212,7 @@ class HTTPClient:
         url = f"{self.base_url}/{path.lstrip('/')}"
         request_headers = self._prepare_headers(headers)
 
-        response = self.session.put(
-            url, json=data, params=params, headers=request_headers, timeout=self.timeout
-        )
+        response = self.session.put(url, json=data, params=params, headers=request_headers, timeout=self.timeout)
 
         return self._handle_response(response)
 
@@ -248,9 +238,7 @@ class HTTPClient:
         url = f"{self.base_url}/{path.lstrip('/')}"
         request_headers = self._prepare_headers(headers)
 
-        response = self.session.patch(
-            url, json=data, params=params, headers=request_headers, timeout=self.timeout
-        )
+        response = self.session.patch(url, json=data, params=params, headers=request_headers, timeout=self.timeout)
 
         return self._handle_response(response)
 
@@ -274,8 +262,6 @@ class HTTPClient:
         url = f"{self.base_url}/{path.lstrip('/')}"
         request_headers = self._prepare_headers(headers)
 
-        response = self.session.delete(
-            url, params=params, headers=request_headers, timeout=self.timeout
-        )
+        response = self.session.delete(url, params=params, headers=request_headers, timeout=self.timeout)
 
         return self._handle_response(response)

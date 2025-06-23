@@ -2,7 +2,7 @@
 Customers resource manager for Ophelos API.
 """
 
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Union
 from .base import BaseResource
 from ..models import Customer, PaginatedResponse
 
@@ -73,43 +73,56 @@ class CustomersResource(BaseResource):
         response_data = self.http_client.get(f"customers/{customer_id}", params=params)
         return self._parse_model_response(response_data, Customer)
 
-    def create(self, data: Dict[str, Any], expand: Optional[List[str]] = None) -> Customer:
+    def create(self, data: Union[Dict[str, Any], Customer], expand: Optional[List[str]] = None) -> Customer:
         """
         Create a new customer.
 
         Args:
-            data: Customer data
+            data: Customer data (dictionary) or Customer model instance
             expand: List of fields to expand
 
         Returns:
             Created customer instance
         """
+        # Prepare data (handles both dict and model instances)
+        if hasattr(data, "to_api_body"):
+            api_data = data.to_api_body()
+        else:
+            api_data = data
+
         if expand:
             params = self._build_expand_params(expand)
-            response_data = self.http_client.post("customers", data=data, params=params)
+            response_data = self.http_client.post("customers", data=api_data, params=params)
         else:
-            response_data = self.http_client.post("customers", data=data)
+            response_data = self.http_client.post("customers", data=api_data)
         return self._parse_model_response(response_data, Customer)
 
     def update(
-        self, customer_id: str, data: Dict[str, Any], expand: Optional[List[str]] = None
+        self,
+        customer_id: str,
+        data: Union[Dict[str, Any], Customer],
+        expand: Optional[List[str]] = None,
     ) -> Customer:
         """
         Update a customer.
 
         Args:
             customer_id: Customer ID
-            data: Updated customer data
+            data: Updated customer data (dictionary) or Customer model instance
             expand: List of fields to expand
 
         Returns:
             Updated customer instance
         """
+        # Prepare data (handles both dict and model instances)
+        if hasattr(data, "to_api_body"):
+            api_data = data.to_api_body()
+        else:
+            api_data = data
+
         if expand:
             params = self._build_expand_params(expand)
-            response_data = self.http_client.put(
-                f"customers/{customer_id}", data=data, params=params
-            )
+            response_data = self.http_client.put(f"customers/{customer_id}", data=api_data, params=params)
         else:
-            response_data = self.http_client.put(f"customers/{customer_id}", data=data)
+            response_data = self.http_client.put(f"customers/{customer_id}", data=api_data)
         return self._parse_model_response(response_data, Customer)
