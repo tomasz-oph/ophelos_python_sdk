@@ -11,13 +11,13 @@ from .base import BaseOphelosModel, Currency
 class Payout(BaseOphelosModel):
     """Payout model."""
 
-    id: str
-    object: str = "payout"
+    id: Optional[str] = None
+    object: Optional[str] = "payout"
     amount: int  # Amount in cents
     currency: Optional[Currency] = None
-    status: str
+    status: Optional[str] = None
     payout_date: Optional[date] = None
-    organisation_id: str
+    organisation_id: Optional[str] = None
     metadata: Optional[Dict[str, Any]] = None
-    created_at: datetime
-    updated_at: datetime
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None

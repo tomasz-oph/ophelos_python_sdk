@@ -26,17 +26,17 @@ class LineItemKind(str, Enum):
 class LineItem(BaseOphelosModel):
     """Line item model."""
 
-    id: str
-    object: str = "line_item"
-    debt_id: str
+    id: Optional[str] = None
+    object: Optional[str] = "line_item"
+    debt_id: Optional[str] = None
     invoice_id: Optional[str] = None
     kind: LineItemKind
     description: Optional[str] = None
     amount: int
     currency: Optional[Currency] = None
     transaction_at: Optional[datetime] = None
-    created_at: datetime
-    updated_at: datetime
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
     metadata: Optional[Dict[str, Any]] = None
 
     # Define which fields can be sent in API create/update requests
@@ -53,9 +53,9 @@ class LineItem(BaseOphelosModel):
 class Invoice(BaseOphelosModel):
     """Invoice model."""
 
-    id: str
-    object: str = "invoice"
-    debt: Union[str, "Debt"]  # Can be debt ID or expanded debt object
+    id: Optional[str] = None
+    object: Optional[str] = "invoice"
+    debt: Optional[Union[str, "Debt"]] = None  # Can be debt ID or expanded debt object
     currency: Optional[Currency] = None
     reference: Optional[str] = None
     status: Optional[str] = None
@@ -63,8 +63,8 @@ class Invoice(BaseOphelosModel):
     due_on: Optional[date] = None
     description: Optional[str] = None
     line_items: Optional[List[Union[str, LineItem]]] = None
-    created_at: datetime
-    updated_at: datetime
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
     metadata: Optional[Dict[str, Any]] = None
 
     # Define which fields can be sent in API create/update requests

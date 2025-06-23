@@ -20,16 +20,16 @@ class PaymentOptionsConfiguration(BaseOphelosModel):
 class Organisation(BaseOphelosModel):
     """Organisation model."""
 
-    id: str
-    object: str = "organisation"
-    name: str
+    id: Optional[str] = None
+    object: Optional[str] = "organisation"
+    name: Optional[str] = None
     internal_name: Optional[str] = None
     customer_facing_name: Optional[str] = None
     contact_details: Optional[List[Union[str, "ContactDetail"]]] = None
     configurations: Dict[str, Any] = {}
     deleted_at: Optional[datetime] = None
-    created_at: datetime
-    updated_at: datetime
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
     metadata: Optional[Dict[str, Any]] = None
     payment_options_configuration: Optional[PaymentOptionsConfiguration] = None
 

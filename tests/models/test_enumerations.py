@@ -19,6 +19,7 @@ class TestEnumerations:
     def test_contact_detail_type_enum(self):
         """Test contact detail type enumeration."""
         assert ContactDetailType.EMAIL == "email"
-        assert ContactDetailType.PHONE == "phone"
-        assert ContactDetailType.MOBILE == "mobile"
+        assert ContactDetailType.PHONE_NUMBER == "phone_number"
+        assert ContactDetailType.MOBILE_NUMBER == "mobile_number"
+        assert ContactDetailType.FAX_NUMBER == "fax_number"
         assert ContactDetailType.ADDRESS == "address"

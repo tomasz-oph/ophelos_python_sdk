@@ -2,9 +2,9 @@
 Main Ophelos API client.
 """
 
-from typing import Optional
+from typing import Optional, Union
 
-from .auth import OAuth2Authenticator
+from .auth import OAuth2Authenticator, StaticTokenAuthenticator
 from .http_client import HTTPClient
 from .resources import (
     DebtsResource,
@@ -30,25 +30,27 @@ class OphelosClient:
 
     def __init__(
         self,
-        client_id: str,
-        client_secret: str,
-        audience: str,
+        client_id: Optional[str] = None,
+        client_secret: Optional[str] = None,
+        audience: Optional[str] = None,
         environment: str = "development",
         timeout: int = 30,
         max_retries: int = 3,
         tenant_id: Optional[str] = None,
+        access_token: Optional[str] = None,
     ):
         """
         Initialize the Ophelos API client.
 
         Args:
-            client_id: OAuth2 client ID
-            client_secret: OAuth2 client secret
-            audience: API audience/identifier
+            client_id: OAuth2 client ID (required if access_token not provided)
+            client_secret: OAuth2 client secret (required if access_token not provided)
+            audience: API audience/identifier (required if access_token not provided)
             environment: "development", "staging", or "production"
             timeout: Request timeout in seconds
             max_retries: Maximum number of retries for failed requests
             tenant_id: Optional tenant ID to include in all requests as OPHELOS_TENANT_ID header
+            access_token: Optional pre-obtained access token (bypasses OAuth2 flow)
 
         Note:
             Retry requests automatically use exponential backoff with jitter (0-1.5s randomness)
@@ -56,10 +58,18 @@ class OphelosClient:
 
         Example:
             ```python
+            # OAuth2 flow (default)
             client = OphelosClient(
                 client_id="your_client_id",
                 client_secret="your_client_secret",
                 audience="your_audience",
+                environment="development",
+                tenant_id="your_tenant_id"  # Optional: adds OPHELOS_TENANT_ID header
+            )
+
+            # Direct access token
+            client = OphelosClient(
+                access_token="your_access_token",
                 environment="development",
                 tenant_id="your_tenant_id"  # Optional: adds OPHELOS_TENANT_ID header
             )
@@ -72,12 +82,25 @@ class OphelosClient:
         else:  # staging (default)
             base_url = "https://api.ophelos.dev"
 
-        self.authenticator = OAuth2Authenticator(
-            client_id=client_id,
-            client_secret=client_secret,
-            audience=audience,
-            environment=environment,
-        )
+        # Choose authenticator based on provided parameters
+        self.authenticator: Union[OAuth2Authenticator, StaticTokenAuthenticator]
+        if access_token:
+            self.authenticator = StaticTokenAuthenticator(access_token=access_token)
+        else:
+            if not all([client_id, client_secret, audience]):
+                raise ValueError(
+                    "client_id, client_secret, and audience are required when access_token is not provided"
+                )
+            # mypy: At this point we know these are not None due to the check above
+            assert client_id is not None
+            assert client_secret is not None
+            assert audience is not None
+            self.authenticator = OAuth2Authenticator(
+                client_id=client_id,
+                client_secret=client_secret,
+                audience=audience,
+                environment=environment,
+            )
 
         self.http_client = HTTPClient(
             authenticator=self.authenticator,

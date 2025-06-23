@@ -101,6 +101,34 @@ class BaseResource:
 
         return params
 
+    def _is_valid_model_data(self, data: Dict[str, Any], model_class: Type[BaseOphelosModel]) -> bool:
+        """
+        Check if data looks like valid model data.
+        
+        Args:
+            data: Dictionary data to check
+            model_class: Model class to validate against
+            
+        Returns:
+            True if data looks valid for the model, False otherwise
+        """
+        if not isinstance(data, dict):
+            return False
+            
+        # Check if it has at least one expected model field
+        model_fields = set(model_class.model_fields.keys())
+        data_keys = set(data.keys())
+        
+        # If all keys are unknown to the model, it's probably invalid
+        if not (data_keys & model_fields):
+            return False
+            
+        # If it has only "invalid" or similar non-model keys, it's invalid
+        if data_keys <= {"invalid", "missing_required_fields", "error", "message"}:
+            return False
+            
+        return True
+
     def _parse_response(
         self, response_data: Dict[str, Any], model_class: Optional[Type[T]] = None
     ) -> Union[T, Dict[str, Any]]:
@@ -116,6 +144,9 @@ class BaseResource:
         """
         if model_class and response_data:
             try:
+                # Check if this looks like valid model data
+                if not self._is_valid_model_data(response_data, model_class):
+                    return response_data
                 return model_class(**response_data)
             except Exception:
                 # Fallback to raw data if parsing fails
@@ -159,7 +190,11 @@ class BaseResource:
             for i, item in enumerate(items):
                 try:
                     if isinstance(item, dict):
-                        parsed_items.append(model_class(**item))
+                        # Check if this looks like valid model data
+                        if not self._is_valid_model_data(item, model_class):
+                            parsed_items.append(item)
+                        else:
+                            parsed_items.append(model_class(**item))
                     else:
                         # Already a model object
                         parsed_items.append(item)

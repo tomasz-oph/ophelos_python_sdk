@@ -25,18 +25,18 @@ class PaymentStatus(str, Enum):
 class Payment(BaseOphelosModel):
     """Payment model."""
 
-    id: str
-    object: str = "payment"
-    debt: Union[str, "Debt"]  # Can be debt ID or expanded debt object
-    status: PaymentStatus
+    id: Optional[str] = None
+    object: Optional[str] = "payment"
+    debt: Optional[Union[str, "Debt"]] = None  # Can be debt ID or expanded debt object
+    status: Optional[PaymentStatus] = None
     transaction_at: datetime
-    transaction_ref: Optional[str] = None
-    amount: int  # Amount in cents (amount_in_cents from jbuilder)
-    currency: Optional[Currency] = None  # amount_currency from jbuilder
-    payment_provider: Optional[str] = None  # underscore.downcase from jbuilder
+    transaction_ref: str
+    amount: int  # Amount in cents
+    currency: Optional[Currency] = None
+    payment_provider: Optional[str] = None
     payment_plan: Optional[Union[str, "PaymentPlan"]] = None  # Can be payment_plan ID or expanded object
-    created_at: datetime
-    updated_at: datetime
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
     metadata: Optional[Dict[str, Any]] = None
 
     # Define which fields can be sent in API create/update requests
@@ -46,11 +46,11 @@ class Payment(BaseOphelosModel):
 class PaymentPlan(BaseOphelosModel):
     """Payment plan model."""
 
-    id: str
-    object: str = "payment_plan"
-    debt: Union[str, "Debt"]  # Can be debt ID or expanded debt object (from jbuilder)
-    status: str  # From item.status in jbuilder
+    id: Optional[str] = None
+    object: Optional[str] = "payment_plan"
+    debt: Optional[Union[str, "Debt"]] = None  # Can be debt ID or expanded debt object (from jbuilder)
+    status: Optional[str] = None  # From item.status in jbuilder
     schedule: Optional[List[Union[str, Any]]] = None  # Can be schedule IDs or expanded objects (from jbuilder)
-    created_at: datetime
-    updated_at: datetime
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
     metadata: Optional[Dict[str, Any]] = None

@@ -7,10 +7,10 @@ Models are organized by domain for better maintainability.
 
 # Import all models for backward compatibility
 from .base import BaseOphelosModel, Currency
-from .customer import Customer, ContactDetail, ContactDetailType
+from .customer import Customer, ContactDetail, ContactDetailType, ContactDetailUsage, ContactDetailSource
 from .debt import Debt, DebtStatus, StatusObject, DebtSummary, SummaryBreakdown
 from .payment import Payment, PaymentPlan, PaymentStatus
-from .invoice import Invoice, LineItem
+from .invoice import Invoice, LineItem, LineItemKind
 from .communication import Communication, CommunicationTemplate
 from .webhook import Webhook, WebhookEvent
 from .organisation import Organisation, PaymentOptionsConfiguration
@@ -36,6 +36,8 @@ __all__ = [
     "Customer",
     "ContactDetail",
     "ContactDetailType",
+    "ContactDetailUsage",
+    "ContactDetailSource",
     # Debt
     "Debt",
     "DebtStatus",
@@ -49,6 +51,7 @@ __all__ = [
     # Invoice
     "Invoice",
     "LineItem",
+    "LineItemKind",
     # Communication
     "Communication",
     "CommunicationTemplate",

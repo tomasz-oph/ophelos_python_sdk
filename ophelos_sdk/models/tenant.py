@@ -11,10 +11,13 @@ from .base import BaseOphelosModel
 class Tenant(BaseOphelosModel):
     """Tenant model."""
 
-    id: str
-    object: str = "tenant"
-    name: str
+    id: Optional[str] = None
+    object: Optional[str] = "tenant"
+    name: Optional[str] = None
     description: Optional[str] = None
+    configurations: Dict[str, Any] = {}
     metadata: Optional[Dict[str, Any]] = None
-    created_at: datetime
-    updated_at: datetime
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+

@@ -9,7 +9,7 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-from .auth import OAuth2Authenticator
+from .auth import OAuth2Authenticator, StaticTokenAuthenticator
 from .exceptions import (
     OphelosAPIError,
     AuthenticationError,
@@ -46,7 +46,7 @@ class HTTPClient:
 
     def __init__(
         self,
-        authenticator: OAuth2Authenticator,
+        authenticator: Union[OAuth2Authenticator, StaticTokenAuthenticator],
         base_url: str,
         tenant_id: Optional[str] = None,
         timeout: int = 30,
@@ -56,7 +56,7 @@ class HTTPClient:
         Initialize HTTP client.
 
         Args:
-            authenticator: OAuth2 authenticator instance
+            authenticator: OAuth2 or StaticToken authenticator instance
             base_url: Base URL for API requests
             timeout: Request timeout in seconds
             max_retries: Maximum number of retries for failed requests

@@ -97,19 +97,19 @@ class DebtSummary(BaseOphelosModel):
 class Debt(BaseOphelosModel):
     """Debt model."""
 
-    id: str
-    object: str = "debt"
-    status: StatusObject
+    id: Optional[str] = None
+    object: Optional[str] = "debt"
+    status: Optional[StatusObject] = None
     kind: Optional[str] = None
     reference_code: Optional[str] = None
     account_number: Optional[str] = None
-    customer: Union[str, "Customer"]  # Can be customer ID or expanded customer object
+    customer: Optional[Union[str, "Customer"]] = None  # Can be customer ID or expanded customer object
     customer_id: Optional[str] = None  # Used for API POST or PUT requests
-    organisation: Union[str, "Organisation"]  # Can be organisation ID or expanded organisation object
+    organisation: Optional[Union[str, "Organisation"]] = None  # Can be organisation ID or expanded organisation object
     organisation_id: Optional[str] = None  # Used for API POST or PUT requests
     originator: Optional[Union[str, Any]] = None  # Can be originator ID, expanded object, or None
     currency: Optional[Currency] = None
-    summary: DebtSummary
+    summary: Optional[DebtSummary] = None
     invoices: Optional[List[Union[str, "Invoice"]]] = None  # Can be invoice IDs or expanded invoice objects
     line_items: Optional[List[Union[str, "LineItem"]]] = None  # Can be line_item IDs or expanded objects
     payments: Optional[List[Union[str, "Payment"]]] = None  # Can be payment IDs or expanded payment objects
@@ -118,8 +118,8 @@ class Debt(BaseOphelosModel):
     configurations: Optional[Dict[str, Any]] = None
     calculated_configurations: Optional[Dict[str, Any]] = None
     start_at: Optional[date] = None
-    created_at: datetime
-    updated_at: datetime
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
     metadata: Optional[Dict[str, Any]] = None
 
     # Define which fields can be sent in API create/update requests
@@ -145,4 +145,6 @@ class Debt(BaseOphelosModel):
     @property
     def balance_amount(self) -> int:
         """Get the remaining balance amount."""
+        if self.summary is None:
+            return 0
         return self.summary.amount_remaining or 0

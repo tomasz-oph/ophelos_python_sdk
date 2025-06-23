@@ -152,3 +152,49 @@ class TestOphelosClient:
         # Verify the HTTP client was initialized with the tenant_id
         args, kwargs = mock_http_client.call_args
         assert kwargs["tenant_id"] == tenant_id
+
+    def test_client_initialization_with_access_token(self):
+        """Test client initialization with direct access token."""
+        access_token = "test_access_token_123"
+        client = OphelosClient(access_token=access_token, environment="development")
+
+        # Verify StaticTokenAuthenticator is used
+        from ophelos_sdk.auth import StaticTokenAuthenticator
+
+        assert isinstance(client.authenticator, StaticTokenAuthenticator)
+        assert client.authenticator.access_token == access_token
+
+    def test_client_initialization_validation_error(self):
+        """Test that client raises ValueError when neither access_token nor OAuth2 credentials are provided."""
+        with pytest.raises(ValueError, match="client_id, client_secret, and audience are required"):
+            OphelosClient()
+
+    def test_client_initialization_with_access_token_and_tenant_id(self):
+        """Test client initialization with access token and tenant ID."""
+        access_token = "test_access_token_123"
+        tenant_id = "test_tenant_456"
+        client = OphelosClient(access_token=access_token, tenant_id=tenant_id, environment="development")
+
+        # Verify both access token and tenant ID are set
+        from ophelos_sdk.auth import StaticTokenAuthenticator
+
+        assert isinstance(client.authenticator, StaticTokenAuthenticator)
+        assert client.authenticator.access_token == access_token
+        assert client.http_client.tenant_id == tenant_id
+
+    def test_client_access_token_takes_precedence(self):
+        """Test that access_token takes precedence over OAuth2 credentials when both are provided."""
+        access_token = "test_access_token_123"
+        client = OphelosClient(
+            access_token=access_token,
+            client_id="should_be_ignored",
+            client_secret="should_be_ignored",
+            audience="should_be_ignored",
+            environment="development",
+        )
+
+        # Verify StaticTokenAuthenticator is used instead of OAuth2Authenticator
+        from ophelos_sdk.auth import StaticTokenAuthenticator
+
+        assert isinstance(client.authenticator, StaticTokenAuthenticator)
+        assert client.authenticator.access_token == access_token

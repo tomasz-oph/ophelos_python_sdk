@@ -19,8 +19,8 @@ class TestContactDetailModel:
             "type": "email",
             "value": "test@example.com",
             "primary": True,
-            "usage": "billing",
-            "source": "manual",
+            "usage": "permanent",
+            "source": "client",
             "status": "active",
             "created_at": datetime.now().isoformat(),
             "updated_at": datetime.now().isoformat(),
@@ -34,8 +34,8 @@ class TestContactDetailModel:
         assert contact_detail.type == ContactDetailType.EMAIL
         assert contact_detail.value == "test@example.com"
         assert contact_detail.primary is True
-        assert contact_detail.usage == "billing"
-        assert contact_detail.source == "manual"
+        assert contact_detail.usage == "permanent"
+        assert contact_detail.source == "client"
         assert contact_detail.status == "active"
         assert contact_detail.metadata == {"custom_field": "value"}
 
@@ -44,7 +44,7 @@ class TestContactDetailModel:
         minimal_data = {
             "id": "cd_456",
             "object": "contact_detail",
-            "type": "phone",
+            "type": "phone_number",
             "value": "+44123456789",
             "created_at": datetime.now().isoformat(),
             "updated_at": datetime.now().isoformat(),
@@ -52,7 +52,7 @@ class TestContactDetailModel:
 
         contact_detail = ContactDetail(**minimal_data)
         assert contact_detail.id == "cd_456"
-        assert contact_detail.type == ContactDetailType.PHONE
+        assert contact_detail.type == ContactDetailType.PHONE_NUMBER
         assert contact_detail.value == "+44123456789"
         assert contact_detail.primary is None
         assert contact_detail.usage is None
@@ -68,8 +68,8 @@ class TestContactDetailModel:
             type="email",
             value="test@example.com",
             primary=True,
-            usage="billing",
-            source="user_input",
+            usage="permanent",
+            source="client",
             status="verified",
             created_at=datetime.now(),
             updated_at=datetime.now(),
@@ -88,8 +88,8 @@ class TestContactDetailModel:
         assert api_body["type"] == "email"
         assert api_body["value"] == "test@example.com"
         assert api_body["primary"] is True
-        assert api_body["usage"] == "billing"
-        assert api_body["source"] == "user_input"
+        assert api_body["usage"] == "permanent"
+        assert api_body["source"] == "client"
         assert api_body["status"] == "verified"
         assert api_body["metadata"] == {"verified_date": "2024-01-01"}
 
@@ -98,7 +98,7 @@ class TestContactDetailModel:
         contact_detail = ContactDetail(
             id="cd_456",
             object="contact_detail",
-            type="phone",
+            type="phone_number",
             value="+44123456789",
             created_at=datetime.now(),
             updated_at=datetime.now(),
@@ -106,7 +106,7 @@ class TestContactDetailModel:
 
         api_body = contact_detail.to_api_body()
 
-        assert api_body["type"] == "phone"
+        assert api_body["type"] == "phone_number"
         assert api_body["value"] == "+44123456789"
         # None values should be excluded by default
         assert "primary" not in api_body

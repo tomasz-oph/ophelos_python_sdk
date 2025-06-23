@@ -7,7 +7,7 @@ import time
 from unittest.mock import Mock, patch
 import requests
 
-from ophelos_sdk.auth import OAuth2Authenticator
+from ophelos_sdk.auth import OAuth2Authenticator, StaticTokenAuthenticator
 from ophelos_sdk.exceptions import AuthenticationError
 
 
@@ -201,3 +201,41 @@ class TestOAuth2Authenticator:
         # Should default to 1 hour (3600 seconds)
         expected_expiry = time.time() + 3600
         assert abs(authenticator._token_expires_at - expected_expiry) < 10
+
+
+class TestStaticTokenAuthenticator:
+    """Test cases for StaticTokenAuthenticator."""
+
+    def test_static_token_initialization(self):
+        """Test StaticTokenAuthenticator initialization."""
+        access_token = "test_static_token_123"
+        authenticator = StaticTokenAuthenticator(access_token=access_token)
+
+        assert authenticator.access_token == access_token
+
+    def test_get_access_token(self):
+        """Test getting access token from static authenticator."""
+        access_token = "test_static_token_123"
+        authenticator = StaticTokenAuthenticator(access_token=access_token)
+
+        token = authenticator.get_access_token()
+        assert token == access_token
+
+    def test_get_auth_headers(self):
+        """Test getting authentication headers from static authenticator."""
+        access_token = "test_static_token_123"
+        authenticator = StaticTokenAuthenticator(access_token=access_token)
+
+        headers = authenticator.get_auth_headers()
+        assert headers["Authorization"] == f"Bearer {access_token}"
+
+    def test_invalidate_token_no_op(self):
+        """Test that invalidate_token is a no-op for static authenticator."""
+        access_token = "test_static_token_123"
+        authenticator = StaticTokenAuthenticator(access_token=access_token)
+
+        # Should not raise any errors
+        authenticator.invalidate_token()
+
+        # Token should still be available
+        assert authenticator.get_access_token() == access_token

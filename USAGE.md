@@ -35,6 +35,7 @@ pip install -e .
 ```python
 from ophelos_sdk import OphelosClient
 
+# Option 1: OAuth2 Authentication (Recommended)
 # For staging environment (default)
 client = OphelosClient(
     client_id="your_client_id",
@@ -59,13 +60,27 @@ client = OphelosClient(
     environment="development"  # Uses http://api.localhost:3000
 )
 
-# For multi-tenant applications
+# Option 2: Direct Access Token Authentication
+# If you already have a valid access token
+client = OphelosClient(
+    access_token="your_access_token",
+    environment="production"
+)
+
+# Option 3: Multi-tenant applications
 client = OphelosClient(
     client_id="your_client_id",
     client_secret="your_client_secret",
     audience="your_audience",
     environment="production",
     tenant_id="tenant_123"  # Automatically adds OPHELOS_TENANT_ID header to all requests
+)
+
+# Multi-tenant with access token
+client = OphelosClient(
+    access_token="your_access_token",
+    environment="production",
+    tenant_id="tenant_123"
 )
 ```
 
@@ -429,6 +444,8 @@ def handle_webhook_simple(request):
 
 ## Error Handling
 
+The SDK provides comprehensive error handling with graceful fallback for invalid API responses:
+
 ```python
 from ophelos_sdk import (
     OphelosError, OphelosAPIError, AuthenticationError,
@@ -443,12 +460,28 @@ except AuthenticationError:
     print("Authentication failed - check your credentials")
 except ValidationError as e:
     print(f"Validation error: {e}")
+    if hasattr(e, 'response_data'):
+        print(f"Response data: {e.response_data}")
 except RateLimitError:
     print("Rate limit exceeded - please retry later")
 except OphelosAPIError as e:
     print(f"API error: {e.message} (status: {e.status_code})")
+    if hasattr(e, 'response_data'):
+        print(f"Full response: {e.response_data}")
 except OphelosError as e:
     print(f"General Ophelos error: {e}")
+
+# The SDK automatically handles invalid API responses
+# by falling back to raw dictionary data when model parsing fails
+try:
+    # If the API returns malformed data, you'll get a dict instead of a model
+    result = client.debts.get("debt_with_invalid_data")
+    if isinstance(result, dict):
+        print("Received raw data due to parsing error:", result)
+    else:
+        print("Received valid debt model:", result.id)
+except Exception as e:
+    print(f"Request failed: {e}")
 ```
 
 ## Configuration Options
@@ -458,9 +491,15 @@ except OphelosError as e:
 You can also configure the client using environment variables:
 
 ```bash
+# OAuth2 Authentication
 export OPHELOS_CLIENT_ID="your_client_id"
 export OPHELOS_CLIENT_SECRET="your_client_secret"
 export OPHELOS_AUDIENCE="your_audience"
+
+# OR Direct Access Token Authentication
+export OPHELOS_ACCESS_TOKEN="your_access_token"
+
+# Common Configuration
 export OPHELOS_ENVIRONMENT="staging"
 export OPHELOS_TENANT_ID="tenant_123"  # Optional for multi-tenant applications
 ```
@@ -469,12 +508,20 @@ export OPHELOS_TENANT_ID="tenant_123"  # Optional for multi-tenant applications
 import os
 from ophelos_sdk import OphelosClient
 
+# OAuth2 authentication from environment
 client = OphelosClient(
     client_id=os.getenv("OPHELOS_CLIENT_ID"),
     client_secret=os.getenv("OPHELOS_CLIENT_SECRET"),
     audience=os.getenv("OPHELOS_AUDIENCE"),
     environment=os.getenv("OPHELOS_ENVIRONMENT", "staging"),
     tenant_id=os.getenv("OPHELOS_TENANT_ID")  # Will be None if not set
+)
+
+# OR Access token authentication from environment
+client = OphelosClient(
+    access_token=os.getenv("OPHELOS_ACCESS_TOKEN"),
+    environment=os.getenv("OPHELOS_ENVIRONMENT", "staging"),
+    tenant_id=os.getenv("OPHELOS_TENANT_ID")
 )
 ```
 
@@ -495,10 +542,20 @@ client = OphelosClient(
 ### Complete Configuration Reference
 
 ```python
+# OAuth2 Authentication
 client = OphelosClient(
     client_id="your_client_id",           # Required: OAuth2 client ID
     client_secret="your_client_secret",   # Required: OAuth2 client secret
     audience="your_audience",             # Required: API audience/identifier
+    environment="production",             # Optional: "development", "staging", or "production"
+    tenant_id="tenant_123",              # Optional: For multi-tenant applications
+    timeout=30,                          # Optional: Request timeout in seconds (default: 30)
+    max_retries=3                        # Optional: Max retry attempts (default: 3)
+)
+
+# OR Direct Access Token Authentication
+client = OphelosClient(
+    access_token="your_access_token",     # Required: Pre-obtained access token
     environment="production",             # Optional: "development", "staging", or "production"
     tenant_id="tenant_123",              # Optional: For multi-tenant applications
     timeout=30,                          # Optional: Request timeout in seconds (default: 30)
@@ -605,7 +662,7 @@ api_body = customer_with_contacts.to_api_body()
 
 ### Field Control and Validation
 
-Models define which fields can be sent in API requests:
+Models automatically determine which fields are appropriate for API requests:
 
 ```python
 # Payment model example - debt field excluded from API body
@@ -621,10 +678,43 @@ api_body = payment.to_api_body()
 # Only includes: amount, transaction_ref, currency, transaction_at, metadata
 # Excludes: debt (set by endpoint context), id, object, created_at, updated_at
 
-# Check what fields are included for any model
-print(f"Customer API fields: {Customer._get_api_body_fields()}")
-print(f"Debt API fields: {Debt._get_api_body_fields()}")
-print(f"Payment API fields: {Payment._get_api_body_fields()}")
+# The SDK automatically excludes server-generated fields:
+# - id, object, created_at, updated_at (always excluded)
+# - Context-specific fields (like 'debt' in payment creation)
+
+# Test field exclusion
+assert "id" not in api_body
+assert "debt" not in api_body
+assert "amount" in api_body
+print("✅ Field exclusion working correctly")
+```
+
+### Robust Error Handling and Data Validation
+
+The SDK provides intelligent error handling with graceful fallbacks:
+
+```python
+# The SDK handles invalid API responses gracefully
+# If the API returns malformed data, it falls back to raw dictionaries
+
+# Example: API returns invalid debt data
+try:
+    # This might return either a Debt model or raw dict
+    result = client.debts.get("some_debt_id")
+    
+    if isinstance(result, Debt):
+        print(f"Valid debt model: {result.id}")
+        print(f"Amount: {result.summary.amount_total}")
+    elif isinstance(result, dict):
+        print(f"Raw data (parsing failed): {result}")
+        # Handle raw data appropriately
+        debt_id = result.get("id", "unknown")
+        print(f"Debt ID from raw data: {debt_id}")
+    
+except OphelosAPIError as e:
+    print(f"API error: {e.message}")
+    if hasattr(e, 'response_data'):
+        print(f"Response data: {e.response_data}")
 ```
 
 ### Model Usage Patterns
@@ -805,7 +895,7 @@ for debt_id in debt_ids:
 
 ## Testing Your Integration
 
-Test your connection:
+Test your connection and explore the comprehensive test coverage:
 
 ```python
 # Test basic connectivity
@@ -820,4 +910,59 @@ try:
     print(f"✅ Authenticated as: {tenant.name}")
 except Exception as e:
     print(f"❌ Authentication failed: {e}")
+
+# Test model functionality
+from ophelos_sdk.models import Customer, ContactDetail
+
+# Create a test customer model
+customer = Customer(
+    id="temp_test",
+    first_name="Test",
+    last_name="User",
+    contact_details=[
+        ContactDetail(
+            id="temp_email",
+            type="email",
+            value="test@example.com",
+            primary=True
+        )
+    ]
+)
+
+# Test API body generation
+api_body = customer.to_api_body()
+print(f"✅ Model API body generation works: {api_body}")
+
+# Verify server fields are excluded
+assert "id" not in api_body
+assert "object" not in api_body
+assert "created_at" not in api_body
+assert "updated_at" not in api_body
+print("✅ Server field exclusion working correctly")
+```
+
+## SDK Test Coverage
+
+The Ophelos SDK includes comprehensive test coverage:
+
+- **155+ Model Tests**: Complete coverage of all Pydantic models including API body generation, field validation, enum handling, and relationship processing
+- **Resource Tests**: Full coverage of all API resource managers with error handling and fallback mechanisms
+- **Authentication Tests**: OAuth2 and access token authentication with thread-safety validation
+- **Integration Tests**: End-to-end testing with real API endpoints (when credentials are provided)
+- **Error Handling Tests**: Validation of graceful fallback for invalid API responses
+
+Run the test suite:
+
+```bash
+# Run all tests
+pytest
+
+# Run specific test categories
+pytest tests/models/          # 155+ model tests
+pytest tests/test_resources.py  # Resource and error handling tests
+pytest tests/test_auth.py       # Authentication tests
+pytest tests/test_client.py     # Client configuration tests
+
+# Run with coverage
+pytest --cov=ophelos_sdk tests/
 ``` 

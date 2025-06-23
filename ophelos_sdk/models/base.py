@@ -57,6 +57,9 @@ class BaseOphelosModel(BaseModel):
 
             return value.to_api_body()
 
+        elif isinstance(value, (datetime, date)):
+            return value.isoformat()
+
         elif isinstance(value, list):
             return [self._process_nested_value(item, field_name) for item in value]
 

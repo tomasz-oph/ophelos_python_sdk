@@ -129,3 +129,28 @@ class OAuth2Authenticator:
         """Invalidate the current token, forcing a refresh on next request."""
         self._access_token = None
         self._token_expires_at = None
+
+
+class StaticTokenAuthenticator:
+    """Simple authenticator that uses a pre-provided access token."""
+
+    def __init__(self, access_token: str):
+        """
+        Initialize with a static access token.
+
+        Args:
+            access_token: Pre-obtained access token
+        """
+        self.access_token = access_token
+
+    def get_access_token(self) -> str:
+        """Return the static access token."""
+        return self.access_token
+
+    def get_auth_headers(self) -> Dict[str, str]:
+        """Get headers for authenticated requests."""
+        return {"Authorization": f"Bearer {self.access_token}"}
+
+    def invalidate_token(self) -> None:
+        """No-op for static tokens."""
+        pass

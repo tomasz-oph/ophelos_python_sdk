@@ -86,17 +86,18 @@ client.debts.ready(debt.id)
 
 ## Features
 
-- **Complete API Coverage**: All Ophelos API endpoints supported
+- **Complete API Coverage**: All Ophelos API endpoints supported with comprehensive test coverage
 - **Type Safety**: Full type hints and Pydantic models with automatic API body generation
 - **Model-First Approach**: Create and pass Pydantic model instances directly to API calls
 - **Smart Field Management**: Automatic exclusion of server-generated fields and intelligent relationship handling
-- **Authentication**: Automatic OAuth2 token management with thread-safe token caching
+- **Robust Error Handling**: Graceful fallback for invalid API responses with comprehensive error handling
+- **Authentication**: Automatic OAuth2 token management with thread-safe token caching and access token support
 - **Multi-Tenant Support**: Automatic tenant header injection for multi-tenant applications
-- **Error Handling**: Comprehensive error handling with custom exceptions
-- **Pagination**: Built-in pagination support
-- **Search**: Advanced search functionality
-- **Webhooks**: Webhook event handling and validation
+- **Pagination**: Built-in pagination support with generators for memory-efficient iteration
+- **Search**: Advanced search functionality with flexible query parameters
+- **Webhooks**: Webhook event handling and validation with signature verification
 - **Concurrent Safe**: Thread-safe for use with concurrent request patterns
+- **Comprehensive Testing**: 155+ model tests and full test coverage ensuring reliability
 
 ## Model-First API Usage
 
@@ -201,16 +202,17 @@ created_debt = client.debts.create(debt)
 
 ## Authentication
 
-The Ophelos API uses OAuth2 Client Credentials flow. You'll need:
+The Ophelos API supports two authentication methods:
 
+### Option 1: OAuth2 Client Credentials (Recommended)
+
+You'll need:
 1. **Client ID**: Your application's client identifier
 2. **Client Secret**: Your application's client secret
 3. **Audience**: Your API identifier
 
-Contact Ophelos support to obtain these credentials.
-
 ```python
-# Environment configuration
+# OAuth2 authentication (automatic token management)
 client = OphelosClient(
     client_id="your_client_id",
     client_secret="your_client_secret", 
@@ -226,6 +228,25 @@ client = OphelosClient(
     environment="development"
 )
 ```
+
+### Option 2: Direct Access Token
+
+If you already have a valid access token:
+
+```python
+# Direct access token authentication
+client = OphelosClient(
+    access_token="your_access_token"
+)
+
+# Or with environment configuration
+client = OphelosClient(
+    access_token="your_access_token",
+    environment="production"
+)
+```
+
+Contact Ophelos support to obtain these credentials.
 
 ### Multi-Tenant Support
 
@@ -459,9 +480,15 @@ with ThreadPoolExecutor(max_workers=5) as executor:
 
 ```python
 OphelosClient(
-    client_id: str,
-    client_secret: str, 
-    audience: str,
+    # OAuth2 Authentication (Option 1)
+    client_id: Optional[str] = None,
+    client_secret: Optional[str] = None, 
+    audience: Optional[str] = None,
+    
+    # Direct Token Authentication (Option 2)
+    access_token: Optional[str] = None,
+    
+    # Common Configuration
     environment: str = "staging",  # "development", "staging", or "production"
     tenant_id: Optional[str] = None,  # For multi-tenant applications
     timeout: int = 30,
@@ -470,13 +497,16 @@ OphelosClient(
 ```
 
 **Parameters:**
-- `client_id`: OAuth2 client identifier
-- `client_secret`: OAuth2 client secret
-- `audience`: API audience/identifier
+- `client_id`: OAuth2 client identifier (required for OAuth2 auth)
+- `client_secret`: OAuth2 client secret (required for OAuth2 auth)
+- `audience`: API audience/identifier (required for OAuth2 auth)
+- `access_token`: Pre-obtained access token (alternative to OAuth2 credentials)
 - `environment`: Target environment (`"development"`, `"staging"`, or `"production"`)
 - `tenant_id`: Optional tenant identifier for multi-tenant applications (adds `OPHELOS_TENANT_ID` header)
 - `timeout`: Request timeout in seconds
 - `max_retries`: Maximum number of retries for failed requests
+
+**Note:** You must provide either OAuth2 credentials (`client_id`, `client_secret`, `audience`) OR an `access_token`.
 
 ### Resource Managers
 
@@ -497,12 +527,22 @@ cd ophelos-python-sdk
 # Install development dependencies
 pip install -e ".[dev]"
 
-# Run tests
+# Run tests (155+ model tests + integration tests)
 pytest
 
-# Run linting
+# Run specific test categories
+pytest tests/models/          # Model tests (155+ tests)
+pytest tests/test_resources.py  # Resource tests with error handling
+pytest tests/test_auth.py       # Authentication tests
+pytest tests/test_client.py     # Client configuration tests
+
+# Run linting and type checking
 flake8 ophelos_sdk/
 mypy ophelos_sdk/
+black ophelos_sdk/ --line-length 120
+
+# Check test coverage
+pytest --cov=ophelos_sdk tests/
 ```
 
 ## Support
