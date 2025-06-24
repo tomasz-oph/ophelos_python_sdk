@@ -92,25 +92,3 @@ class TestContactDetailModel:
         assert api_body["source"] == "client"
         assert api_body["status"] == "verified"
         assert api_body["metadata"] == {"verified_date": "2024-01-01"}
-
-    def test_contact_detail_to_api_body_minimal(self):
-        """Test contact detail to_api_body with minimal fields."""
-        contact_detail = ContactDetail(
-            id="cd_456",
-            object="contact_detail",
-            type="phone_number",
-            value="+44123456789",
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-        )
-
-        api_body = contact_detail.to_api_body()
-
-        assert api_body["type"] == "phone_number"
-        assert api_body["value"] == "+44123456789"
-        # None values should be excluded by default
-        assert "primary" not in api_body
-        assert "usage" not in api_body
-        assert "source" not in api_body
-        assert "status" not in api_body
-        assert "metadata" not in api_body

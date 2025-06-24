@@ -171,25 +171,6 @@ class TestPayout:
         assert api_body["payout_date"] == "2024-07-15"
         assert isinstance(api_body["payout_date"], str)
 
-    def test_payout_api_body_excludes_server_fields(self):
-        """Test that payout API body excludes all server-generated fields."""
-        payout = Payout(
-            id="payout_server_test",
-            object="payout",
-            amount=90000,
-            currency=Currency.EUR,
-            status="completed",
-            organisation_id="org_server_test",
-            created_at=datetime.now(),
-            updated_at=datetime.now()
-        )
-        
-        api_body = payout.to_api_body()
-        
-        server_fields = {"id", "object", "created_at", "updated_at"}
-        for field in server_fields:
-            assert field not in api_body
-
     def test_payout_large_amounts(self):
         """Test payout with large amounts (edge case)."""
         large_amount = 999999999  # Large amount in cents

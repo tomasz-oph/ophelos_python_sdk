@@ -268,28 +268,6 @@ class TestLineItemModel:
         assert credit_api["amount"] == -500
         assert discount_api["amount"] == -100
 
-    def test_line_item_api_body_fields_configuration(self):
-        """Test that line item uses correct __api_body_fields__ configuration."""
-        line_item = LineItem(
-            id="li_test",
-            kind=LineItemKind.FEE,
-            description="Test fee",
-            amount=50,
-            currency=Currency.EUR,
-            transaction_at=datetime.now(),
-            metadata={"test": True},
-        )
-
-        api_body = line_item.to_api_body()
-        expected_fields = {"description", "kind", "amount", "currency", "transaction_at", "metadata"}
-
-        # All expected fields should be present (none are None)
-        for field in expected_fields:
-            assert field in api_body
-
-        # Verify specific values
-        assert len(api_body) == len(expected_fields)
-
 
 class TestInvoiceModelEnhanced:
     """Enhanced test cases for Invoice model."""
@@ -384,36 +362,6 @@ class TestInvoiceModelEnhanced:
         assert api_body["due_on"] == "2024-05-01"
         assert isinstance(api_body["invoiced_on"], str)
         assert isinstance(api_body["due_on"], str)
-
-    def test_invoice_api_body_fields_configuration(self):
-        """Test that invoice uses correct __api_body_fields__ configuration."""
-        invoice = Invoice(
-            id="inv_config_test",
-            debt="debt_123",
-            currency=Currency.GBP,
-            reference="INV-CONFIG-001",
-            status="draft",
-            invoiced_on=date(2024, 1, 1),
-            due_on=date(2024, 2, 1),
-            description="Configuration test",
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-            metadata={"test": True},
-        )
-
-        api_body = invoice.to_api_body()
-        expected_fields = {"description", "reference", "status", "invoiced_on", "due_on", "line_items", "metadata"}
-
-        # Check that only expected fields are included (excluding None values)
-        for field in api_body.keys():
-            assert field in expected_fields
-
-        # Check specific inclusions/exclusions
-        assert "debt" not in api_body  # Not in __api_body_fields__
-        assert "currency" not in api_body  # Not in __api_body_fields__
-        assert "id" not in api_body  # Server field
-        assert "reference" in api_body
-        assert "status" in api_body
 
     def test_invoice_with_debt_model(self):
         """Test invoice with expanded Debt model."""

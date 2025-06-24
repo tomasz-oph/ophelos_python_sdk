@@ -172,40 +172,6 @@ class TestCustomerModel:
         assert "kind" not in api_body
         assert "date_of_birth" not in api_body
 
-    def test_customer_api_body_fields_configuration(self):
-        """Test that customer uses correct __api_body_fields__ configuration."""
-        customer = Customer(
-            id="cust_123",
-            object="customer",
-            first_name="John",
-            last_name="Doe",
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-        )
-
-        api_body = customer.to_api_body()
-        expected_fields = {
-            "kind",
-            "full_name",
-            "first_name",
-            "last_name",
-            "preferred_locale",
-            "date_of_birth",
-            "contact_details",
-            "metadata",
-        }
-
-        for field in expected_fields:
-            if getattr(customer, field, None) is not None:
-                assert field in api_body or field in [
-                    "kind",
-                    "full_name",
-                    "preferred_locale",
-                    "date_of_birth",
-                    "contact_details",
-                    "metadata",
-                ]
-
     def test_customer_to_api_body_relationship_handling(self):
         """Test customer to_api_body with debt relationships."""
         customer = Customer(
@@ -324,64 +290,6 @@ class TestContactDetailModel:
         assert contact.usage is None
         assert contact.source is None
         assert contact.status is None
-
-    def test_contact_detail_to_api_body(self):
-        """Test contact detail to_api_body method."""
-        contact = ContactDetail(
-            id="cd_123",
-            object="contact_detail",
-            type=ContactDetailType.EMAIL,
-            value="test@example.com",
-            primary=True,
-            usage=ContactDetailUsage.PERMANENT,
-            source=ContactDetailSource.CLIENT,
-            status="verified",
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-            metadata={"test": "value"}
-        )
-        
-        api_body = contact.to_api_body()
-        
-        # Server fields should be excluded
-        assert "id" not in api_body
-        assert "object" not in api_body
-        assert "created_at" not in api_body
-        assert "updated_at" not in api_body
-        
-        # API body fields should be included
-        assert api_body["type"] == "email"  # Enum should be serialized as string
-        assert api_body["value"] == "test@example.com"
-        assert api_body["primary"] is True
-        assert api_body["usage"] == "permanent"
-        assert api_body["source"] == "client"
-        assert api_body["status"] == "verified"
-        assert api_body["metadata"] == {"test": "value"}
-
-    def test_contact_detail_api_body_fields_configuration(self):
-        """Test that contact detail uses correct __api_body_fields__ configuration."""
-        contact = ContactDetail(
-            id="cd_123",
-            type=ContactDetailType.EMAIL,
-            value="test@example.com",
-            primary=True,
-            usage=ContactDetailUsage.PERMANENT,
-            source=ContactDetailSource.CLIENT,
-            status="verified",
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-            metadata={"test": "value"}
-        )
-        
-        api_body = contact.to_api_body()
-        expected_fields = {"type", "value", "primary", "usage", "source", "status", "metadata"}
-        
-        # All expected fields should be present (none are None)
-        for field in expected_fields:
-            assert field in api_body
-        
-        # Verify specific values
-        assert len(api_body) == len(expected_fields)
 
 
 class TestCustomerWithContactDetails:

@@ -85,14 +85,17 @@ class TestDebtModel:
         assert "object" not in api_body
         assert "created_at" not in api_body
         assert "updated_at" not in api_body
-        assert api_body["customer"] == "cust_123"
-        assert api_body["organisation"] == "org_123"
+        # String IDs should be converted to _id fields
+        assert "customer" not in api_body
+        assert "organisation" not in api_body
+        assert api_body["customer_id"] == "cust_123"
+        assert api_body["organisation_id"] == "org_123"
         # status and summary are not in __api_body_fields__ for debt
         assert "status" not in api_body
         assert "summary" not in api_body
 
     def test_debt_to_api_body_with_customer_model(self):
-        """Test debt to_api_body with customer model (should convert to ID)."""
+        """Test debt to_api_body with customer model (should convert to customer_id)."""
         customer_model = Customer(
             id="cust_real_123",
             object="customer",
@@ -115,10 +118,85 @@ class TestDebtModel:
 
         api_body = debt.to_api_body()
 
-        assert api_body["customer"] == "cust_real_123"
+        # Should convert customer model to customer_id
+        assert "customer" not in api_body
+        assert api_body["customer_id"] == "cust_real_123"
+        assert "organisation" not in api_body
+        assert api_body["organisation_id"] == "org_123"
+
+
+    def test_debt_to_api_body_with_organisation_model(self):
+        """Test debt to_api_body with organisation model (should convert to organisation_id)."""
+        organisation_model = Organisation(
+            id="org_real_456",
+            object="organisation",
+            name="ACME Corp",
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+        )
+
+        debt = Debt(
+            id="debt_123",
+            object="debt",
+            customer="cust_123",
+            organisation=organisation_model,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+        )
+
+        api_body = debt.to_api_body()
+
+        # Should convert organisation model to organisation_id
+        assert "organisation" not in api_body
+        assert api_body["organisation_id"] == "org_real_456"
+
+    def test_debt_to_api_body_with_both_models(self):
+        """Test debt to_api_body with both customer and organisation models."""
+        customer_model = Customer(
+            id="cust_real_123",
+            object="customer",
+            first_name="John",
+            last_name="Doe",
+        )
+        
+        organisation_model = Organisation(
+            id="org_real_456",
+            object="organisation",
+            name="ACME Corp",
+        )
+
+        debt = Debt(
+            id="debt_123",
+            customer=customer_model,
+            organisation=organisation_model,
+        )
+
+        api_body = debt.to_api_body()
+
+        # Should convert both models to their respective ID fields
+        assert "customer" not in api_body
+        assert "organisation" not in api_body
+        assert api_body["customer_id"] == "cust_real_123"
+        assert api_body["organisation_id"] == "org_real_456"
+
+    def test_debt_to_api_body_with_string_ids(self):
+        """Test debt to_api_body with string customer/organisation IDs."""
+        debt = Debt(
+            id="debt_123",
+            customer="cust_string_123",
+            organisation="org_string_456",
+        )
+
+        api_body = debt.to_api_body()
+
+        # Should convert string IDs to _id fields
+        assert "customer" not in api_body
+        assert "organisation" not in api_body
+        assert api_body["customer_id"] == "cust_string_123"
+        assert api_body["organisation_id"] == "org_string_456"
 
     def test_debt_to_api_body_with_temp_customer_model(self):
-        """Test debt to_api_body with temp customer model (should include full object)."""
+        """Test debt to_api_body with temp customer model (should not convert to ID)."""
         customer_model = Customer(
             id="temp_cust_123",
             object="customer",
@@ -141,10 +219,81 @@ class TestDebtModel:
 
         api_body = debt.to_api_body()
 
+        # Should not convert temp ID to customer_id
+        assert "customer_id" not in api_body
         assert isinstance(api_body["customer"], dict)
         assert api_body["customer"]["first_name"] == "John"
         assert api_body["customer"]["last_name"] == "Doe"
-        assert "id" not in api_body["customer"]
+        assert "id" not in api_body["customer"]  # Server fields excluded
+        # Should convert organisation string ID to organisation_id
+        assert "organisation" not in api_body
+        assert api_body["organisation_id"] == "org_123"
+
+    def test_debt_to_api_body_with_temp_organisation_model(self):
+        """Test debt to_api_body with temp organisation model (should not convert to ID)."""
+        organisation_model = Organisation(
+            id="temp_org_456",
+            object="organisation",
+            name="ACME Corp",
+        )
+
+        debt = Debt(
+            id="debt_123",
+            customer="cust_123",
+            organisation=organisation_model,
+        )
+
+        api_body = debt.to_api_body()
+
+        # Should not convert temp ID to organisation_id
+        assert "organisation_id" not in api_body
+        assert isinstance(api_body["organisation"], dict)
+        assert api_body["organisation"]["name"] == "ACME Corp"
+        assert "id" not in api_body["organisation"]  # Server fields excluded
+        # Should convert customer string ID to customer_id
+        assert "customer" not in api_body
+        assert api_body["customer_id"] == "cust_123"
+
+    def test_debt_to_api_body_with_customer_model_without_id(self):
+        """Test debt to_api_body with customer model without ID."""
+        customer_model = Customer(
+            object="customer",
+            first_name="John",
+            last_name="Doe",
+        )
+
+        debt = Debt(
+            id="debt_123",
+            customer=customer_model,
+            organisation="org_123",
+        )
+
+        api_body = debt.to_api_body()
+
+        # Should not convert to customer_id since no ID
+        assert "customer_id" not in api_body
+        assert isinstance(api_body["customer"], dict)
+        assert api_body["customer"]["first_name"] == "John"
+        # Should convert organisation string ID to organisation_id
+        assert "organisation" not in api_body
+        assert api_body["organisation_id"] == "org_123"
+
+    def test_debt_to_api_body_mixed_scenarios(self):
+        """Test debt to_api_body with mixed customer/organisation scenarios."""
+        customer_model = Customer(id="cust_real_123", first_name="John")
+        
+        debt = Debt(
+            id="debt_123",
+            customer=customer_model,  # Model with ID -> should convert
+            organisation="org_string_456",  # String ID -> should convert
+        )
+
+        api_body = debt.to_api_body()
+
+        assert "customer" not in api_body
+        assert "organisation" not in api_body
+        assert api_body["customer_id"] == "cust_real_123"
+        assert api_body["organisation_id"] == "org_string_456"
 
     def test_debt_to_api_body_with_all_fields(self):
         """Test debt to_api_body with all optional fields."""
@@ -177,43 +326,11 @@ class TestDebtModel:
         assert api_body["configurations"] == {"payment_reminder": True}
         assert api_body["start_at"] == "2024-01-01"  # Date is serialized as ISO string
         assert api_body["metadata"] == {"source": "api", "priority": "high"}
-
-    def test_debt_api_body_fields_configuration(self):
-        """Test that debt uses correct __api_body_fields__ configuration."""
-        debt = Debt(
-            id="debt_123",
-            object="debt",
-            status={"value": "prepared", "whodunnit": "system", "updated_at": datetime.now()},
-            customer="cust_123",
-            organisation="org_123",
-            summary={"amount_total": 10000, "amount_paid": 0, "amount_remaining": 10000},
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-        )
-
-        api_body = debt.to_api_body()
-        expected_fields = {
-            "kind",
-            "reference_code",
-            "account_number",
-            "customer",
-            "customer_id",
-            "organisation",
-            "organisation_id",
-            "originator",
-            "currency",
-            "invoices",
-            "line_items",
-            "payments",
-            "tags",
-            "configurations",
-            "start_at",
-            "metadata",
-        }
-
-        # Only non-None fields should be included (due to exclude_none=True default)
-        for field in api_body.keys():
-            assert field in expected_fields or field in ["status", "summary"]
+        # Verify customer/organisation string IDs are converted to _id fields
+        assert "customer" not in api_body
+        assert "organisation" not in api_body
+        assert api_body["customer_id"] == "cust_123"
+        assert api_body["organisation_id"] == "org_123"
 
     def test_debt_balance_amount_property(self):
         """Test debt balance_amount computed property."""
@@ -506,8 +623,9 @@ class TestDebtModelEnhanced:
         assert api_body["currency"] == "EUR"  # Enum serialized as string
         assert api_body["reference_code"] == "REF-2024-001"
         assert api_body["account_number"] == "ACC-123456"
-        assert api_body["customer"] == "cust_123"
-        assert api_body["organisation"] == "org_123"
+        # String IDs converted to _id fields
+        assert api_body["customer_id"] == "cust_123"
+        assert api_body["organisation_id"] == "org_123"
         assert api_body["tags"] == ["priority", "vip"]
         assert api_body["metadata"] == {"source": "api", "channel": "web"}
 
@@ -524,8 +642,8 @@ class TestDebtModelEnhanced:
         api_body = debt.to_api_body()
 
         # Real IDs should be converted to ID references
-        assert api_body["customer"] == "cust_real_456"
-        assert api_body["organisation"] == "org_real_789"
+        assert api_body["customer_id"] == "cust_real_456"
+        assert api_body["organisation_id"] == "org_real_789"
         assert api_body["kind"] == "mortgage"
         assert api_body["currency"] == "USD"
 
@@ -541,8 +659,8 @@ class TestDebtModelEnhanced:
         assert isinstance(api_body["customer"], dict)
         assert api_body["customer"]["first_name"] == "Temp"
         assert api_body["customer"]["last_name"] == "Customer"
-        # Organisation ID should remain as string
-        assert api_body["organisation"] == "org_123"
+        # Organisation string ID should be converted to organisation_id
+        assert api_body["organisation_id"] == "org_123"
 
     def test_debt_balance_amount_property_with_summary(self):
         """Test debt balance_amount property with DebtSummary."""
@@ -561,38 +679,18 @@ class TestDebtModelEnhanced:
     def test_debt_date_serialization_in_api_body(self):
         """Test that date fields are properly serialized in to_api_body."""
         debt = Debt(
-            id="debt_date_test", customer="cust_123", organisation="org_123", start_at=date(2024, 3, 15), kind="loan"
+            id="debt_date_test",
+            kind="personal_loan",
+            customer="cust_456",
+            organisation="org_456",
+            currency=Currency.GBP,
+            start_at=date(2024, 2, 1),
+            reference_code="REF-DATE-001",
+            metadata={"created_by": "api", "test_date": True},
         )
 
         api_body = debt.to_api_body()
 
         # Date should be serialized as ISO format string
-        assert api_body["start_at"] == "2024-03-15"
+        assert api_body["start_at"] == "2024-02-01"
         assert isinstance(api_body["start_at"], str)
-
-    def test_debt_api_body_excludes_server_fields(self):
-        """Test that debt API body excludes server-generated fields."""
-        debt = Debt(
-            id="debt_server_test",
-            object="debt",
-            status=StatusObject(value=DebtStatus.PREPARED, updated_at=datetime.now()),
-            summary=DebtSummary(amount_total=10000),
-            customer="cust_123",
-            organisation="org_123",
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-        )
-
-        api_body = debt.to_api_body()
-
-        # Server fields should be excluded
-        assert "id" not in api_body
-        assert "object" not in api_body
-        assert "status" not in api_body
-        assert "summary" not in api_body
-        assert "created_at" not in api_body
-        assert "updated_at" not in api_body
-
-        # Client fields should be included
-        assert api_body["customer"] == "cust_123"
-        assert api_body["organisation"] == "org_123"

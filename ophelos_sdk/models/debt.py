@@ -5,10 +5,10 @@ from typing import Optional, Dict, Any, List, Union, TYPE_CHECKING
 from enum import Enum
 
 from .base import BaseOphelosModel, Currency
+from .customer import Customer
+from .organisation import Organisation
 
 if TYPE_CHECKING:
-    from .customer import Customer
-    from .organisation import Organisation
     from .invoice import Invoice, LineItem
     from .payment import Payment, PaymentPlan
 
@@ -148,3 +148,35 @@ class Debt(BaseOphelosModel):
         if self.summary is None:
             return 0
         return self.summary.amount_remaining or 0
+
+    def to_api_body(self, exclude_none: bool = True) -> Dict[str, Any]:
+        """Convert debt model to API body with customer/organisation ID conversion."""
+        api_data = super().to_api_body(exclude_none=exclude_none)
+        
+        # Convert customer to customer_id
+        customer_value = getattr(self, "customer", None)
+        if customer_value:
+            customer_id = None
+            if isinstance(customer_value, str):
+                customer_id = customer_value
+            elif isinstance(customer_value, Customer) and customer_value.id and not customer_value.id.startswith("temp"):
+                customer_id = customer_value.id
+            
+            if customer_id:
+                api_data["customer_id"] = customer_id
+                api_data.pop("customer", None)
+
+        # Convert organisation to organisation_id
+        organisation_value = getattr(self, "organisation", None)
+        if organisation_value:
+            organisation_id = None
+            if isinstance(organisation_value, str):
+                organisation_id = organisation_value
+            elif isinstance(organisation_value, Organisation) and organisation_value.id and not organisation_value.id.startswith("temp"):
+                organisation_id = organisation_value.id
+            
+            if organisation_id:
+                api_data["organisation_id"] = organisation_id
+                api_data.pop("organisation", None)
+
+        return api_data

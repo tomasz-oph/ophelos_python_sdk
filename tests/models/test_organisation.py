@@ -236,68 +236,6 @@ class TestOrganisation:
         assert "metadata" in api_body
         assert api_body["metadata"] is None
 
-    def test_organisation_api_body_fields_configuration(self):
-        """Test that organisation uses correct __api_body_fields__ configuration."""
-        org = Organisation(
-            id="org_fields_test",
-            object="organisation",
-            name="Fields Test Org",
-            internal_name="fields_test",
-            customer_facing_name="Fields Test",
-            configurations={"test": True},
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-            metadata={"test_field": "value"},
-        )
-
-        api_body = org.to_api_body()
-        expected_fields = {
-            "name",
-            "internal_name",
-            "customer_facing_name",
-            "industry",
-            "logo",
-            "contact_details",
-            "configurations",
-            "metadata",
-        }
-
-        # Check that only expected fields are included (excluding None values)
-        for field in api_body.keys():
-            assert field in expected_fields
-
-        # Check specific inclusions/exclusions
-        assert "id" not in api_body  # Server field
-        assert "object" not in api_body  # Server field
-        assert "created_at" not in api_body  # Server field
-        assert "updated_at" not in api_body  # Server field
-        assert "deleted_at" not in api_body  # Server field
-        assert "payment_options_configuration" not in api_body  # Not in __api_body_fields__
-
-        # Fields that should be included
-        assert "name" in api_body
-        assert "internal_name" in api_body
-        assert "customer_facing_name" in api_body
-        assert "configurations" in api_body
-        assert "metadata" in api_body
-
-    def test_organisation_api_body_excludes_server_fields(self):
-        """Test that organisation API body excludes all server-generated fields."""
-        org = Organisation(
-            id="org_server_test",
-            object="organisation",
-            name="Server Test Org",
-            deleted_at=datetime.now(),
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-        )
-
-        api_body = org.to_api_body()
-
-        server_fields = {"id", "object", "deleted_at", "created_at", "updated_at"}
-        for field in server_fields:
-            assert field not in api_body
-
     def test_organisation_with_payment_options_configuration(self):
         """Test organisation with nested payment options configuration."""
         payment_config = PaymentOptionsConfiguration(

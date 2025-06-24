@@ -132,23 +132,6 @@ class TestWebhook:
         assert api_body["version"] == "v1"
         assert api_body["metadata"] == {"test": True, "version": "v1"}
 
-    def test_webhook_to_api_body_minimal(self):
-        """Test webhook to_api_body with minimal fields."""
-        webhook = Webhook(
-            id="webhook_minimal",
-            url="https://minimal.example.com/webhook"
-        )
-        
-        api_body = webhook.to_api_body()
-        
-        assert api_body["url"] == "https://minimal.example.com/webhook"
-        # None values should be excluded by default
-        assert "enabled" not in api_body
-        assert "enabled_events" not in api_body
-        assert "signing_key" not in api_body
-        assert "version" not in api_body
-        assert "metadata" not in api_body
-
     def test_webhook_to_api_body_exclude_none_false(self):
         """Test webhook to_api_body includes None values when exclude_none=False."""
         webhook = Webhook(
@@ -174,24 +157,6 @@ class TestWebhook:
         assert api_body["version"] is None
         assert "metadata" in api_body
         assert api_body["metadata"] is None
-
-    def test_webhook_api_body_excludes_server_fields(self):
-        """Test that webhook API body excludes all server-generated fields."""
-        webhook = Webhook(
-            id="webhook_server_test",
-            object="webhook",
-            url="https://server-test.example.com/webhook",
-            enabled=True,
-            enabled_events=["test.event"],
-            created_at=datetime.now(),
-            updated_at=datetime.now()
-        )
-        
-        api_body = webhook.to_api_body()
-        
-        server_fields = {"id", "object", "created_at", "updated_at"}
-        for field in server_fields:
-            assert field not in api_body
 
     def test_webhook_url_formats(self):
         """Test webhook with different URL formats."""

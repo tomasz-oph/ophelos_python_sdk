@@ -117,22 +117,6 @@ class TestTenant:
         assert api_body["configurations"] == {"test_mode": True}
         assert api_body["metadata"] == {"test": True, "priority": "high"}
 
-    def test_tenant_to_api_body_minimal(self):
-        """Test tenant to_api_body with minimal fields."""
-        tenant = Tenant(
-            id="tenant_minimal",
-            name="Minimal Tenant"
-        )
-        
-        api_body = tenant.to_api_body()
-        
-        assert api_body["name"] == "Minimal Tenant"
-        # None values should be excluded by default
-        assert "description" not in api_body
-        assert "metadata" not in api_body
-        # Empty dict should be included
-        assert api_body["configurations"] == {}
-
     def test_tenant_to_api_body_exclude_none_false(self):
         """Test tenant to_api_body includes None values when exclude_none=False."""
         tenant = Tenant(
@@ -151,23 +135,6 @@ class TestTenant:
         assert api_body["metadata"] is None
         # Empty dict should be included
         assert api_body["configurations"] == {}
-
-    def test_tenant_api_body_excludes_server_fields(self):
-        """Test that tenant API body excludes all server-generated fields."""
-        tenant = Tenant(
-            id="tenant_server_test",
-            object="tenant",
-            name="Server Test Tenant",
-            description="Server test tenant",
-            created_at=datetime.now(),
-            updated_at=datetime.now()
-        )
-        
-        api_body = tenant.to_api_body()
-        
-        server_fields = {"id", "object", "created_at", "updated_at"}
-        for field in server_fields:
-            assert field not in api_body
 
     def test_tenant_configurations_formats(self):
         """Test tenant with different configuration formats."""

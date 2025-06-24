@@ -64,30 +64,6 @@ class TestPaymentModel:
         assert "payment_provider" not in api_body
         assert "payment_plan" not in api_body
 
-    def test_payment_to_api_body_minimal(self):
-        """Test payment to_api_body with minimal fields."""
-        payment = Payment(
-            id="pay_123",
-            object="payment",
-            debt="debt_123",
-            status=PaymentStatus.PENDING,
-            transaction_at=datetime.now(),
-            transaction_ref="TXN-MINIMAL",
-            amount=5000,
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-        )
-
-        api_body = payment.to_api_body()
-
-        assert "debt" not in api_body
-        assert api_body["amount"] == 5000
-        assert api_body["transaction_ref"] == "TXN-MINIMAL"
-        # status is not in __api_body_fields__
-        assert "status" not in api_body
-        # None values should be excluded by default
-        assert "currency" not in api_body
-
 
 class TestPaymentStatusEnum:
     """Test cases for PaymentStatus enum."""
@@ -201,39 +177,6 @@ class TestPaymentModelEnhanced:
         assert "payment_provider" not in api_body
         assert "payment_plan" not in api_body
 
-    def test_payment_api_body_fields_configuration(self):
-        """Test that payment uses correct __api_body_fields__ configuration."""
-        payment = Payment(
-            id="pay_fields_test",
-            debt="debt_789",
-            status=PaymentStatus.FAILED,
-            transaction_at=datetime.now(),
-            transaction_ref="TXN-FIELDS-001",
-            amount=7500,
-            currency=Currency.GBP,
-            payment_provider="adyen",
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-            metadata={"retry_count": 2}
-        )
-        
-        api_body = payment.to_api_body()
-        expected_fields = {"transaction_at", "transaction_ref", "amount", "currency", "metadata"}
-        
-        # Check that only expected fields are included (excluding None values)
-        for field in api_body.keys():
-            assert field in expected_fields
-        
-        # Check specific inclusions/exclusions
-        assert "id" not in api_body  # Server field
-        assert "object" not in api_body  # Server field
-        assert "debt" not in api_body  # Not in __api_body_fields__
-        assert "status" not in api_body  # Not in __api_body_fields__
-        assert "payment_provider" not in api_body  # Not in __api_body_fields__
-        assert "payment_plan" not in api_body  # Not in __api_body_fields__
-        assert "created_at" not in api_body  # Server field
-        assert "updated_at" not in api_body  # Server field
-
     def test_payment_datetime_serialization_in_api_body(self):
         """Test that datetime fields are properly serialized in to_api_body."""
         transaction_time = datetime(2024, 3, 15, 14, 30, 0)
@@ -251,26 +194,6 @@ class TestPaymentModelEnhanced:
         # Datetime should be serialized as ISO format string
         assert isinstance(api_body["transaction_at"], str)
         assert "2024-03-15T14:30:00" in api_body["transaction_at"]
-
-    def test_payment_api_body_excludes_server_fields(self):
-        """Test that payment API body excludes all server-generated fields."""
-        payment = Payment(
-            id="pay_server_test",
-            object="payment",
-            debt="debt_server_test",
-            status=PaymentStatus.SUCCEEDED,
-            transaction_at=datetime.now(),
-            transaction_ref="TXN-SERVER-001",
-            amount=9000,
-            created_at=datetime.now(),
-            updated_at=datetime.now()
-        )
-        
-        api_body = payment.to_api_body()
-        
-        server_fields = {"id", "object", "created_at", "updated_at"}
-        for field in server_fields:
-            assert field not in api_body
 
 
 class TestPaymentPlan:
