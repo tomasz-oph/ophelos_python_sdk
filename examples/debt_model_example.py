@@ -21,7 +21,7 @@ def setup_client():
             "your_client_secret",
         ),
         audience=os.getenv("OPHELOS_AUDIENCE", "your_audience"),
-        environment=os.getenv("OPHELOS_ENVIRONMENT", "staging"),  # staging, development, production
+        environment=os.getenv("OPHELOS_ENVIRONMENT", "development"),  # staging, development, production
     )
 
 
@@ -78,6 +78,7 @@ def safe_debt_list_example():
     except Exception as e:
         print(f"❌ Unexpected error: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
@@ -155,9 +156,7 @@ def pagination_with_models():
         for debt in client.debts.iterate(limit_per_page=5, max_pages=2):
             count += 1
             # debt is automatically a Debt model object
-            print(
-                f"  {count}. Debt {debt.id}: ${debt.summary.amount_total / 100:.2f} ({debt.status.value})"
-            )
+            print(f"  {count}. Debt {debt.id}: ${debt.summary.amount_total / 100:.2f} ({debt.status.value})")
 
             if count >= 3:  # Limit output for demo
                 print(f"  ... (showing 3 of {count}+ total)")

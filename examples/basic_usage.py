@@ -26,9 +26,7 @@ def setup_client():
             "your_client_secret",
         ),
         audience=os.getenv("OPHELOS_AUDIENCE", "your_audience"),
-        environment=os.getenv(
-            "OPHELOS_ENVIRONMENT", "staging"
-        ),  # staging, development, or production
+        environment=os.getenv("OPHELOS_ENVIRONMENT", "development"),  # staging, development, or production
     )
 
     print(f"Environment: {client.authenticator.environment}")
@@ -58,7 +56,6 @@ def tenant_operations(client):
     print("=" * 50)
 
     try:
-        
         tenant = client.tenants.get_me()
         print(f"Tenant ID: {tenant.id}")
         print(f"Tenant Name: {tenant.name}")
@@ -88,9 +85,7 @@ def debt_operations(client):
                     customer_name = f"Customer ID: {debt.customer}"
                 else:
                     customer_name = debt.customer.full_name or "N/A"
-            print(
-                f"  Debt {debt.id}: {debt.status.value} - ${debt.summary.amount_total / 100:.2f} ({customer_name})"
-            )
+            print(f"  Debt {debt.id}: {debt.status.value} - ${debt.summary.amount_total / 100:.2f} ({customer_name})")
 
         if debts.data:
             debt_id = debts.data[0].id
@@ -146,10 +141,7 @@ def customer_operations(client):
             # Handle both model objects and dictionaries (fallback)
             if hasattr(customer, "full_name"):
                 # It's a Customer model object
-                name = (
-                    customer.full_name
-                    or f"{customer.first_name or ''} {customer.last_name or ''}".strip()
-                )
+                name = customer.full_name or f"{customer.first_name or ''} {customer.last_name or ''}".strip()
                 customer_id = customer.id
             else:
                 # It's a dictionary (parsing failed, fallback)
@@ -364,8 +356,8 @@ def _demonstrate_additional_operations(client):
     print("--- Filtering and Searching ---")
     try:
         all_debts = client.debts.list(limit=100, expand=["customer", "organisation", "payments"])
-        print(f"Total debts after filters: {len(all_debts)} (showing first {min(5, len(all_debts))})")
-        for debt in all_debts[:5]:
+        print(f"Total debts after filters: {len(all_debts.data)} (showing first {min(5, len(all_debts.data))})")
+        for debt in all_debts.data[:5]:
             print(f"  Debt {debt.id}: {debt.status.value} - ${debt.summary.amount_total / 100:.2f}")
             print(f"    Balance: ${debt.balance_amount / 100:.2f}")
     except Exception as e:

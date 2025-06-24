@@ -133,9 +133,7 @@ def search_pagination_examples():
     print("\n--- Search Generator ---")
     try:
         count = 0
-        for debt in client.debts.iterate_search(
-            query="total_amount>5000", limit_per_page=5, max_pages=2
-        ):
+        for debt in client.debts.iterate_search(query="total_amount>5000", limit_per_page=5, max_pages=2):
             count += 1
             print(f"  Found debt {debt.id}: ${debt.summary.amount_total / 100:.2f}")
             if count >= 3:

@@ -26,16 +26,12 @@ def setup_client() -> OphelosClient:
             "your_client_secret",
         ),
         audience=os.getenv("OPHELOS_AUDIENCE", "your_audience"),
-        environment=os.getenv(
-            "OPHELOS_ENVIRONMENT", "development"
-        ),  # staging, development, production
+        environment=os.getenv("OPHELOS_ENVIRONMENT", "development"),  # staging, development, production
         tenant_id=os.getenv("OPHELOS_TENANT_ID"),  # Optional
     )
 
 
-def fetch_debt_data(
-    client: OphelosClient, debt_id: str
-) -> Tuple[str, Optional[dict], Optional[str]]:
+def fetch_debt_data(client: OphelosClient, debt_id: str) -> Tuple[str, Optional[dict], Optional[str]]:
     """
     Fetch debt data - this function will be called concurrently.
 
@@ -57,9 +53,7 @@ def fetch_debt_data(
         return debt_id, None, error_msg
 
 
-def fetch_customer_data(
-    client: OphelosClient, customer_id: str
-) -> Tuple[str, Optional[dict], Optional[str]]:
+def fetch_customer_data(client: OphelosClient, customer_id: str) -> Tuple[str, Optional[dict], Optional[str]]:
     """
     Fetch customer data - this function will be called concurrently.
 
@@ -165,10 +159,7 @@ def example_concurrent_specific_resources():
         debt_futures = [executor.submit(fetch_debt_data, client, debt_id) for debt_id in debt_ids]
 
         # Submit customer fetching tasks
-        customer_futures = [
-            executor.submit(fetch_customer_data, client, customer_id)
-            for customer_id in customer_ids
-        ]
+        customer_futures = [executor.submit(fetch_customer_data, client, customer_id) for customer_id in customer_ids]
 
         all_futures = debt_futures + customer_futures
 
