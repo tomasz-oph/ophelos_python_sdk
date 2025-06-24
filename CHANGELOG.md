@@ -5,6 +5,66 @@ All notable changes to the Ophelos Python SDK will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.3] - 2024-06-24
+
+### Added
+- **Access Token Authentication**: Added support for direct access token authentication alongside OAuth2
+  - New `StaticTokenAuthenticator` class for pre-provided tokens
+  - Enhanced `OphelosClient` with optional `access_token` parameter
+  - Smart authentication selection (either access_token or OAuth2 credentials required)
+- **Model-First API Approach**: Enhanced all models with `to_api_body()` method for intelligent field management
+  - Smart server field exclusion (id, object, created_at, updated_at automatically filtered)
+  - Intelligent relationship handling (customer/organisation → ID references, others → full objects)
+  - Configurable field inclusion with `__api_body_fields__` class attributes
+- **Comprehensive Test Coverage**: Added 143 model tests and 254+ total tests
+  - Complete coverage of all Pydantic models including API body generation
+  - Field validation, enum handling, and relationship processing tests
+  - Authentication tests for both OAuth2 and access token methods
+  - Integration tests with graceful fallback for invalid API responses
+
+### Enhanced
+- **Model Organization**: Reorganized models from monolithic `models.py` into separate files
+  - Individual model files: `customer.py`, `debt.py`, `payment.py`, `invoice.py`, etc.
+  - Enhanced `models/__init__.py` with proper exports and model rebuilding
+  - Better maintainability and clearer code organization
+- **Error Handling**: Improved robustness with graceful fallback mechanisms
+  - Invalid API responses now fall back to raw dictionaries when model parsing fails
+  - Enhanced error messages with detailed response information
+  - Better handling of JSON serialization for date/datetime objects
+- **Code Quality**: Applied comprehensive formatting and linting
+  - Black formatting with 120-character line length
+  - isort import sorting across all Python files
+  - mypy type checking compliance
+  - flake8 style compliance
+
+### Fixed
+- **JSON Serialization**: Fixed `TypeError: Object of type date is not JSON serializable`
+  - Added proper date/datetime handling in `_process_nested_value()` method
+  - Date objects now convert to ISO format strings automatically
+- **Type Safety**: Resolved mypy type annotation errors
+  - Fixed `PaginatedResponse` type handling in `BaseResource`
+  - Added explicit type annotations for parsed items lists
+- **PaginatedResponse Handling**: Fixed `basic_usage.py` example errors
+  - Corrected `len(all_debts)` to `len(all_debts.data)`
+  - Fixed slicing operations on `PaginatedResponse` objects
+- **Import Organization**: Standardized import sorting across entire codebase
+  - 60 files updated with consistent import organization
+  - Standard library, third-party, and local imports properly separated
+
+### Technical
+- **Smart Field Management**: Implemented intelligent API body generation
+  - Automatic exclusion of server-generated fields
+  - Relationship field conversion (objects → IDs where appropriate)
+  - Nested object processing with proper serialization
+- **Authentication Flexibility**: Dual authentication support
+  - OAuth2 client credentials flow (existing)
+  - Direct access token authentication (new)
+  - Environment variable support for both methods
+- **Development Tools**: Enhanced development experience
+  - Updated Black, isort, and flake8 configurations for 120-character lines
+  - Comprehensive test suite with model-specific test files
+  - Better error handling examples and documentation
+
 ## [1.0.2] - 2024-06-14
 
 ### Added

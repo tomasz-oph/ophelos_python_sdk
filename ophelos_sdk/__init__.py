@@ -38,7 +38,7 @@ from .models import (
 )
 from .webhooks import WebhookHandler, construct_event
 
-__version__ = "1.0.2"
+__version__ = "1.0.3"
 __author__ = "Ophelos"
 __email__ = "support@ophelos.com"
 
