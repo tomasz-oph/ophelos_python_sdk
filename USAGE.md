@@ -943,9 +943,9 @@ print("✅ Server field exclusion working correctly")
 
 ## SDK Test Coverage
 
-The Ophelos SDK includes comprehensive test coverage:
+The Ophelos SDK includes comprehensive test coverage with **254+ total tests**:
 
-- **155+ Model Tests**: Complete coverage of all Pydantic models including API body generation, field validation, enum handling, and relationship processing
+- **143 Model Tests**: Complete coverage of all Pydantic models including API body generation, field validation, enum handling, and relationship processing
 - **Resource Tests**: Full coverage of all API resource managers with error handling and fallback mechanisms
 - **Authentication Tests**: OAuth2 and access token authentication with thread-safety validation
 - **Integration Tests**: End-to-end testing with real API endpoints (when credentials are provided)
@@ -958,7 +958,7 @@ Run the test suite:
 pytest
 
 # Run specific test categories
-pytest tests/models/          # 155+ model tests
+pytest tests/models/          # 143 model tests
 pytest tests/test_resources.py  # Resource and error handling tests
 pytest tests/test_auth.py       # Authentication tests
 pytest tests/test_client.py     # Client configuration tests

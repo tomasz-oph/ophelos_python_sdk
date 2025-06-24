@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from datetime import datetime, date
-from typing import Optional, Dict, Any, List, Union, TYPE_CHECKING
+from datetime import date, datetime
 from enum import Enum
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from .base import BaseOphelosModel, Currency
 from .customer import Customer
@@ -27,7 +27,9 @@ class DebtStatus(str, Enum):
     ANALYSING = "analysing"  # Debt is being analysed by Data
     RESUMED = "resumed"  # Debt is resumed after being paused
     CONTACTED = "contacted"  # Communication has been sent to the customer regarding this debt
-    CONTACT_ESTABLISHED = "contact_established"  # Communication has been established with the customer
+    CONTACT_ESTABLISHED = (
+        "contact_established"  # Communication has been established with the customer
+    )
     CONTACT_FAILED = "contact_failed"  # Communication with the customer has failed
     ENRICHING = "enriching"  # Debt is being enriched by Data
     RETURNED = "returned"  # Debt is returned to the client
@@ -52,7 +54,9 @@ class DebtStatus(str, Enum):
     PROCESS_EXHAUSTED = "process_exhausted"  # Debt is closed due to process exhaustion
 
     # Legal flow
-    LEGAL_PROTECTION = "legal_protection"  # Debt is under legal protection (e.g., DRO, bankruptcy, sequestration)
+    LEGAL_PROTECTION = (
+        "legal_protection"  # Debt is under legal protection (e.g., DRO, bankruptcy, sequestration)
+    )
 
     # Legacy
     CLOSED = "closed"  # Debt is closed as paid in full
@@ -103,17 +107,29 @@ class Debt(BaseOphelosModel):
     kind: Optional[str] = None
     reference_code: Optional[str] = None
     account_number: Optional[str] = None
-    customer: Optional[Union[str, "Customer"]] = None  # Can be customer ID or expanded customer object
+    customer: Optional[Union[str, "Customer"]] = (
+        None  # Can be customer ID or expanded customer object
+    )
     customer_id: Optional[str] = None  # Used for API POST or PUT requests
-    organisation: Optional[Union[str, "Organisation"]] = None  # Can be organisation ID or expanded organisation object
+    organisation: Optional[Union[str, "Organisation"]] = (
+        None  # Can be organisation ID or expanded organisation object
+    )
     organisation_id: Optional[str] = None  # Used for API POST or PUT requests
     originator: Optional[Union[str, Any]] = None  # Can be originator ID, expanded object, or None
     currency: Optional[Currency] = None
     summary: Optional[DebtSummary] = None
-    invoices: Optional[List[Union[str, "Invoice"]]] = None  # Can be invoice IDs or expanded invoice objects
-    line_items: Optional[List[Union[str, "LineItem"]]] = None  # Can be line_item IDs or expanded objects
-    payments: Optional[List[Union[str, "Payment"]]] = None  # Can be payment IDs or expanded payment objects
-    payment_plans: Optional[List[Union[str, "PaymentPlan"]]] = None  # Can be payment_plan IDs or expanded objects
+    invoices: Optional[List[Union[str, "Invoice"]]] = (
+        None  # Can be invoice IDs or expanded invoice objects
+    )
+    line_items: Optional[List[Union[str, "LineItem"]]] = (
+        None  # Can be line_item IDs or expanded objects
+    )
+    payments: Optional[List[Union[str, "Payment"]]] = (
+        None  # Can be payment IDs or expanded payment objects
+    )
+    payment_plans: Optional[List[Union[str, "PaymentPlan"]]] = (
+        None  # Can be payment_plan IDs or expanded objects
+    )
     tags: Optional[List[str]] = None
     configurations: Optional[Dict[str, Any]] = None
     calculated_configurations: Optional[Dict[str, Any]] = None
@@ -152,16 +168,20 @@ class Debt(BaseOphelosModel):
     def to_api_body(self, exclude_none: bool = True) -> Dict[str, Any]:
         """Convert debt model to API body with customer/organisation ID conversion."""
         api_data = super().to_api_body(exclude_none=exclude_none)
-        
+
         # Convert customer to customer_id
         customer_value = getattr(self, "customer", None)
         if customer_value:
             customer_id = None
             if isinstance(customer_value, str):
                 customer_id = customer_value
-            elif isinstance(customer_value, Customer) and customer_value.id and not customer_value.id.startswith("temp"):
+            elif (
+                isinstance(customer_value, Customer)
+                and customer_value.id
+                and not customer_value.id.startswith("temp")
+            ):
                 customer_id = customer_value.id
-            
+
             if customer_id:
                 api_data["customer_id"] = customer_id
                 api_data.pop("customer", None)
@@ -172,9 +192,13 @@ class Debt(BaseOphelosModel):
             organisation_id = None
             if isinstance(organisation_value, str):
                 organisation_id = organisation_value
-            elif isinstance(organisation_value, Organisation) and organisation_value.id and not organisation_value.id.startswith("temp"):
+            elif (
+                isinstance(organisation_value, Organisation)
+                and organisation_value.id
+                and not organisation_value.id.startswith("temp")
+            ):
                 organisation_id = organisation_value.id
-            
+
             if organisation_id:
                 api_data["organisation_id"] = organisation_id
                 api_data.pop("organisation", None)

@@ -2,7 +2,7 @@
 Exception classes for the Ophelos SDK.
 """
 
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
 
 class OphelosError(Exception):

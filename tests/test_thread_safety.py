@@ -8,7 +8,9 @@ with ThreadPoolExecutor and multiple concurrent requests.
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
+
 import pytest
+
 from ophelos_sdk import OphelosClient
 
 

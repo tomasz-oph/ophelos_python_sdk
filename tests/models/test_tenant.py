@@ -2,8 +2,9 @@
 Unit tests for Tenant model.
 """
 
-import pytest
 from datetime import datetime
+
+import pytest
 
 from ophelos_sdk.models import Tenant
 

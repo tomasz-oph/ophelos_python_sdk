@@ -2,9 +2,10 @@
 Payment Plans resource manager for Ophelos API.
 """
 
-from typing import Optional, Dict, Any, List
+from typing import Any, Dict, List, Optional
+
+from ..models import PaginatedResponse, PaymentPlan
 from .base import BaseResource
-from ..models import PaymentPlan, PaginatedResponse
 
 
 class PaymentPlansResource(BaseResource):

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from datetime import datetime, date
-from typing import Optional, Dict, Any, List, Union, TYPE_CHECKING
+from datetime import date, datetime
 from enum import Enum
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from .base import BaseOphelosModel
 
@@ -19,6 +19,7 @@ class ContactDetailType(str, Enum):
     FAX_NUMBER = "fax_number"
     ADDRESS = "address"
 
+
 class ContactDetailUsage(str, Enum):
     """Contact detail usage enumeration."""
 
@@ -28,6 +29,7 @@ class ContactDetailUsage(str, Enum):
     DELIVERY_ADDRESS = "delivery_address"
     OTHER = "other"
 
+
 class ContactDetailSource(str, Enum):
     """Contact detail source enumeration."""
 
@@ -35,6 +37,7 @@ class ContactDetailSource(str, Enum):
     CUSTOMER = "customer"
     SUPPORT_AGENT = "support_agent"
     OTHER = "other"
+
 
 class ContactDetail(BaseOphelosModel):
     """Contact detail model."""

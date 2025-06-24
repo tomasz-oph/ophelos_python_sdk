@@ -7,16 +7,16 @@ from typing import Optional, Union
 from .auth import OAuth2Authenticator, StaticTokenAuthenticator
 from .http_client import HTTPClient
 from .resources import (
-    DebtsResource,
-    CustomersResource,
-    OrganisationsResource,
-    PaymentsResource,
-    InvoicesResource,
-    WebhooksResource,
-    PaymentPlansResource,
     CommunicationsResource,
+    CustomersResource,
+    DebtsResource,
+    InvoicesResource,
+    OrganisationsResource,
+    PaymentPlansResource,
+    PaymentsResource,
     PayoutsResource,
     TenantsResource,
+    WebhooksResource,
 )
 
 

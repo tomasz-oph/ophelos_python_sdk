@@ -7,16 +7,16 @@ Models are organized by domain for better maintainability.
 
 # Import all models for backward compatibility
 from .base import BaseOphelosModel, Currency
-from .customer import Customer, ContactDetail, ContactDetailType, ContactDetailUsage, ContactDetailSource
-from .debt import Debt, DebtStatus, StatusObject, DebtSummary, SummaryBreakdown
-from .payment import Payment, PaymentPlan, PaymentStatus
-from .invoice import Invoice, LineItem, LineItemKind
 from .communication import Communication, CommunicationTemplate
-from .webhook import Webhook, WebhookEvent
+from .customer import ContactDetail, ContactDetailSource, ContactDetailType, ContactDetailUsage, Customer
+from .debt import Debt, DebtStatus, DebtSummary, StatusObject, SummaryBreakdown
+from .invoice import Invoice, LineItem, LineItemKind
 from .organisation import Organisation, PaymentOptionsConfiguration
-from .tenant import Tenant
-from .payout import Payout
 from .pagination import PaginatedResponse
+from .payment import Payment, PaymentPlan, PaymentStatus
+from .payout import Payout
+from .tenant import Tenant
+from .webhook import Webhook, WebhookEvent
 
 # Rebuild models to resolve forward references
 Customer.model_rebuild()

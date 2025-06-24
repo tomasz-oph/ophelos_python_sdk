@@ -2,24 +2,25 @@
 Unit tests for Ophelos SDK HTTP client.
 """
 
-import pytest
 from unittest.mock import Mock, patch
-import requests
-from urllib3.util.retry import Retry
-from urllib3.response import HTTPResponse
 
-from ophelos_sdk.http_client import HTTPClient, JitteredRetry
+import pytest
+import requests
+from urllib3.response import HTTPResponse
+from urllib3.util.retry import Retry
+
 from ophelos_sdk.auth import OAuth2Authenticator
 from ophelos_sdk.exceptions import (
-    OphelosAPIError,
     AuthenticationError,
-    ValidationError,
-    NotFoundError,
-    RateLimitError,
     ConflictError,
     ForbiddenError,
+    NotFoundError,
+    OphelosAPIError,
+    RateLimitError,
     ServerError,
+    ValidationError,
 )
+from ophelos_sdk.http_client import HTTPClient, JitteredRetry
 
 
 class TestHTTPClient:

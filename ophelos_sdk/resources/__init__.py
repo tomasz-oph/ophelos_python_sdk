@@ -3,16 +3,16 @@ Resource managers for Ophelos API endpoints.
 """
 
 from .base import BaseResource
-from .debts import DebtsResource
-from .customers import CustomersResource
-from .organisations import OrganisationsResource
-from .payments import PaymentsResource
-from .invoices import InvoicesResource
-from .webhooks import WebhooksResource
-from .payment_plans import PaymentPlansResource
 from .communications import CommunicationsResource
+from .customers import CustomersResource
+from .debts import DebtsResource
+from .invoices import InvoicesResource
+from .organisations import OrganisationsResource
+from .payment_plans import PaymentPlansResource
+from .payments import PaymentsResource
 from .payouts import PayoutsResource
 from .tenants import TenantsResource
+from .webhooks import WebhooksResource
 
 __all__ = [
     "BaseResource",

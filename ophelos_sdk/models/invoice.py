@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from datetime import datetime, date
-from typing import Optional, Dict, Any, List, Union, TYPE_CHECKING
+from datetime import date, datetime
 from enum import Enum
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from .base import BaseOphelosModel, Currency
 

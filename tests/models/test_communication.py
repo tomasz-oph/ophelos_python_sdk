@@ -2,15 +2,11 @@
 Unit tests for Communication and CommunicationTemplate models.
 """
 
-import pytest
 from datetime import datetime
 
-from ophelos_sdk.models import (
-    Communication,
-    CommunicationTemplate,
-    Debt,
-    ContactDetail,
-)
+import pytest
+
+from ophelos_sdk.models import Communication, CommunicationTemplate, ContactDetail, Debt
 
 
 class TestCommunicationTemplateModel:

@@ -3,7 +3,7 @@ Tenant-related models for Ophelos SDK.
 """
 
 from datetime import datetime
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
 from .base import BaseOphelosModel
 
@@ -19,5 +19,3 @@ class Tenant(BaseOphelosModel):
     metadata: Optional[Dict[str, Any]] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
-
-

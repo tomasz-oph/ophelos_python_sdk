@@ -2,11 +2,12 @@
 Unit tests for Ophelos SDK client.
 """
 
-import pytest
 from unittest.mock import Mock, patch
 
-from ophelos_sdk.client import OphelosClient
+import pytest
+
 from ophelos_sdk.auth import OAuth2Authenticator
+from ophelos_sdk.client import OphelosClient
 from ophelos_sdk.http_client import HTTPClient
 
 

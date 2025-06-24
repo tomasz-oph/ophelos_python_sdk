@@ -2,9 +2,10 @@
 Customers resource manager for Ophelos API.
 """
 
-from typing import Optional, Dict, Any, List, Union
-from .base import BaseResource
+from typing import Any, Dict, List, Optional, Union
+
 from ..models import Customer, PaginatedResponse
+from .base import BaseResource
 
 
 class CustomersResource(BaseResource):
@@ -73,7 +74,9 @@ class CustomersResource(BaseResource):
         response_data = self.http_client.get(f"customers/{customer_id}", params=params)
         return self._parse_model_response(response_data, Customer)
 
-    def create(self, data: Union[Dict[str, Any], Customer], expand: Optional[List[str]] = None) -> Customer:
+    def create(
+        self, data: Union[Dict[str, Any], Customer], expand: Optional[List[str]] = None
+    ) -> Customer:
         """
         Create a new customer.
 
@@ -122,7 +125,9 @@ class CustomersResource(BaseResource):
 
         if expand:
             params = self._build_expand_params(expand)
-            response_data = self.http_client.put(f"customers/{customer_id}", data=api_data, params=params)
+            response_data = self.http_client.put(
+                f"customers/{customer_id}", data=api_data, params=params
+            )
         else:
             response_data = self.http_client.put(f"customers/{customer_id}", data=api_data)
         return self._parse_model_response(response_data, Customer)

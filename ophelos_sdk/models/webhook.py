@@ -3,7 +3,7 @@ Webhook-related models for Ophelos SDK.
 """
 
 from datetime import datetime
-from typing import Optional, Dict, Any, List
+from typing import Any, Dict, List, Optional
 
 from .base import BaseOphelosModel
 

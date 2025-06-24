@@ -2,12 +2,13 @@
 Unit tests for Ophelos SDK resource managers.
 """
 
-import pytest
 from unittest.mock import Mock
 
-from ophelos_sdk.resources import DebtsResource, CustomersResource, PaymentsResource
+import pytest
+
 from ophelos_sdk.http_client import HTTPClient
-from ophelos_sdk.models import Debt, Customer, Payment, PaginatedResponse
+from ophelos_sdk.models import Customer, Debt, PaginatedResponse, Payment
+from ophelos_sdk.resources import CustomersResource, DebtsResource, PaymentsResource
 
 
 class TestBaseResource:

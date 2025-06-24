@@ -10,8 +10,9 @@ This comprehensive example demonstrates:
 """
 
 import os
+
 from ophelos_sdk import OphelosClient, WebhookHandler
-from ophelos_sdk.exceptions import OphelosAPIError, AuthenticationError
+from ophelos_sdk.exceptions import AuthenticationError, OphelosAPIError
 
 
 def setup_client():

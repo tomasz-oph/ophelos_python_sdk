@@ -2,7 +2,8 @@
 Base resource class for Ophelos API resources.
 """
 
-from typing import Optional, Dict, Any, List, Union, Type, TypeVar, cast, Generator
+from typing import Any, Dict, Generator, List, Optional, Type, TypeVar, Union, cast
+
 from ..http_client import HTTPClient
 from ..models import BaseOphelosModel, PaginatedResponse
 
@@ -101,32 +102,32 @@ class BaseResource:
 
         return params
 
-    def _is_valid_model_data(self, data: Dict[str, Any], model_class: Type[BaseOphelosModel]) -> bool:
+    def _is_valid_model_data(
+        self, data: Dict[str, Any], model_class: Type[BaseOphelosModel]
+    ) -> bool:
         """
         Check if data looks like valid model data.
-        
+
         Args:
             data: Dictionary data to check
             model_class: Model class to validate against
-            
+
         Returns:
             True if data looks valid for the model, False otherwise
         """
-        if not isinstance(data, dict):
-            return False
-            
+
         # Check if it has at least one expected model field
         model_fields = set(model_class.model_fields.keys())
         data_keys = set(data.keys())
-        
+
         # If all keys are unknown to the model, it's probably invalid
         if not (data_keys & model_fields):
             return False
-            
+
         # If it has only "invalid" or similar non-model keys, it's invalid
         if data_keys <= {"invalid", "missing_required_fields", "error", "message"}:
             return False
-            
+
         return True
 
     def _parse_response(
@@ -186,7 +187,7 @@ class BaseResource:
         items = response_data.get("data", [])
 
         if model_class:
-            parsed_items = []
+            parsed_items: List[Union[Dict[str, Any], BaseOphelosModel]] = []
             for i, item in enumerate(items):
                 try:
                     if isinstance(item, dict):
@@ -258,7 +259,9 @@ class BaseResource:
 
             # Fetch current page - using getattr to satisfy type checker
             list_method = getattr(self, "list")
-            page = list_method(limit=limit_per_page, after=after_cursor, before=None, expand=expand, **kwargs)
+            page = list_method(
+                limit=limit_per_page, after=after_cursor, before=None, expand=expand, **kwargs
+            )
 
             pages_fetched += 1
 

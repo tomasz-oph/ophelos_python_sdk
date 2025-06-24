@@ -2,18 +2,19 @@
 Unit tests for Debt model and DebtStatus enum.
 """
 
+from datetime import date, datetime
+
 import pytest
-from datetime import datetime, date
 
 from ophelos_sdk.models import (
+    Currency,
+    Customer,
     Debt,
     DebtStatus,
-    StatusObject,
     DebtSummary,
-    SummaryBreakdown,
-    Customer,
     Organisation,
-    Currency,
+    StatusObject,
+    SummaryBreakdown,
 )
 
 

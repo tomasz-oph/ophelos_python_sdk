@@ -2,10 +2,11 @@
 Unit tests for Payout model.
 """
 
-import pytest
-from datetime import datetime, date
+from datetime import date, datetime
 
-from ophelos_sdk.models import Payout, Currency
+import pytest
+
+from ophelos_sdk.models import Currency, Payout
 
 
 class TestPayout:

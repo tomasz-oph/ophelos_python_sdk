@@ -2,9 +2,10 @@
 Tenants resource manager for Ophelos API.
 """
 
-from typing import Optional, Dict, Any, List
-from .base import BaseResource
+from typing import Any, Dict, List, Optional
+
 from ..models import Tenant
+from .base import BaseResource
 
 
 class TenantsResource(BaseResource):

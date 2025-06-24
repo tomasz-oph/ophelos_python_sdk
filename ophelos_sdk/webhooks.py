@@ -2,13 +2,13 @@
 Webhook validation and handling utilities.
 """
 
-import hmac
 import hashlib
+import hmac
 import time
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
-from .models import WebhookEvent
 from .exceptions import OphelosError
+from .models import WebhookEvent
 
 
 class WebhookHandler:
@@ -95,7 +95,9 @@ class WebhookHandler:
         except (json.JSONDecodeError, TypeError, ValueError) as e:
             raise OphelosError(f"Error parsing webhook payload: {str(e)}")
 
-    def verify_and_parse(self, payload: str, signature_header: str, tolerance: int = 300) -> WebhookEvent:
+    def verify_and_parse(
+        self, payload: str, signature_header: str, tolerance: int = 300
+    ) -> WebhookEvent:
         """
         Verify signature and parse webhook event in one step.
 
@@ -116,7 +118,9 @@ class WebhookHandler:
         return self.parse_event(payload)
 
 
-def construct_event(payload: str, signature_header: str, webhook_secret: str, tolerance: int = 300) -> WebhookEvent:
+def construct_event(
+    payload: str, signature_header: str, webhook_secret: str, tolerance: int = 300
+) -> WebhookEvent:
     """
     Convenience function to verify and parse a webhook event.
 

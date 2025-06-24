@@ -2,9 +2,10 @@
 Payouts resource for Ophelos API.
 """
 
-from typing import List, Optional, Dict, Any
+from typing import Any, Dict, List, Optional
+
+from ..models import PaginatedResponse, Payout
 from .base import BaseResource
-from ..models import Payout, PaginatedResponse
 
 
 class PayoutsResource(BaseResource):
@@ -31,7 +32,9 @@ class PayoutsResource(BaseResource):
         Returns:
             Paginated list of payouts
         """
-        params = self._build_list_params(limit=limit, after=after, before=before, expand=expand, **kwargs)
+        params = self._build_list_params(
+            limit=limit, after=after, before=before, expand=expand, **kwargs
+        )
         response_data = self.http_client.get("payouts", params=params)
         return self._parse_list_response(response_data, Payout)
 

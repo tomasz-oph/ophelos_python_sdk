@@ -2,10 +2,11 @@
 Pytest configuration and shared fixtures for Ophelos SDK tests.
 """
 
-import pytest
-from unittest.mock import Mock, MagicMock, patch
-from datetime import datetime, date
 import json
+from datetime import date, datetime
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
 
 from ophelos_sdk import OphelosClient
 from ophelos_sdk.auth import OAuth2Authenticator

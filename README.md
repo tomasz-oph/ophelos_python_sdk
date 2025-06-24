@@ -97,7 +97,7 @@ client.debts.ready(debt.id)
 - **Search**: Advanced search functionality with flexible query parameters
 - **Webhooks**: Webhook event handling and validation with signature verification
 - **Concurrent Safe**: Thread-safe for use with concurrent request patterns
-- **Comprehensive Testing**: 155+ model tests and full test coverage ensuring reliability
+
 
 ## Model-First API Usage
 

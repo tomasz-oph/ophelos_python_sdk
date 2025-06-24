@@ -18,27 +18,18 @@ def test_imports():
 
         # Test exception imports
         from ophelos import (
-            OphelosError,
-            OphelosAPIError,
             AuthenticationError,
-            ValidationError,
             NotFoundError,
+            OphelosAPIError,
+            OphelosError,
             RateLimitError,
+            ValidationError,
         )
 
         print("✓ Exception classes imported successfully")
 
         # Test model imports
-        from ophelos import (
-            Debt,
-            Customer,
-            Organisation,
-            Payment,
-            Invoice,
-            WebhookEvent,
-            DebtStatus,
-            PaymentStatus,
-        )
+        from ophelos import Customer, Debt, DebtStatus, Invoice, Organisation, Payment, PaymentStatus, WebhookEvent
 
         print("✓ Model classes imported successfully")
 
@@ -92,8 +83,9 @@ def test_models():
     """Test model creation and validation."""
     print("\nTesting models...")
     try:
-        from ophelos import Debt, Customer, Payment, DebtStatus, PaymentStatus
         from datetime import datetime
+
+        from ophelos import Customer, Debt, DebtStatus, Payment, PaymentStatus
 
         # Test debt status enum
         status = DebtStatus.PREPARED
@@ -133,8 +125,9 @@ def test_webhook_handler():
     """Test webhook handler functionality."""
     print("\nTesting webhook handler...")
     try:
-        from ophelos import WebhookHandler
         import json
+
+        from ophelos import WebhookHandler
 
         # Initialize webhook handler
         handler = WebhookHandler("test_secret")

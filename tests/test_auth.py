@@ -2,9 +2,10 @@
 Unit tests for Ophelos SDK authentication module.
 """
 
-import pytest
 import time
 from unittest.mock import Mock, patch
+
+import pytest
 import requests
 
 from ophelos_sdk.auth import OAuth2Authenticator, StaticTokenAuthenticator

@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional, Dict, Any, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
 from .base import BaseOphelosModel
 
 if TYPE_CHECKING:
-    from .debt import Debt
     from .customer import ContactDetail
+    from .debt import Debt
 
 
 class CommunicationTemplate(BaseOphelosModel):

@@ -12,7 +12,8 @@ This example demonstrates:
 import os
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import List, Tuple, Optional
+from typing import List, Optional, Tuple
+
 from ophelos_sdk import OphelosClient
 from ophelos_sdk.exceptions import OphelosAPIError
 

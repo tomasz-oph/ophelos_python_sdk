@@ -2,16 +2,11 @@
 Unit tests for Customer model.
 """
 
-import pytest
-from datetime import datetime, date
+from datetime import date, datetime
 
-from ophelos_sdk.models import (
-    Customer, 
-    ContactDetail, 
-    ContactDetailType, 
-    ContactDetailUsage, 
-    ContactDetailSource
-)
+import pytest
+
+from ophelos_sdk.models import ContactDetail, ContactDetailSource, ContactDetailType, ContactDetailUsage, Customer
 
 
 class TestCustomerModel:

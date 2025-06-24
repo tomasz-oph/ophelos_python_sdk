@@ -2,7 +2,7 @@
 Pagination-related models for Ophelos SDK.
 """
 
-from typing import Optional, List, Union, Dict, Any
+from typing import Any, Dict, List, Optional, Union
 
 from .base import BaseOphelosModel
 

@@ -11,7 +11,8 @@ This example demonstrates all pagination approaches available in the SDK:
 """
 
 import os
-from typing import Dict, Any
+from typing import Any, Dict
+
 from ophelos_sdk import OphelosClient
 
 

@@ -2,9 +2,10 @@
 Unit tests for Webhook model.
 """
 
-import pytest
 from datetime import datetime
-from typing import Dict, Any
+from typing import Any, Dict
+
+import pytest
 
 from ophelos_sdk.models import Webhook
 

@@ -7,9 +7,10 @@ and handles authentication and API errors gracefully.
 """
 
 import os
+
 from ophelos_sdk import OphelosClient
+from ophelos_sdk.exceptions import AuthenticationError, OphelosAPIError
 from ophelos_sdk.models import DebtStatus, PaymentStatus
-from ophelos_sdk.exceptions import OphelosAPIError, AuthenticationError
 
 
 def setup_client():

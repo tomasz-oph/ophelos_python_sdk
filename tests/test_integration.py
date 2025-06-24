@@ -5,13 +5,13 @@ These tests require valid API credentials and should be run against
 the staging environment.
 """
 
-import pytest
 import os
-from datetime import datetime, date
+from datetime import date, datetime
+
+import pytest
 
 from ophelos_sdk import OphelosClient
-from ophelos_sdk.exceptions import OphelosAPIError, AuthenticationError
-
+from ophelos_sdk.exceptions import AuthenticationError, OphelosAPIError
 
 # Skip integration tests (uncomment the first line to enable them when credentials are available)
 # integration_skip = pytest.mark.skipif(
