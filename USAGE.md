@@ -25,8 +25,26 @@ pip install dist/ophelos-sdk-1.0.2.tar.gz
 For development with live changes:
 
 ```bash
+# Install in development mode with all dev dependencies
+pip install -e ".[dev]"
+
+# Or install base package + dev dependencies separately
 pip install -e .
+pip install -r requirements-dev.txt
 ```
+
+### Requirements Structure
+
+The project uses a clear requirements structure:
+
+- **`requirements.txt`** - Runtime dependencies only (requests, pydantic, etc.)
+- **`requirements-dev.txt`** - Development tools only (pytest, black, mypy, etc.)
+- **`pyproject.toml`** - Complete project specification (recommended for development)
+
+This separation ensures:
+- End users only install what they need for runtime
+- Developers get all necessary tools
+- Clear dependency management and faster installs
 
 ## Basic Usage
 
@@ -565,19 +583,81 @@ client = OphelosClient(
 
 ## Pagination
 
-Handle paginated responses:
+The Ophelos SDK provides robust pagination support with header-based cursor navigation, following the [Ophelos API pagination specification](https://ophelos-api.readme.io/reference/pagination).
+
+### Basic Pagination
 
 ```python
 # Get first page
 debts = client.debts.list(limit=10)
 
-# Check if there are more results
+# Check pagination status
+print(f"Has more results: {debts.has_more}")
+print(f"Total count: {debts.total_count}")
+print(f"Current page items: {len(debts.data)}")
+
+# Basic navigation
 if debts.has_more:
-    print(f"Total count: {debts.total_count}")
+    # Get next page using cursor
+    next_page = client.debts.list(limit=10, after=debts.pagination['next']['after'])
+```
+
+### Advanced Pagination Navigation
+
+The SDK extracts pagination information from HTTP Link headers and provides easy navigation:
+
+```python
+# Get a page of debts
+debts = client.debts.list(limit=20)
+
+# Access pagination metadata
+pagination = debts.pagination
+
+# Navigate to next page
+if pagination and 'next' in pagination:
+    print(f"Next cursor: {pagination['next']['after']}")
+    print(f"Next URL: {pagination['next']['url']}")
+    next_page = client.debts.list(limit=20, after=pagination['next']['after'])
+
+# Navigate to previous page
+if pagination and 'prev' in pagination:
+    print(f"Previous cursor: {pagination['prev']['before']}")
+    prev_page = client.debts.list(limit=20, before=pagination['prev']['before'])
+
+# The pagination object contains full Link header information
+# Each relation (next, prev) includes:
+# - cursor value (after/before)
+# - full URL with all parameters
+# - limit parameter
+```
+
+### Memory-Efficient Iteration
+
+For processing large datasets, use generators to iterate through all pages:
+
+```python
+def iterate_all_debts(client):
+    """Generator that yields all debts across all pages."""
+    cursor = None
     
-    # Get next page using the last item ID
-    last_debt_id = debts.data[-1].id
-    next_page = client.debts.list(limit=10, after=last_debt_id)
+    while True:
+        params = {'limit': 100}
+        if cursor:
+            params['after'] = cursor
+            
+        page = client.debts.list(**params)
+        
+        for debt in page.data:
+            yield debt
+        
+        if not page.has_more:
+            break
+            
+        cursor = page.pagination['next']['after'] if page.pagination and 'next' in page.pagination else None
+
+# Use the generator
+for debt in iterate_all_debts(client):
+    print(f"Processing debt: {debt.id}")
 ```
 
 ## Model-First API Usage
@@ -943,15 +1023,39 @@ print("✅ Server field exclusion working correctly")
 
 ## SDK Test Coverage
 
-The Ophelos SDK includes comprehensive test coverage with **254+ total tests**:
+The Ophelos SDK includes comprehensive test coverage with **250+ total tests**:
 
 - **143 Model Tests**: Complete coverage of all Pydantic models including API body generation, field validation, enum handling, and relationship processing
 - **Resource Tests**: Full coverage of all API resource managers with error handling and fallback mechanisms
 - **Authentication Tests**: OAuth2 and access token authentication with thread-safety validation
 - **Integration Tests**: End-to-end testing with real API endpoints (when credentials are provided)
 - **Error Handling Tests**: Validation of graceful fallback for invalid API responses
+- **HTTP Client Tests**: Comprehensive pagination, header parsing, and request handling tests
 
-Run the test suite:
+## Running Tests
+
+### Using the Test Runner Script (Recommended)
+
+The SDK includes a convenient test runner script:
+
+```bash
+# Quick test run (fastest)
+python scripts/run_tests.py --fast
+
+# Run with coverage report
+python scripts/run_tests.py --coverage
+
+# Run all tests including integration tests
+python scripts/run_tests.py --all
+
+# Run only integration tests
+python scripts/run_tests.py --integration
+
+# Verbose output
+python scripts/run_tests.py --verbose
+```
+
+### Using pytest Directly
 
 ```bash
 # Run all tests
@@ -962,7 +1066,32 @@ pytest tests/models/          # 143 model tests
 pytest tests/test_resources.py  # Resource and error handling tests
 pytest tests/test_auth.py       # Authentication tests
 pytest tests/test_client.py     # Client configuration tests
+pytest tests/test_http_client.py # HTTP client and pagination tests
 
 # Run with coverage
 pytest --cov=ophelos_sdk tests/
-``` 
+
+# Run only unit tests (exclude integration)
+pytest -m "not integration"
+```
+
+### Development Dependencies
+
+Install development tools:
+
+```bash
+# Option 1: Install via pyproject.toml (recommended)
+pip install -e ".[dev]"
+
+# Option 2: Install from requirements file
+pip install -r requirements-dev.txt
+```
+
+Development tools included:
+- **pytest**: Testing framework with coverage reporting
+- **black**: Code formatting (120 character line length)
+- **flake8**: Code linting and style checking
+- **mypy**: Static type checking
+- **isort**: Import sorting and organization
+- **autoflake**: Remove unused imports and variables
+- **pre-commit**: Git hooks for code quality 

@@ -23,6 +23,25 @@ pip install dist/ophelos-sdk-1.0.2.tar.gz
 pip install -e .
 ```
 
+### Requirements Files
+
+The project includes separate requirements files:
+
+- **`requirements.txt`** - Runtime dependencies only (for end users)
+- **`requirements-dev.txt`** - Development dependencies only
+- **`pyproject.toml`** - Complete dependency specification (recommended)
+
+```bash
+# For end users (runtime only)
+pip install -r requirements.txt
+
+# For developers (includes testing, linting, formatting tools)
+pip install -r requirements-dev.txt
+
+# Or install everything via pyproject.toml (recommended)
+pip install -e ".[dev]"
+```
+
 ## Quick Start
 
 ```python
@@ -295,6 +314,18 @@ from ophelos_sdk.models import Debt
 # List debts with pagination
 debts = client.debts.list(limit=10)
 
+# Check pagination status
+if debts.has_more:
+    print(f"Total count: {debts.total_count}")
+    
+    # Access pagination cursors
+    next_cursor = debts.pagination['next']['after'] if debts.pagination and 'next' in debts.pagination else None
+    prev_cursor = debts.pagination['prev']['before'] if debts.pagination and 'prev' in debts.pagination else None
+    
+    # Navigate using cursors
+    next_page = client.debts.list(limit=10, after=next_cursor)
+    prev_page = client.debts.list(limit=10, before=prev_cursor)
+
 # Search debts
 results = client.debts.search("status:paying AND updated_at>=2024-01-01")
 
@@ -517,6 +548,44 @@ OphelosClient(
 - `client.invoices` - Invoice management operations
 - `client.webhooks` - Webhook management operations
 
+## Pagination
+
+The SDK provides comprehensive pagination support with header-based cursor navigation:
+
+```python
+# Basic pagination
+debts = client.debts.list(limit=20)
+
+# Check pagination state
+print(f"Has more: {debts.has_more}")
+print(f"Total count: {debts.total_count}")
+
+# Navigate using cursors (extracted from Link headers)
+if debts.pagination and 'next' in debts.pagination:
+    next_page = client.debts.list(limit=20, after=debts.pagination['next']['after'])
+
+if debts.pagination and 'prev' in debts.pagination:
+    prev_page = client.debts.list(limit=20, before=debts.pagination['prev']['before'])
+
+# Memory-efficient iteration through all pages
+def iterate_all_debts():
+    cursor = None
+    while True:
+        page = client.debts.list(limit=100, after=cursor)
+        
+        for debt in page.data:
+            yield debt
+            
+        if not page.has_more:
+            break
+            
+        cursor = page.pagination['next']['after'] if page.pagination and 'next' in page.pagination else None
+
+# Use the generator
+for debt in iterate_all_debts():
+    print(f"Processing debt: {debt.id}")
+```
+
 ## Development
 
 ```bash
@@ -527,11 +596,19 @@ cd ophelos-python-sdk
 # Install development dependencies
 pip install -e ".[dev]"
 
-# Run tests (155+ model tests + integration tests)
+# Or alternatively install dev dependencies separately
+pip install -r requirements-dev.txt
+
+# Run tests using the test runner script (recommended)
+python scripts/run_tests.py --fast        # Quick test run
+python scripts/run_tests.py --coverage    # With coverage report
+python scripts/run_tests.py --all         # Include integration tests
+
+# Or run pytest directly (250+ tests: 143 model tests + integration tests)
 pytest
 
 # Run specific test categories
-pytest tests/models/          # Model tests (155+ tests)
+pytest tests/models/          # Model tests (143+ tests)
 pytest tests/test_resources.py  # Resource tests with error handling
 pytest tests/test_auth.py       # Authentication tests
 pytest tests/test_client.py     # Client configuration tests
@@ -540,6 +617,7 @@ pytest tests/test_client.py     # Client configuration tests
 flake8 ophelos_sdk/
 mypy ophelos_sdk/
 black ophelos_sdk/ --line-length 120
+autoflake --check --recursive --remove-all-unused-imports --remove-unused-variables ophelos_sdk/
 
 # Check test coverage
 pytest --cov=ophelos_sdk tests/

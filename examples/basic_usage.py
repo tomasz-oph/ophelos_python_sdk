@@ -262,7 +262,7 @@ def demonstrate_error_handling(client):
     # Try to get a non-existent debt
     print("--- Handling Not Found Error ---")
     try:
-        debt = client.debts.get("non-existent-id")
+        client.debts.get("non-existent-id")
         print("This shouldn't print")
     except OphelosAPIError as e:
         print(f"✅ Caught API error: {e}")
@@ -347,7 +347,7 @@ def _demonstrate_cross_resource_iterators(client):
                 elif count == 2:
                     print(f"    ... ({count}+ items)")
                     break
-        except Exception as e:
+        except Exception:
             print(f"  {name}: No data available")
 
 

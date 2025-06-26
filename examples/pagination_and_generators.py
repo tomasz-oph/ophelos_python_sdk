@@ -11,7 +11,6 @@ This example demonstrates all pagination approaches available in the SDK:
 """
 
 import os
-from typing import Any, Dict
 
 from ophelos_sdk import OphelosClient
 
@@ -38,16 +37,32 @@ def basic_pagination_examples():
     print("\n--- Simple List with Pagination ---")
     page1 = client.debts.list(limit=5)
     print(f"First page: {len(page1.data)} debts, has_more: {page1.has_more}")
+    if page1.total_count:
+        print(f"Total count: {page1.total_count}")
 
     for debt in page1.data[:3]:  # Show first 3
         print(f"  Debt {debt.id}: {debt.status.value} - ${debt.summary.amount_total / 100:.2f}")
 
-    # Next page
-    if page1.has_more and page1.data:
+    # Next page using cursors from pagination info
+    if page1.has_more and page1.pagination and "next" in page1.pagination:
         print("\n--- Next Page ---")
-        last_id = page1.data[-1].id
-        page2 = client.debts.list(limit=5, after=last_id)
+        next_cursor = page1.pagination["next"]["after"]
+        page2 = client.debts.list(limit=5, after=next_cursor)
         print(f"Second page: {len(page2.data)} debts, has_more: {page2.has_more}")
+        if page2.total_count:
+            print(f"Total count: {page2.total_count}")
+        print(f"Used cursor: {next_cursor}")
+
+        # Show pagination info
+        if page2.pagination:
+            print("Available pagination options:")
+            for rel, info in page2.pagination.items():
+                cursor_type = "after" if "after" in info else "before" if "before" in info else "none"
+                cursor_value = info.get("after") or info.get("before", "N/A")
+                print(f"  {rel}: {cursor_type}={cursor_value}")
+    else:
+        print("\n--- No more pages available ---")
+        print("✅ Pagination is working correctly!")
 
     # With expanded data
     print("\n--- With Expanded Data ---")
@@ -231,12 +246,48 @@ def chunked_processing_example():
         print(f"\nProcessing final chunk {chunk_num} ({len(chunk)} debts)")
 
 
+def cursor_based_navigation():
+    """Demonstrate cursor-based navigation using Link headers."""
+    client = setup_client()
+
+    print("\n" + "=" * 60)
+    print("6. CURSOR-BASED NAVIGATION")
+    print("=" * 60)
+
+    print("\n--- Easy Navigation with Cursors ---")
+
+    # Get first page
+    page = client.debts.list(limit=3)
+    print(f"Current page: {len(page.data)} debts, has_more: {page.has_more}")
+
+    if page.pagination:
+        print("Available navigation options:")
+        for rel, info in page.pagination.items():
+            cursor_type = "after" if "after" in info else "before" if "before" in info else "none"
+            cursor_value = info.get("after") or info.get("before", "N/A")
+            print(f"  {rel}: {cursor_type}={cursor_value}")
+
+        # Navigate to next page using cursor
+        if "next" in page.pagination:
+            print("\n--- Navigating to Next Page ---")
+            next_after = page.pagination["next"]["after"]
+            next_page = client.debts.list(limit=3, after=next_after)
+            print(f"Next page: {len(next_page.data)} debts")
+
+            # Navigate back to previous page using cursor
+            if next_page.pagination and "prev" in next_page.pagination:
+                print("\n--- Navigating Back to Previous Page ---")
+                prev_before = next_page.pagination["prev"]["before"]
+                prev_page = client.debts.list(limit=3, before=prev_before)
+                print(f"Previous page: {len(prev_page.data)} debts")
+
+
 def advanced_patterns():
     """Advanced pagination patterns."""
     client = setup_client()
 
     print("\n" + "=" * 60)
-    print("6. ADVANCED PATTERNS")
+    print("7. ADVANCED PATTERNS")
     print("=" * 60)
 
     # Conditional processing
@@ -285,6 +336,7 @@ def main():
         search_pagination_examples()
         cross_resource_consistency()
         chunked_processing_example()
+        cursor_based_navigation()
         advanced_patterns()
 
         print("\n" + "=" * 60)

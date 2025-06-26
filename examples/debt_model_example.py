@@ -10,7 +10,7 @@ import os
 
 from ophelos_sdk import OphelosClient
 from ophelos_sdk.exceptions import AuthenticationError, OphelosAPIError
-from ophelos_sdk.models import DebtStatus, PaymentStatus
+from ophelos_sdk.models import DebtStatus
 
 
 def setup_client():

@@ -62,6 +62,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Environment variable support for both methods
 - **Development Tools**: Enhanced development experience
   - Updated Black, isort, and flake8 configurations for 120-character lines
+  - Added autoflake for removing unused imports and variables
   - Comprehensive test suite with model-specific test files
   - Better error handling examples and documentation
 
