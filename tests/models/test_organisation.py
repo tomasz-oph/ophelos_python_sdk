@@ -3,9 +3,6 @@ Unit tests for Organisation model and PaymentOptionsConfiguration.
 """
 
 from datetime import datetime
-from typing import Any, Dict
-
-import pytest
 
 from ophelos_sdk.models import ContactDetail, ContactDetailType, Organisation, PaymentOptionsConfiguration
 

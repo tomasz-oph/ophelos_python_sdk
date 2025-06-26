@@ -4,8 +4,6 @@ Unit tests for Payout model.
 
 from datetime import date, datetime
 
-import pytest
-
 from ophelos_sdk.models import Currency, Payout
 
 
@@ -15,7 +13,7 @@ class TestPayout:
     def test_payout_creation_minimal(self):
         """Test payout creation with minimal required fields."""
         payout = Payout(amount=50000)
-        
+
         assert payout.id is None
         assert payout.object == "payout"
         assert payout.amount == 50000
@@ -32,7 +30,7 @@ class TestPayout:
         payout_date = date(2024, 4, 15)
         created_time = datetime.now()
         updated_time = datetime.now()
-        
+
         payout = Payout(
             id="payout_123",
             object="payout",
@@ -43,9 +41,9 @@ class TestPayout:
             organisation_id="org_456",
             metadata={"batch_id": "batch_001", "region": "UK"},
             created_at=created_time,
-            updated_at=updated_time
+            updated_at=updated_time,
         )
-        
+
         assert payout.id == "payout_123"
         assert payout.object == "payout"
         assert payout.amount == 75000
@@ -59,13 +57,8 @@ class TestPayout:
 
     def test_payout_with_currency_enum(self):
         """Test payout creation with Currency enum."""
-        payout = Payout(
-            amount=100000,
-            currency=Currency.EUR,
-            status="completed",
-            organisation_id="org_789"
-        )
-        
+        payout = Payout(amount=100000, currency=Currency.EUR, status="completed", organisation_id="org_789")
+
         assert payout.amount == 100000
         assert payout.currency == Currency.EUR
         assert payout.status == "completed"
@@ -73,13 +66,8 @@ class TestPayout:
 
     def test_payout_with_currency_string(self):
         """Test payout creation with currency as string."""
-        payout = Payout(
-            amount=25000,
-            currency="USD",
-            status="failed",
-            payout_date=date(2024, 5, 1)
-        )
-        
+        payout = Payout(amount=25000, currency="USD", status="failed", payout_date=date(2024, 5, 1))
+
         assert payout.amount == 25000
         assert payout.currency == "USD"
         assert payout.status == "failed"
@@ -97,17 +85,17 @@ class TestPayout:
             organisation_id="org_api_test",
             created_at=datetime.now(),
             updated_at=datetime.now(),
-            metadata={"priority": "high"}
+            metadata={"priority": "high"},
         )
-        
+
         api_body = payout.to_api_body()
-        
+
         # Server fields should be excluded
         assert "id" not in api_body
         assert "object" not in api_body
         assert "created_at" not in api_body
         assert "updated_at" not in api_body
-        
+
         # Status is typically server-managed, so might not be in API body
         # But amount, currency, payout_date, organisation_id, metadata should be included
         assert api_body["amount"] == 60000
@@ -118,14 +106,10 @@ class TestPayout:
 
     def test_payout_to_api_body_minimal(self):
         """Test payout to_api_body with minimal fields."""
-        payout = Payout(
-            id="payout_minimal",
-            amount=30000,
-            organisation_id="org_minimal"
-        )
-        
+        payout = Payout(id="payout_minimal", amount=30000, organisation_id="org_minimal")
+
         api_body = payout.to_api_body()
-        
+
         assert api_body["amount"] == 30000
         assert api_body["organisation_id"] == "org_minimal"
         # None values should be excluded by default
@@ -136,15 +120,11 @@ class TestPayout:
     def test_payout_to_api_body_exclude_none_false(self):
         """Test payout to_api_body includes None values when exclude_none=False."""
         payout = Payout(
-            amount=40000,
-            currency=None,
-            payout_date=None,
-            organisation_id="org_include_none",
-            metadata=None
+            amount=40000, currency=None, payout_date=None, organisation_id="org_include_none", metadata=None
         )
-        
+
         api_body = payout.to_api_body(exclude_none=False)
-        
+
         assert api_body["amount"] == 40000
         assert api_body["organisation_id"] == "org_include_none"
         # None values should be included
@@ -158,16 +138,11 @@ class TestPayout:
     def test_payout_date_serialization_in_api_body(self):
         """Test that date fields are properly serialized in to_api_body."""
         payout_date = date(2024, 7, 15)
-        
-        payout = Payout(
-            amount=80000,
-            currency=Currency.USD,
-            payout_date=payout_date,
-            organisation_id="org_date_test"
-        )
-        
+
+        payout = Payout(amount=80000, currency=Currency.USD, payout_date=payout_date, organisation_id="org_date_test")
+
         api_body = payout.to_api_body()
-        
+
         # Date should be serialized as ISO format string
         assert api_body["payout_date"] == "2024-07-15"
         assert isinstance(api_body["payout_date"], str)
@@ -175,28 +150,20 @@ class TestPayout:
     def test_payout_large_amounts(self):
         """Test payout with large amounts (edge case)."""
         large_amount = 999999999  # Large amount in cents
-        
-        payout = Payout(
-            amount=large_amount,
-            currency=Currency.GBP,
-            organisation_id="org_large_amount"
-        )
-        
+
+        payout = Payout(amount=large_amount, currency=Currency.GBP, organisation_id="org_large_amount")
+
         assert payout.amount == large_amount
-        
+
         api_body = payout.to_api_body()
         assert api_body["amount"] == large_amount
 
     def test_payout_status_values(self):
         """Test payout with different status values."""
         statuses = ["pending", "processing", "completed", "failed", "cancelled"]
-        
+
         for status in statuses:
-            payout = Payout(
-                amount=50000,
-                status=status,
-                organisation_id=f"org_{status}"
-            )
-            
+            payout = Payout(amount=50000, status=status, organisation_id=f"org_{status}")
+
             assert payout.status == status
-            assert payout.organisation_id == f"org_{status}" 
+            assert payout.organisation_id == f"org_{status}"

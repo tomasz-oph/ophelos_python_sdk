@@ -66,9 +66,7 @@ class WebhooksResource(BaseResource):
         response_data = self.http_client.post("webhooks", data=data, params=params)
         return self._parse_model_response(response_data, Webhook)
 
-    def update(
-        self, webhook_id: str, data: Dict[str, Any], expand: Optional[List[str]] = None
-    ) -> Webhook:
+    def update(self, webhook_id: str, data: Dict[str, Any], expand: Optional[List[str]] = None) -> Webhook:
         """
         Update a webhook.
 

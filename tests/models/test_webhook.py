@@ -3,9 +3,6 @@ Unit tests for Webhook model.
 """
 
 from datetime import datetime
-from typing import Any, Dict
-
-import pytest
 
 from ophelos_sdk.models import Webhook
 
@@ -16,7 +13,7 @@ class TestWebhook:
     def test_webhook_creation_minimal(self):
         """Test webhook creation with minimal required fields."""
         webhook = Webhook(url="https://example.com/webhook")
-        
+
         assert webhook.id is None
         assert webhook.object == "webhook"
         assert webhook.url == "https://example.com/webhook"
@@ -33,7 +30,7 @@ class TestWebhook:
         events = ["customer.created", "debt.updated", "payment.completed"]
         created_time = datetime.now()
         updated_time = datetime.now()
-        
+
         webhook = Webhook(
             id="webhook_123",
             object="webhook",
@@ -42,15 +39,11 @@ class TestWebhook:
             signing_key="whsec_test_secret_key_123",
             enabled_events=events,
             version="v1",
-            metadata={
-                "environment": "production",
-                "team": "backend",
-                "priority": "high"
-            },
+            metadata={"environment": "production", "team": "backend", "priority": "high"},
             created_at=created_time,
-            updated_at=updated_time
+            updated_at=updated_time,
         )
-        
+
         assert webhook.id == "webhook_123"
         assert webhook.object == "webhook"
         assert webhook.url == "https://api.example.com/webhooks/ophelos"
@@ -58,22 +51,14 @@ class TestWebhook:
         assert webhook.signing_key == "whsec_test_secret_key_123"
         assert webhook.enabled_events == events
         assert webhook.version == "v1"
-        assert webhook.metadata == {
-            "environment": "production",
-            "team": "backend",
-            "priority": "high"
-        }
+        assert webhook.metadata == {"environment": "production", "team": "backend", "priority": "high"}
         assert webhook.created_at == created_time
         assert webhook.updated_at == updated_time
 
     def test_webhook_with_single_event(self):
         """Test webhook creation with single event."""
-        webhook = Webhook(
-            url="https://example.com/single-event",
-            enabled_events=["payment.completed"],
-            enabled=True
-        )
-        
+        webhook = Webhook(url="https://example.com/single-event", enabled_events=["payment.completed"], enabled=True)
+
         assert webhook.url == "https://example.com/single-event"
         assert webhook.enabled_events == ["payment.completed"]
         assert webhook.enabled is True
@@ -90,15 +75,11 @@ class TestWebhook:
             "payment.completed",
             "payment.failed",
             "invoice.created",
-            "invoice.sent"
+            "invoice.sent",
         ]
-        
-        webhook = Webhook(
-            url="https://example.com/all-events",
-            enabled_events=events,
-            enabled=True
-        )
-        
+
+        webhook = Webhook(url="https://example.com/all-events", enabled_events=events, enabled=True)
+
         assert webhook.enabled_events == events
         assert len(webhook.enabled_events) == 10
 
@@ -114,17 +95,17 @@ class TestWebhook:
             version="v1",
             metadata={"test": True, "version": "v1"},
             created_at=datetime.now(),
-            updated_at=datetime.now()
+            updated_at=datetime.now(),
         )
-        
+
         api_body = webhook.to_api_body()
-        
+
         # Server fields should be excluded
         assert "id" not in api_body
         assert "object" not in api_body
         assert "created_at" not in api_body
         assert "updated_at" not in api_body
-        
+
         # Client fields should be included
         assert api_body["url"] == "https://api.test.com/webhook"
         assert api_body["enabled"] is True
@@ -141,11 +122,11 @@ class TestWebhook:
             enabled_events=None,
             signing_key=None,
             version=None,
-            metadata=None
+            metadata=None,
         )
-        
+
         api_body = webhook.to_api_body(exclude_none=False)
-        
+
         assert api_body["url"] == "https://include-none.example.com/webhook"
         # None values should be included
         assert "enabled" in api_body
@@ -167,14 +148,14 @@ class TestWebhook:
             "https://subdomain.example.com/path/to/webhook",
             "https://example.com:8080/webhook",
             "https://example.com/webhook?param=value",
-            "https://webhook-service.internal/receive"
+            "https://webhook-service.internal/receive",
         ]
-        
+
         for url in url_cases:
             webhook = Webhook(url=url)
-            
+
             assert webhook.url == url
-            
+
             api_body = webhook.to_api_body()
             assert api_body["url"] == url
 
@@ -186,58 +167,32 @@ class TestWebhook:
             "sk_test_webhook_secret_key",
             "webhook_secret_with_underscores",
             "webhook-secret-with-hyphens",
-            "VeryLongWebhookSecretKeyThatMightBeUsedInProduction123"
+            "VeryLongWebhookSecretKeyThatMightBeUsedInProduction123",
         ]
-        
+
         for signing_key in signing_key_cases:
-            webhook = Webhook(
-                url="https://example.com/webhook",
-                signing_key=signing_key
-            )
-            
+            webhook = Webhook(url="https://example.com/webhook", signing_key=signing_key)
+
             assert webhook.signing_key == signing_key
-            
+
             api_body = webhook.to_api_body()
             assert api_body["signing_key"] == signing_key
 
     def test_webhook_event_types(self):
         """Test webhook with various event types."""
         event_categories = {
-            "customer": [
-                "customer.created",
-                "customer.updated",
-                "customer.deleted"
-            ],
-            "debt": [
-                "debt.created",
-                "debt.updated",
-                "debt.status_changed",
-                "debt.deleted"
-            ],
-            "payment": [
-                "payment.created",
-                "payment.completed",
-                "payment.failed",
-                "payment.cancelled"
-            ],
-            "invoice": [
-                "invoice.created",
-                "invoice.sent",
-                "invoice.paid",
-                "invoice.overdue"
-            ]
+            "customer": ["customer.created", "customer.updated", "customer.deleted"],
+            "debt": ["debt.created", "debt.updated", "debt.status_changed", "debt.deleted"],
+            "payment": ["payment.created", "payment.completed", "payment.failed", "payment.cancelled"],
+            "invoice": ["invoice.created", "invoice.sent", "invoice.paid", "invoice.overdue"],
         }
-        
+
         for category, events in event_categories.items():
-            webhook = Webhook(
-                url=f"https://example.com/{category}-webhook",
-                enabled_events=events,
-                enabled=True
-            )
-            
+            webhook = Webhook(url=f"https://example.com/{category}-webhook", enabled_events=events, enabled=True)
+
             assert webhook.enabled_events == events
             assert webhook.enabled is True
-            
+
             api_body = webhook.to_api_body()
             assert api_body["enabled_events"] == events
 
@@ -245,51 +200,36 @@ class TestWebhook:
         """Test webhook with complex metadata."""
         complex_metadata = {
             "configuration": {
-                "retry_policy": {
-                    "max_retries": 3,
-                    "backoff_multiplier": 2,
-                    "initial_delay_seconds": 1
-                },
+                "retry_policy": {"max_retries": 3, "backoff_multiplier": 2, "initial_delay_seconds": 1},
                 "timeout_seconds": 30,
-                "verify_ssl": True
+                "verify_ssl": True,
             },
             "tags": ["production", "critical", "customer-facing"],
-            "team_contact": {
-                "email": "webhooks@example.com",
-                "slack_channel": "#webhook-alerts"
-            },
-            "monitoring": {
-                "enabled": True,
-                "alert_on_failure": True,
-                "success_rate_threshold": 0.95
-            }
+            "team_contact": {"email": "webhooks@example.com", "slack_channel": "#webhook-alerts"},
+            "monitoring": {"enabled": True, "alert_on_failure": True, "success_rate_threshold": 0.95},
         }
-        
+
         webhook = Webhook(
             url="https://example.com/complex-webhook",
             enabled_events=["customer.created", "payment.completed"],
             enabled=True,
-            metadata=complex_metadata
+            metadata=complex_metadata,
         )
-        
+
         assert webhook.metadata == complex_metadata
         assert webhook.metadata["configuration"]["retry_policy"]["max_retries"] == 3
         assert webhook.metadata["monitoring"]["enabled"] is True
-        
+
         api_body = webhook.to_api_body()
         assert api_body["metadata"] == complex_metadata
 
     def test_webhook_empty_events_list(self):
         """Test webhook with empty events list."""
-        webhook = Webhook(
-            url="https://example.com/no-events",
-            enabled_events=[],
-            enabled=False
-        )
-        
+        webhook = Webhook(url="https://example.com/no-events", enabled_events=[], enabled=False)
+
         assert webhook.enabled_events == []
         assert webhook.enabled is False
-        
+
         api_body = webhook.to_api_body()
         assert api_body["enabled_events"] == []
         assert api_body["enabled"] is False
@@ -297,31 +237,23 @@ class TestWebhook:
     def test_webhook_version_values(self):
         """Test webhook with different version values."""
         version_cases = ["v1", "v2", "latest", "2023-01-01", "1.0.0"]
-        
+
         for version in version_cases:
-            webhook = Webhook(
-                url="https://example.com/versioned-webhook",
-                version=version,
-                enabled=True
-            )
-            
+            webhook = Webhook(url="https://example.com/versioned-webhook", version=version, enabled=True)
+
             assert webhook.version == version
-            
+
             api_body = webhook.to_api_body()
             assert api_body["version"] == version
 
     def test_webhook_enabled_states(self):
         """Test webhook with different enabled states."""
         enabled_cases = [True, False]
-        
+
         for enabled in enabled_cases:
-            webhook = Webhook(
-                url="https://example.com/enabled-test",
-                enabled=enabled,
-                enabled_events=["test.event"]
-            )
-            
+            webhook = Webhook(url="https://example.com/enabled-test", enabled=enabled, enabled_events=["test.event"])
+
             assert webhook.enabled is enabled
-            
+
             api_body = webhook.to_api_body()
             assert api_body["enabled"] is enabled

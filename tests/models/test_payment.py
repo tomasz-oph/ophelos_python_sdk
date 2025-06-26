@@ -4,8 +4,6 @@ Unit tests for Payment model.
 
 from datetime import datetime
 
-import pytest
-
 from ophelos_sdk.models import Currency, Debt, Payment, PaymentPlan, PaymentStatus
 
 
@@ -72,7 +70,7 @@ class TestPaymentStatusEnum:
     def test_payment_status_enum_completeness(self):
         """Test that all payment status enum values are defined."""
         expected_statuses = {"pending", "succeeded", "failed", "disputed", "refunded", "scheduled", "canceled"}
-        
+
         actual_statuses = {member.value for member in PaymentStatus}
         assert actual_statuses == expected_statuses
 
@@ -99,9 +97,9 @@ class TestPaymentModelEnhanced:
             transaction_ref="TXN-ENUM-001",
             amount=15000,
             currency=Currency.EUR,
-            payment_provider="paypal"
+            payment_provider="paypal",
         )
-        
+
         assert payment.status == PaymentStatus.SUCCEEDED
         assert payment.currency == Currency.EUR
         assert payment.amount == 15000
@@ -109,12 +107,8 @@ class TestPaymentModelEnhanced:
 
     def test_payment_with_debt_model(self):
         """Test payment with expanded Debt model."""
-        debt_model = Debt(
-            id="debt_payment_test",
-            customer="cust_123",
-            organisation="org_123"
-        )
-        
+        debt_model = Debt(id="debt_payment_test", customer="cust_123", organisation="org_123")
+
         payment = Payment(
             id="pay_debt_model",
             debt=debt_model,
@@ -122,23 +116,20 @@ class TestPaymentModelEnhanced:
             transaction_at=datetime.now(),
             transaction_ref="TXN-DEBT-001",
             amount=8000,
-            currency=Currency.GBP
+            currency=Currency.GBP,
         )
-        
+
         assert isinstance(payment.debt, Debt)
         assert payment.debt.id == "debt_payment_test"
-        
+
         # API body should not include debt field
         api_body = payment.to_api_body()
         assert "debt" not in api_body
 
     def test_payment_with_payment_plan_model(self):
         """Test payment with PaymentPlan model."""
-        payment_plan = PaymentPlan(
-            id="pp_123",
-            status="active"
-        )
-        
+        payment_plan = PaymentPlan(id="pp_123", status="active")
+
         payment = Payment(
             id="pay_plan_test",
             debt="debt_456",
@@ -147,9 +138,9 @@ class TestPaymentModelEnhanced:
             transaction_at=datetime.now(),
             transaction_ref="TXN-PLAN-001",
             amount=2500,
-            currency=Currency.USD
+            currency=Currency.USD,
         )
-        
+
         assert isinstance(payment.payment_plan, PaymentPlan)
         assert payment.payment_plan.id == "pp_123"
         assert payment.status == PaymentStatus.SCHEDULED
@@ -163,16 +154,16 @@ class TestPaymentModelEnhanced:
             transaction_ref="TXN-CURRENCY-001",
             amount=12000,
             currency=Currency.USD,
-            metadata={"processor": "stripe", "fee": 300}
+            metadata={"processor": "stripe", "fee": 300},
         )
-        
+
         api_body = payment.to_api_body()
-        
+
         assert api_body["transaction_ref"] == "TXN-CURRENCY-001"
         assert api_body["amount"] == 12000
         assert api_body["currency"] == "USD"  # Enum serialized as string
         assert api_body["metadata"] == {"processor": "stripe", "fee": 300}
-        
+
         # Fields not in __api_body_fields__ should be excluded
         assert "status" not in api_body
         assert "payment_provider" not in api_body
@@ -181,17 +172,17 @@ class TestPaymentModelEnhanced:
     def test_payment_datetime_serialization_in_api_body(self):
         """Test that datetime fields are properly serialized in to_api_body."""
         transaction_time = datetime(2024, 3, 15, 14, 30, 0)
-        
+
         payment = Payment(
             id="pay_datetime_test",
             transaction_at=transaction_time,
             transaction_ref="TXN-DATETIME-001",
             amount=5500,
-            currency=Currency.EUR
+            currency=Currency.EUR,
         )
-        
+
         api_body = payment.to_api_body()
-        
+
         # Datetime should be serialized as ISO format string
         assert isinstance(api_body["transaction_at"], str)
         assert "2024-03-15T14:30:00" in api_body["transaction_at"]
@@ -203,7 +194,7 @@ class TestPaymentPlan:
     def test_payment_plan_creation_minimal(self):
         """Test payment plan creation with minimal fields."""
         plan = PaymentPlan()
-        
+
         assert plan.id is None
         assert plan.object == "payment_plan"
         assert plan.debt is None
@@ -222,9 +213,9 @@ class TestPaymentPlan:
             schedule=["schedule_1", "schedule_2"],
             created_at=datetime.now(),
             updated_at=datetime.now(),
-            metadata={"type": "installment", "frequency": "monthly"}
+            metadata={"type": "installment", "frequency": "monthly"},
         )
-        
+
         assert plan.id == "pp_456"
         assert plan.debt == "debt_789"
         assert plan.status == "active"
@@ -233,20 +224,12 @@ class TestPaymentPlan:
 
     def test_payment_plan_with_debt_model(self):
         """Test payment plan with expanded Debt model."""
-        debt_model = Debt(
-            id="debt_plan_test",
-            customer="cust_456",
-            organisation="org_456"
-        )
-        
+        debt_model = Debt(id="debt_plan_test", customer="cust_456", organisation="org_456")
+
         plan = PaymentPlan(
-            id="pp_debt_model",
-            debt=debt_model,
-            status="pending",
-            created_at=datetime.now(),
-            updated_at=datetime.now()
+            id="pp_debt_model", debt=debt_model, status="pending", created_at=datetime.now(), updated_at=datetime.now()
         )
-        
+
         assert isinstance(plan.debt, Debt)
         assert plan.debt.id == "debt_plan_test"
         assert plan.status == "pending"

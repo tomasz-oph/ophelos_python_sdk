@@ -4,8 +4,6 @@ Unit tests for Customer model.
 
 from datetime import date, datetime
 
-import pytest
-
 from ophelos_sdk.models import ContactDetail, ContactDetailSource, ContactDetailType, ContactDetailUsage, Customer
 
 
@@ -195,11 +193,9 @@ class TestContactDetailEnums:
         assert ContactDetailType.MOBILE_NUMBER == "mobile_number"
         assert ContactDetailType.FAX_NUMBER == "fax_number"
         assert ContactDetailType.ADDRESS == "address"
-        
+
         # Test all enum values are defined
-        expected_types = {
-            "email", "phone_number", "mobile_number", "fax_number", "address"
-        }
+        expected_types = {"email", "phone_number", "mobile_number", "fax_number", "address"}
         actual_types = {member.value for member in ContactDetailType}
         assert actual_types == expected_types
 
@@ -210,11 +206,9 @@ class TestContactDetailEnums:
         assert ContactDetailUsage.SUPPLY_ADDRESS == "supply_address"
         assert ContactDetailUsage.DELIVERY_ADDRESS == "delivery_address"
         assert ContactDetailUsage.OTHER == "other"
-        
+
         # Test all enum values are defined
-        expected_usages = {
-            "permanent", "work", "supply_address", "delivery_address", "other"
-        }
+        expected_usages = {"permanent", "work", "supply_address", "delivery_address", "other"}
         actual_usages = {member.value for member in ContactDetailUsage}
         assert actual_usages == expected_usages
 
@@ -224,11 +218,9 @@ class TestContactDetailEnums:
         assert ContactDetailSource.CUSTOMER == "customer"
         assert ContactDetailSource.SUPPORT_AGENT == "support_agent"
         assert ContactDetailSource.OTHER == "other"
-        
+
         # Test all enum values are defined
-        expected_sources = {
-            "client", "customer", "support_agent", "other"
-        }
+        expected_sources = {"client", "customer", "support_agent", "other"}
         actual_sources = {member.value for member in ContactDetailSource}
         assert actual_sources == expected_sources
 
@@ -244,9 +236,9 @@ class TestContactDetailModel:
             primary=True,
             usage=ContactDetailUsage.PERMANENT,
             source=ContactDetailSource.CLIENT,
-            status="verified"
+            status="verified",
         )
-        
+
         assert contact.type == ContactDetailType.EMAIL
         assert contact.value == "test@example.com"
         assert contact.primary is True
@@ -262,9 +254,9 @@ class TestContactDetailModel:
             primary=False,
             usage="work",
             source="customer",
-            status="unverified"
+            status="unverified",
         )
-        
+
         assert contact.type == "mobile_number"
         assert contact.value == "+1234567890"
         assert contact.primary is False
@@ -274,11 +266,8 @@ class TestContactDetailModel:
 
     def test_contact_detail_minimal_creation(self):
         """Test contact detail creation with only required fields."""
-        contact = ContactDetail(
-            type=ContactDetailType.PHONE_NUMBER,
-            value="+44123456789"
-        )
-        
+        contact = ContactDetail(type=ContactDetailType.PHONE_NUMBER, value="+44123456789")
+
         assert contact.type == ContactDetailType.PHONE_NUMBER
         assert contact.value == "+44123456789"
         assert contact.primary is None
@@ -297,23 +286,19 @@ class TestCustomerWithContactDetails:
             value="john@example.com",
             primary=True,
             usage=ContactDetailUsage.PERMANENT,
-            source=ContactDetailSource.CLIENT
+            source=ContactDetailSource.CLIENT,
         )
-        
+
         contact2 = ContactDetail(
             type=ContactDetailType.MOBILE_NUMBER,
             value="+447466123456",
             primary=False,
             usage=ContactDetailUsage.WORK,
-            source=ContactDetailSource.CUSTOMER
+            source=ContactDetailSource.CUSTOMER,
         )
-        
-        customer = Customer(
-            first_name="John",
-            last_name="Doe",
-            contact_details=[contact1, contact2]
-        )
-        
+
+        customer = Customer(first_name="John", last_name="Doe", contact_details=[contact1, contact2])
+
         assert len(customer.contact_details) == 2
         assert customer.contact_details[0].type == ContactDetailType.EMAIL
         assert customer.contact_details[1].type == ContactDetailType.MOBILE_NUMBER
@@ -326,20 +311,16 @@ class TestCustomerWithContactDetails:
             primary=True,
             usage=ContactDetailUsage.PERMANENT,
             source=ContactDetailSource.CLIENT,
-            status="verified"
+            status="verified",
         )
-        
-        customer = Customer(
-            first_name="John",
-            last_name="Doe",
-            contact_details=[contact]
-        )
-        
+
+        customer = Customer(first_name="John", last_name="Doe", contact_details=[contact])
+
         api_body = customer.to_api_body()
-        
+
         assert "contact_details" in api_body
         assert len(api_body["contact_details"]) == 1
-        
+
         contact_data = api_body["contact_details"][0]
         assert contact_data["type"] == "email"  # Enum serialized as string
         assert contact_data["value"] == "john@example.com"
@@ -350,14 +331,10 @@ class TestCustomerWithContactDetails:
 
     def test_customer_date_serialization_in_api_body(self):
         """Test that date fields are properly serialized in to_api_body."""
-        customer = Customer(
-            first_name="John",
-            last_name="Doe",
-            date_of_birth=date(1990, 1, 15)
-        )
-        
+        customer = Customer(first_name="John", last_name="Doe", date_of_birth=date(1990, 1, 15))
+
         api_body = customer.to_api_body()
-        
+
         # Date should be serialized as ISO format string
         assert api_body["date_of_birth"] == "1990-01-15"
         assert isinstance(api_body["date_of_birth"], str)
@@ -365,24 +342,14 @@ class TestCustomerWithContactDetails:
     def test_customer_mixed_contact_detail_types(self):
         """Test customer with mixed contact detail types (enum and string)."""
         # This tests backward compatibility
-        contact1 = ContactDetail(
-            type=ContactDetailType.EMAIL,  # Using enum
-            value="john@example.com"
-        )
-        
-        contact2 = ContactDetail(
-            type="phone_number",  # Using string
-            value="+44123456789"
-        )
-        
-        customer = Customer(
-            first_name="John",
-            last_name="Doe",
-            contact_details=[contact1, contact2]
-        )
-        
+        contact1 = ContactDetail(type=ContactDetailType.EMAIL, value="john@example.com")  # Using enum
+
+        contact2 = ContactDetail(type="phone_number", value="+44123456789")  # Using string
+
+        customer = Customer(first_name="John", last_name="Doe", contact_details=[contact1, contact2])
+
         api_body = customer.to_api_body()
-        
+
         contact_details = api_body["contact_details"]
         assert contact_details[0]["type"] == "email"
         assert contact_details[1]["type"] == "phone_number"

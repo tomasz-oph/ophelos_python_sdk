@@ -102,9 +102,7 @@ class BaseResource:
 
         return params
 
-    def _is_valid_model_data(
-        self, data: Dict[str, Any], model_class: Type[BaseOphelosModel]
-    ) -> bool:
+    def _is_valid_model_data(self, data: Dict[str, Any], model_class: Type[BaseOphelosModel]) -> bool:
         """
         Check if data looks like valid model data.
 
@@ -259,9 +257,7 @@ class BaseResource:
 
             # Fetch current page - using getattr to satisfy type checker
             list_method = getattr(self, "list")
-            page = list_method(
-                limit=limit_per_page, after=after_cursor, before=None, expand=expand, **kwargs
-            )
+            page = list_method(limit=limit_per_page, after=after_cursor, before=None, expand=expand, **kwargs)
 
             pages_fetched += 1
 

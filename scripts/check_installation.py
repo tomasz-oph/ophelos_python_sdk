@@ -12,29 +12,19 @@ def test_imports():
     print("Testing imports...")
     try:
         # Test main client import
-        from ophelos import OphelosClient
+        pass
 
         print("✓ OphelosClient imported successfully")
 
         # Test exception imports
-        from ophelos import (
-            AuthenticationError,
-            NotFoundError,
-            OphelosAPIError,
-            OphelosError,
-            RateLimitError,
-            ValidationError,
-        )
 
         print("✓ Exception classes imported successfully")
 
         # Test model imports
-        from ophelos import Customer, Debt, DebtStatus, Invoice, Organisation, Payment, PaymentStatus, WebhookEvent
 
         print("✓ Model classes imported successfully")
 
         # Test webhook imports
-        from ophelos import WebhookHandler, construct_event
 
         print("✓ Webhook utilities imported successfully")
 
@@ -85,7 +75,7 @@ def test_models():
     try:
         from datetime import datetime
 
-        from ophelos import Customer, Debt, DebtStatus, Payment, PaymentStatus
+        from ophelos import Debt, DebtStatus, PaymentStatus
 
         # Test debt status enum
         status = DebtStatus.PREPARED

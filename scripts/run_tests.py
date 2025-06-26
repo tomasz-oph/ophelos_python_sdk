@@ -8,7 +8,6 @@ This script provides convenient ways to run different types of tests.
 import argparse
 import subprocess
 import sys
-from pathlib import Path
 
 
 def run_command(cmd):
@@ -23,9 +22,7 @@ def main():
     parser.add_argument("--integration", action="store_true", help="Run only integration tests")
     parser.add_argument("--all", action="store_true", help="Run all tests including integration")
     parser.add_argument("--coverage", action="store_true", help="Run tests with coverage report")
-    parser.add_argument(
-        "--fast", action="store_true", help="Run tests without coverage for faster execution"
-    )
+    parser.add_argument("--fast", action="store_true", help="Run tests without coverage for faster execution")
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
 
     args = parser.parse_args()

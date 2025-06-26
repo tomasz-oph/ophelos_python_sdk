@@ -132,6 +132,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Pagination Issue**: Fixed `has_more` always returning `False` in paginated responses
+  - Updated HTTP client to extract pagination information from response headers per [Ophelos API specification](https://ophelos-api.readme.io/reference/pagination)
+  - Added parsing of `Link` header to determine if more pages are available (`rel="next"`)
+  - Added extraction of `X-Total-Count` header for total count information
+  - Enhanced `_handle_response()` method to detect list responses and process pagination headers
+  - **Enhanced Link Header Parsing**: Extract cursor values (`after`, `before`) from `next`, `prev`, and `first` relations
+  - Added `pagination` field to `PaginatedResponse` with easy-to-use cursor navigation
+  - Added comprehensive tests for header-based pagination scenarios including Link header parsing
+
 ### Changed
 - **BREAKING CHANGE**: Package renamed from `ophelos` to `ophelos_sdk` for better namespace management
 - Import statements now use `from ophelos_sdk import OphelosClient` instead of `from ophelos import OphelosClient`

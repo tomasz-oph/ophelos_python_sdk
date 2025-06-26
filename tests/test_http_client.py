@@ -5,8 +5,6 @@ Unit tests for Ophelos SDK HTTP client.
 from unittest.mock import Mock, patch
 
 import pytest
-import requests
-from urllib3.response import HTTPResponse
 from urllib3.util.retry import Retry
 
 from ophelos_sdk.auth import OAuth2Authenticator
@@ -388,6 +386,193 @@ class TestHTTPClient:
             headers = call_args[1]["headers"]
             assert "OPHELOS_TENANT_ID" in headers
             assert headers["OPHELOS_TENANT_ID"] == tenant_id
+
+    def test_pagination_headers_with_next_page(self, http_client):
+        """Test that pagination information is extracted from headers when next page exists."""
+        with patch("requests.Session.get") as mock_get:
+            mock_response = Mock()
+            mock_response.status_code = 200
+            mock_response.content = b'{"object": "list", "data": [{"id": "test_1"}]}'
+            mock_response.json.return_value = {"object": "list", "data": [{"id": "test_1"}]}
+            # Headers indicating there are more pages
+            mock_response.headers = {
+                "Link": '<https://api.ophelos.com/debts?after=deb_123&limit=10>; rel="next", <https://api.ophelos.com/debts?before=deb_456&limit=10>; rel="prev"',
+                "X-Total-Count": "50",
+                "X-Page-Items": "10",
+            }
+            mock_get.return_value = mock_response
+
+            result = http_client.get("/debts", params={"limit": 10})
+
+            assert result["object"] == "list"
+            assert result["has_more"] is True
+            assert result["total_count"] == 50
+            assert len(result["data"]) == 1
+
+    def test_pagination_headers_without_next_page(self, http_client):
+        """Test that pagination information is extracted from headers when no next page exists."""
+        with patch("requests.Session.get") as mock_get:
+            mock_response = Mock()
+            mock_response.status_code = 200
+            mock_response.content = b'{"object": "list", "data": [{"id": "test_1"}]}'
+            mock_response.json.return_value = {"object": "list", "data": [{"id": "test_1"}]}
+            # Headers indicating no more pages (no "next" rel)
+            mock_response.headers = {
+                "Link": '<https://api.ophelos.com/debts?before=deb_456&limit=10>; rel="prev"',
+                "X-Total-Count": "1",
+                "X-Page-Items": "1",
+            }
+            mock_get.return_value = mock_response
+
+            result = http_client.get("/debts", params={"limit": 10})
+
+            assert result["object"] == "list"
+            assert result["has_more"] is False
+            assert result["total_count"] == 1
+
+    def test_pagination_headers_with_empty_link_header(self, http_client):
+        """Test that pagination works correctly with empty Link header."""
+        with patch("requests.Session.get") as mock_get:
+            mock_response = Mock()
+            mock_response.status_code = 200
+            mock_response.content = b'{"object": "list", "data": []}'
+            mock_response.json.return_value = {"object": "list", "data": []}
+            # No Link header or empty Link header
+            mock_response.headers = {"X-Total-Count": "0", "X-Page-Items": "0"}
+            mock_get.return_value = mock_response
+
+            result = http_client.get("/debts")
+
+            assert result["object"] == "list"
+            assert result["has_more"] is False
+            assert result["total_count"] == 0
+            assert len(result["data"]) == 0
+
+    def test_pagination_headers_with_invalid_total_count(self, http_client):
+        """Test that pagination handles invalid X-Total-Count gracefully."""
+        with patch("requests.Session.get") as mock_get:
+            mock_response = Mock()
+            mock_response.status_code = 200
+            mock_response.content = b'{"object": "list", "data": [{"id": "test_1"}]}'
+            mock_response.json.return_value = {"object": "list", "data": [{"id": "test_1"}]}
+            # Invalid X-Total-Count header
+            mock_response.headers = {
+                "Link": '<https://api.ophelos.com/debts?after=deb_123&limit=10>; rel="next"',
+                "X-Total-Count": "invalid_number",
+                "X-Page-Items": "1",
+            }
+            mock_get.return_value = mock_response
+
+            result = http_client.get("/debts")
+
+            assert result["object"] == "list"
+            assert result["has_more"] is True
+            assert result.get("total_count") is None  # Should be None for invalid count
+
+    def test_no_pagination_headers_for_non_list_responses(self, http_client):
+        """Test that pagination headers are not processed for non-list responses."""
+        with patch("requests.Session.get") as mock_get:
+            mock_response = Mock()
+            mock_response.status_code = 200
+            mock_response.content = b'{"id": "single_item", "name": "Test"}'
+            mock_response.json.return_value = {"id": "single_item", "name": "Test"}
+            # Headers that would indicate pagination (but shouldn't be processed)
+            mock_response.headers = {
+                "Link": '<https://api.ophelos.com/debts?after=deb_123&limit=10>; rel="next"',
+                "X-Total-Count": "50",
+            }
+            mock_get.return_value = mock_response
+
+            result = http_client.get("/debts/single_item")
+
+            # Should not have pagination fields added
+            assert "has_more" not in result
+            assert "total_count" not in result
+            assert result["id"] == "single_item"
+            assert result["name"] == "Test"
+
+    def test_link_header_parsing_comprehensive(self, http_client):
+        """Test comprehensive Link header parsing with all relations."""
+        with patch("requests.Session.get") as mock_get:
+            mock_response = Mock()
+            mock_response.status_code = 200
+            mock_response.content = b'{"object": "list", "data": [{"id": "test_1"}]}'
+            mock_response.json.return_value = {"object": "list", "data": [{"id": "test_1"}]}
+            # Complex Link header with multiple relations
+            mock_response.headers = {
+                "Link": '<https://api.ophelos.com/debts?after=deb_first&limit=10>; rel="first", <https://api.ophelos.com/debts?after=deb_next&limit=10>; rel="next", <https://api.ophelos.com/debts?before=deb_prev&limit=10>; rel="prev"',
+                "X-Total-Count": "100",
+            }
+            mock_get.return_value = mock_response
+
+            result = http_client.get("/debts")
+
+            assert result["has_more"] is True
+            assert result["total_count"] == 100
+            assert "pagination" in result
+
+            pagination = result["pagination"]
+
+            # Check next relation
+            assert "next" in pagination
+            assert pagination["next"]["after"] == "deb_next"
+            assert pagination["next"]["limit"] == 10
+            assert "debts?after=deb_next" in pagination["next"]["url"]
+
+            # Check prev relation
+            assert "prev" in pagination
+            assert pagination["prev"]["before"] == "deb_prev"
+            assert pagination["prev"]["limit"] == 10
+            assert "debts?before=deb_prev" in pagination["prev"]["url"]
+
+            # Check first relation
+            assert "first" in pagination
+            assert pagination["first"]["after"] == "deb_first"
+            assert pagination["first"]["limit"] == 10
+            assert "debts?after=deb_first" in pagination["first"]["url"]
+
+    def test_link_header_parsing_malformed(self, http_client):
+        """Test Link header parsing with malformed header."""
+        with patch("requests.Session.get") as mock_get:
+            mock_response = Mock()
+            mock_response.status_code = 200
+            mock_response.content = b'{"object": "list", "data": []}'
+            mock_response.json.return_value = {"object": "list", "data": []}
+            # Malformed Link header
+            mock_response.headers = {"Link": "malformed link header without proper format", "X-Total-Count": "0"}
+            mock_get.return_value = mock_response
+
+            result = http_client.get("/debts")
+
+            assert result["has_more"] is False
+            assert result["total_count"] == 0
+            # Should not have pagination field for malformed header
+            assert result.get("pagination") is None
+
+    def test_link_header_parsing_mixed_parameters(self, http_client):
+        """Test Link header parsing with mixed query parameters."""
+        with patch("requests.Session.get") as mock_get:
+            mock_response = Mock()
+            mock_response.status_code = 200
+            mock_response.content = b'{"object": "list", "data": [{"id": "test_1"}]}'
+            mock_response.json.return_value = {"object": "list", "data": [{"id": "test_1"}]}
+            # Link header with mixed parameters including expand, status, etc.
+            mock_response.headers = {
+                "Link": '<https://api.ophelos.com/debts?after=deb_123&limit=5&expand=customer&status=active>; rel="next"',
+                "X-Total-Count": "25",
+            }
+            mock_get.return_value = mock_response
+
+            result = http_client.get("/debts")
+
+            assert result["has_more"] is True
+            pagination = result["pagination"]
+
+            # Should extract cursor and limit, ignore other parameters
+            assert pagination["next"]["after"] == "deb_123"
+            assert pagination["next"]["limit"] == 5
+            assert "expand=customer" in pagination["next"]["url"]
+            assert "status=active" in pagination["next"]["url"]
 
 
 class TestJitteredRetry:

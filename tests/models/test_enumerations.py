@@ -2,8 +2,6 @@
 Unit tests for enumeration types.
 """
 
-import pytest
-
 from ophelos_sdk.models import ContactDetailType, Currency
 
 

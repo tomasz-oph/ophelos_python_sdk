@@ -2,7 +2,7 @@
 Communications resource manager for Ophelos API.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional
 
 from ..models import Communication, PaginatedResponse
 from .base import BaseResource

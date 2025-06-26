@@ -2,7 +2,7 @@
 Payments resource for Ophelos API.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional
 
 from ..models import PaginatedResponse, Payment
 from .base import BaseResource
@@ -32,9 +32,7 @@ class PaymentsResource(BaseResource):
         Returns:
             Paginated list of payments
         """
-        params = self._build_list_params(
-            limit=limit, after=after, before=before, expand=expand, **kwargs
-        )
+        params = self._build_list_params(limit=limit, after=after, before=before, expand=expand, **kwargs)
         response_data = self.http_client.get("payments", params=params)
         return self._parse_list_response(response_data, Payment)
 

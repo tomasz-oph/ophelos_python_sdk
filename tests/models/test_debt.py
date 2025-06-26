@@ -4,8 +4,6 @@ Unit tests for Debt model and DebtStatus enum.
 
 from datetime import date, datetime
 
-import pytest
-
 from ophelos_sdk.models import (
     Currency,
     Customer,
@@ -125,7 +123,6 @@ class TestDebtModel:
         assert "organisation" not in api_body
         assert api_body["organisation_id"] == "org_123"
 
-
     def test_debt_to_api_body_with_organisation_model(self):
         """Test debt to_api_body with organisation model (should convert to organisation_id)."""
         organisation_model = Organisation(
@@ -159,7 +156,7 @@ class TestDebtModel:
             first_name="John",
             last_name="Doe",
         )
-        
+
         organisation_model = Organisation(
             id="org_real_456",
             object="organisation",
@@ -282,7 +279,7 @@ class TestDebtModel:
     def test_debt_to_api_body_mixed_scenarios(self):
         """Test debt to_api_body with mixed customer/organisation scenarios."""
         customer_model = Customer(id="cust_real_123", first_name="John")
-        
+
         debt = Debt(
             id="debt_123",
             customer=customer_model,  # Model with ID -> should convert

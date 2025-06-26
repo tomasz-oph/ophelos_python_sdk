@@ -14,3 +14,4 @@ class PaginatedResponse(BaseOphelosModel):
     data: List[Union[Dict[str, Any], BaseOphelosModel]]
     has_more: bool = False
     total_count: Optional[int] = None
+    pagination: Optional[Dict[str, Dict[str, Any]]] = None

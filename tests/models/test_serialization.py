@@ -4,8 +4,6 @@ Unit tests for model serialization and deserialization.
 
 from datetime import datetime
 
-import pytest
-
 from ophelos_sdk.models import Debt
 
 

@@ -34,9 +34,7 @@ class Payment(BaseOphelosModel):
     amount: int  # Amount in cents
     currency: Optional[Currency] = None
     payment_provider: Optional[str] = None
-    payment_plan: Optional[Union[str, "PaymentPlan"]] = (
-        None  # Can be payment_plan ID or expanded object
-    )
+    payment_plan: Optional[Union[str, "PaymentPlan"]] = None  # Can be payment_plan ID or expanded object
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     metadata: Optional[Dict[str, Any]] = None
@@ -50,13 +48,9 @@ class PaymentPlan(BaseOphelosModel):
 
     id: Optional[str] = None
     object: Optional[str] = "payment_plan"
-    debt: Optional[Union[str, "Debt"]] = (
-        None  # Can be debt ID or expanded debt object (from jbuilder)
-    )
+    debt: Optional[Union[str, "Debt"]] = None  # Can be debt ID or expanded debt object (from jbuilder)
     status: Optional[str] = None  # From item.status in jbuilder
-    schedule: Optional[List[Union[str, Any]]] = (
-        None  # Can be schedule IDs or expanded objects (from jbuilder)
-    )
+    schedule: Optional[List[Union[str, Any]]] = None  # Can be schedule IDs or expanded objects (from jbuilder)
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     metadata: Optional[Dict[str, Any]] = None
