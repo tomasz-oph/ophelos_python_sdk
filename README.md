@@ -14,10 +14,10 @@ pip install ophelos-sdk
 
 ```bash
 # Install from wheel (recommended)
-pip install dist/ophelos_sdk-1.0.4-py3-none-any.whl
+pip install dist/ophelos_sdk-1.0.5-py3-none-any.whl
 
 # Or install from source distribution  
-pip install dist/ophelos-sdk-1.0.4.tar.gz
+pip install dist/ophelos-sdk-1.0.5.tar.gz
 
 # Or install in development mode
 pip install -e .
@@ -53,7 +53,8 @@ client = OphelosClient(
     client_id="your_client_id",
     client_secret="your_client_secret",
     audience="your_audience",
-    environment="staging"  # or "production"
+    environment="staging",  # or "production"
+    version="2025-04-01"  # API version (default: "2025-04-01")
 )
 
 # Option 1: Create using dictionaries (traditional approach)
@@ -236,7 +237,8 @@ client = OphelosClient(
     client_id="your_client_id",
     client_secret="your_client_secret", 
     audience="your_audience",
-    environment="production"  # "development", "staging", or "production"
+    environment="production",  # "development", "staging", or "production"
+    version="2025-04-01"  # API version (default: "2025-04-01")
 )
 
 # For local development (uses http://api.localhost:3000)
@@ -244,7 +246,8 @@ client = OphelosClient(
     client_id="your_client_id",
     client_secret="your_client_secret",
     audience="your_audience", 
-    environment="development"
+    environment="development",
+    version="2024-12-01"  # Custom API version
 )
 ```
 
@@ -255,17 +258,45 @@ If you already have a valid access token:
 ```python
 # Direct access token authentication
 client = OphelosClient(
-    access_token="your_access_token"
+    access_token="your_access_token",
+    version="2025-04-01"  # API version (default: "2025-04-01")
 )
 
 # Or with environment configuration
 client = OphelosClient(
     access_token="your_access_token",
-    environment="production"
+    environment="production",
+    version=None  # Omit version header if needed
 )
 ```
 
 Contact Ophelos support to obtain these credentials.
+
+### API Versioning
+
+The Ophelos SDK supports API versioning through the `version` parameter. When specified, it adds the `Ophelos-Version` header to all API requests:
+
+```python
+# Use default version (2025-04-01)
+client = OphelosClient(
+    access_token="your_token"
+    # version="2025-04-01" is set by default
+)
+
+# Use custom version
+client = OphelosClient(
+    access_token="your_token",
+    version="2024-12-01"
+)
+
+# Omit version header entirely
+client = OphelosClient(
+    access_token="your_token",
+    version=None
+)
+```
+
+The version parameter ensures API compatibility and enables access to version-specific features. Consult the Ophelos API documentation for available versions and their differences.
 
 ### Multi-Tenant Support
 

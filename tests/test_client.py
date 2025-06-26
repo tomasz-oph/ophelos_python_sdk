@@ -51,6 +51,7 @@ class TestOphelosClient:
             timeout=30,
             max_retries=3,
             tenant_id=None,
+            version="2025-04-01",
         )
 
         # Verify resource managers are initialized
@@ -78,6 +79,7 @@ class TestOphelosClient:
             timeout=30,
             max_retries=3,
             tenant_id=tenant_id,
+            version="2025-04-01",
         )
 
     @patch("ophelos_sdk.client.OAuth2Authenticator")
@@ -129,6 +131,7 @@ class TestOphelosClient:
             timeout=60,
             max_retries=5,
             tenant_id="custom-tenant",
+            version="2025-04-01",
         )
 
     @patch("ophelos_sdk.client.OAuth2Authenticator")
@@ -199,3 +202,52 @@ class TestOphelosClient:
 
         assert isinstance(client.authenticator, StaticTokenAuthenticator)
         assert client.authenticator.access_token == access_token
+
+    @patch("ophelos_sdk.client.OAuth2Authenticator")
+    @patch("ophelos_sdk.client.HTTPClient")
+    def test_client_default_version(self, mock_http_client, mock_authenticator, client_config):
+        """Test that client uses default version when none is specified."""
+        mock_auth_instance = Mock(spec=OAuth2Authenticator)
+        mock_authenticator.return_value = mock_auth_instance
+
+        mock_http_instance = Mock(spec=HTTPClient)
+        mock_http_client.return_value = mock_http_instance
+
+        OphelosClient(**client_config)
+
+        # Verify HTTP client was created with default version
+        args, kwargs = mock_http_client.call_args
+        assert kwargs["version"] == "2025-04-01"
+
+    @patch("ophelos_sdk.client.OAuth2Authenticator")
+    @patch("ophelos_sdk.client.HTTPClient")
+    def test_client_custom_version(self, mock_http_client, mock_authenticator, client_config):
+        """Test that client uses custom version when specified."""
+        mock_auth_instance = Mock(spec=OAuth2Authenticator)
+        mock_authenticator.return_value = mock_auth_instance
+
+        mock_http_instance = Mock(spec=HTTPClient)
+        mock_http_client.return_value = mock_http_instance
+
+        custom_version = "2024-12-01"
+        OphelosClient(**client_config, version=custom_version)
+
+        # Verify HTTP client was created with custom version
+        args, kwargs = mock_http_client.call_args
+        assert kwargs["version"] == custom_version
+
+    @patch("ophelos_sdk.client.OAuth2Authenticator")
+    @patch("ophelos_sdk.client.HTTPClient")
+    def test_client_no_version(self, mock_http_client, mock_authenticator, client_config):
+        """Test that client uses None version when explicitly set to None."""
+        mock_auth_instance = Mock(spec=OAuth2Authenticator)
+        mock_authenticator.return_value = mock_auth_instance
+
+        mock_http_instance = Mock(spec=HTTPClient)
+        mock_http_client.return_value = mock_http_instance
+
+        OphelosClient(**client_config, version=None)
+
+        # Verify HTTP client was created with None version
+        args, kwargs = mock_http_client.call_args
+        assert kwargs["version"] is None

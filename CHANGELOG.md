@@ -5,6 +5,20 @@ All notable changes to the Ophelos Python SDK will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.5] - 2025-01-03
+
+### Added
+- **API Versioning Support**: Added `version` parameter to `OphelosClient` constructor
+  - Default version: `"2025-04-01"` for all new client instances
+  - Custom version: Pass any version string (e.g., `version="2024-12-01"`)
+  - No version: Set `version=None` to omit the `Ophelos-Version` header entirely
+  - Automatic header injection: `Ophelos-Version: {version}` added to all API requests
+  - Comprehensive test coverage for version header functionality
+
+### Changed
+- **Default Behavior**: New clients now include `Ophelos-Version: 2025-04-01` header by default
+- **User-Agent**: Updated to `ophelos-python-sdk/1.0.5`
+
 ## [1.0.4] - 2024-12-19
 
 ### Fixed

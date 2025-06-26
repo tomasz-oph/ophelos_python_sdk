@@ -54,7 +54,7 @@ class TestHTTPClient:
         expected_headers = {
             "Content-Type": "application/json",
             "Accept": "application/json",
-            "User-Agent": "ophelos-python-sdk/1.0.2",
+            "User-Agent": "ophelos-python-sdk/1.0.5",
             "Authorization": "Bearer test_token",
         }
 
@@ -386,6 +386,61 @@ class TestHTTPClient:
             headers = call_args[1]["headers"]
             assert "OPHELOS_TENANT_ID" in headers
             assert headers["OPHELOS_TENANT_ID"] == tenant_id
+
+    def test_version_header_with_default_version(self, mock_authenticator):
+        """Test that Ophelos-Version header is added when version is set."""
+        version = "2025-04-01"
+        client = HTTPClient(authenticator=mock_authenticator, base_url="https://api.test.com", version=version)
+
+        with patch("requests.Session.get") as mock_get:
+            mock_response = Mock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = {}
+            mock_response.content = b"{}"
+            mock_get.return_value = mock_response
+
+            client.get("/test")
+
+            call_args = mock_get.call_args
+            headers = call_args[1]["headers"]
+            assert "Ophelos-Version" in headers
+            assert headers["Ophelos-Version"] == version
+
+    def test_version_header_with_custom_version(self, mock_authenticator):
+        """Test that Ophelos-Version header uses custom version when specified."""
+        custom_version = "2024-12-01"
+        client = HTTPClient(authenticator=mock_authenticator, base_url="https://api.test.com", version=custom_version)
+
+        with patch("requests.Session.post") as mock_post:
+            mock_response = Mock()
+            mock_response.status_code = 201
+            mock_response.json.return_value = {"id": "123"}
+            mock_response.content = b'{"id": "123"}'
+            mock_post.return_value = mock_response
+
+            client.post("/test", data={"name": "test"})
+
+            call_args = mock_post.call_args
+            headers = call_args[1]["headers"]
+            assert "Ophelos-Version" in headers
+            assert headers["Ophelos-Version"] == custom_version
+
+    def test_no_version_header_when_not_set(self, mock_authenticator):
+        """Test that Ophelos-Version header is not added when version is None."""
+        client = HTTPClient(authenticator=mock_authenticator, base_url="https://api.test.com", version=None)
+
+        with patch("requests.Session.get") as mock_get:
+            mock_response = Mock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = {}
+            mock_response.content = b"{}"
+            mock_get.return_value = mock_response
+
+            client.get("/test")
+
+            call_args = mock_get.call_args
+            headers = call_args[1]["headers"]
+            assert "Ophelos-Version" not in headers
 
     def test_pagination_headers_with_next_page(self, http_client):
         """Test that pagination information is extracted from headers when next page exists."""

@@ -51,6 +51,7 @@ class HTTPClient:
         tenant_id: Optional[str] = None,
         timeout: int = 30,
         max_retries: int = 3,
+        version: Optional[str] = None,
     ):
         """
         Initialize HTTP client.
@@ -58,13 +59,16 @@ class HTTPClient:
         Args:
             authenticator: OAuth2 or StaticToken authenticator instance
             base_url: Base URL for API requests
+            tenant_id: Optional tenant ID to include in all requests as OPHELOS_TENANT_ID header
             timeout: Request timeout in seconds
             max_retries: Maximum number of retries for failed requests
+            version: Optional API version to include in Ophelos-Version header
         """
         self.authenticator = authenticator
         self.base_url = base_url.rstrip("/")
         self.tenant_id = tenant_id
         self.timeout = timeout
+        self.version = version
 
         # Configure session with jittered retry strategy
         self.session = requests.Session()
@@ -85,13 +89,16 @@ class HTTPClient:
         request_headers = {
             "Content-Type": "application/json",
             "Accept": "application/json",
-            "User-Agent": "ophelos-python-sdk/1.0.4",
+            "User-Agent": "ophelos-python-sdk/1.0.5",
         }
 
         request_headers.update(self.authenticator.get_auth_headers())
 
         if self.tenant_id:
             request_headers["OPHELOS_TENANT_ID"] = self.tenant_id
+
+        if self.version:
+            request_headers["Ophelos-Version"] = self.version
 
         if headers:
             request_headers.update(headers)

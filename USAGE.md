@@ -9,7 +9,7 @@ This guide shows how to install and use the Ophelos SDK from the local distribut
 Install directly from the built wheel file:
 
 ```bash
-pip install dist/ophelos_sdk-1.0.4-py3-none-any.whl
+pip install dist/ophelos_sdk-1.0.5-py3-none-any.whl
 ```
 
 ### Option 2: Install from Source Distribution
@@ -17,7 +17,7 @@ pip install dist/ophelos_sdk-1.0.4-py3-none-any.whl
 Install from the source distribution:
 
 ```bash
-pip install dist/ophelos-sdk-1.0.4.tar.gz
+pip install dist/ophelos-sdk-1.0.5.tar.gz
 ```
 
 ### Option 3: Development Installation
@@ -59,7 +59,8 @@ client = OphelosClient(
     client_id="your_client_id",
     client_secret="your_client_secret",
     audience="your_audience",
-    environment="staging"
+    environment="staging",
+    version="2025-04-01"  # API version (default: "2025-04-01")
 )
 
 # For production environment
@@ -67,7 +68,8 @@ client = OphelosClient(
     client_id="your_client_id",
     client_secret="your_client_secret",
     audience="your_audience",
-    environment="production"
+    environment="production",
+    version="2025-04-01"  # Specify API version
 )
 
 # For local development
@@ -75,14 +77,16 @@ client = OphelosClient(
     client_id="your_client_id",
     client_secret="your_client_secret",
     audience="your_audience",
-    environment="development"  # Uses http://api.localhost:3000
+    environment="development",  # Uses http://api.localhost:3000
+    version="2024-12-01"  # Custom API version for testing
 )
 
 # Option 2: Direct Access Token Authentication
 # If you already have a valid access token
 client = OphelosClient(
     access_token="your_access_token",
-    environment="production"
+    environment="production",
+    version="2025-04-01"  # API version (default: "2025-04-01")
 )
 
 # Option 3: Multi-tenant applications
@@ -91,18 +95,59 @@ client = OphelosClient(
     client_secret="your_client_secret",
     audience="your_audience",
     environment="production",
-    tenant_id="tenant_123"  # Automatically adds OPHELOS_TENANT_ID header to all requests
+    tenant_id="tenant_123",  # Automatically adds OPHELOS_TENANT_ID header to all requests
+    version="2025-04-01"  # API version (default: "2025-04-01")
 )
 
 # Multi-tenant with access token
 client = OphelosClient(
     access_token="your_access_token",
     environment="production",
-    tenant_id="tenant_123"
+    tenant_id="tenant_123",
+    version=None  # Omit version header if needed
 )
 ```
 
-### 2. Multi-Tenant Usage Patterns
+### 2. API Versioning
+
+The Ophelos SDK supports API versioning through the `version` parameter. This adds the `Ophelos-Version` header to all requests:
+
+```python
+# Default version (recommended for new projects)
+client = OphelosClient(
+    access_token="your_token"
+    # version="2025-04-01" is set by default
+)
+
+# Specify a custom version
+client = OphelosClient(
+    access_token="your_token",
+    version="2024-12-01"  # Use specific API version
+)
+
+# Omit version header (not recommended)
+client = OphelosClient(
+    access_token="your_token",
+    version=None  # No Ophelos-Version header will be sent
+)
+
+# Version with OAuth2
+client = OphelosClient(
+    client_id="your_client_id",
+    client_secret="your_client_secret",
+    audience="your_audience",
+    environment="production",
+    version="2025-04-01"
+)
+```
+
+**Important Notes:**
+- The default version is `"2025-04-01"` for all new client instances
+- Setting `version=None` omits the `Ophelos-Version` header entirely
+- Different API versions may have different feature sets and response formats
+- Consult the Ophelos API documentation for version-specific changes and compatibility
+
+### 3. Multi-Tenant Usage Patterns
 
 For applications serving multiple tenants, you can use different approaches:
 

@@ -38,6 +38,7 @@ class OphelosClient:
         max_retries: int = 3,
         tenant_id: Optional[str] = None,
         access_token: Optional[str] = None,
+        version: Optional[str] = "2025-04-01",
     ):
         """
         Initialize the Ophelos API client.
@@ -51,6 +52,7 @@ class OphelosClient:
             max_retries: Maximum number of retries for failed requests
             tenant_id: Optional tenant ID to include in all requests as OPHELOS_TENANT_ID header
             access_token: Optional pre-obtained access token (bypasses OAuth2 flow)
+            version: API version to use (defaults to '2025-04-01', set to None to omit header)
 
         Note:
             Retry requests automatically use exponential backoff with jitter (0-1.5s randomness)
@@ -72,6 +74,13 @@ class OphelosClient:
                 access_token="your_access_token",
                 environment="development",
                 tenant_id="your_tenant_id"  # Optional: adds OPHELOS_TENANT_ID header
+            )
+
+            # Custom API version
+            client = OphelosClient(
+                access_token="your_access_token",
+                environment="development",
+                version="2024-12-01"
             )
             ```
         """
@@ -108,6 +117,7 @@ class OphelosClient:
             timeout=timeout,
             max_retries=max_retries,
             tenant_id=tenant_id,
+            version=version,
         )
         self.debts = DebtsResource(self.http_client)
         self.customers = CustomersResource(self.http_client)
