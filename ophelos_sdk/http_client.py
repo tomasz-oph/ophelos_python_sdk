@@ -85,7 +85,7 @@ class HTTPClient:
         request_headers = {
             "Content-Type": "application/json",
             "Accept": "application/json",
-            "User-Agent": "ophelos-python-sdk/1.0.2",
+            "User-Agent": "ophelos-python-sdk/1.0.4",
         }
 
         request_headers.update(self.authenticator.get_auth_headers())
