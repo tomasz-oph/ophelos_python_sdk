@@ -13,4 +13,4 @@ recursive-exclude * *.py[co]
 recursive-exclude * .pytest_cache
 recursive-exclude * .mypy_cache
 recursive-exclude * .coverage
-recursive-exclude * htmlcov 
+recursive-exclude * htmlcov
