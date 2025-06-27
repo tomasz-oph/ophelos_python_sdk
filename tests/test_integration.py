@@ -209,26 +209,25 @@ class TestIntegrationHelpers:
 
 
 # Example usage instructions
-"""
-Integration tests are DISABLED by default.
-
-To enable and run integration tests:
-
-1. Uncomment the conditional skip logic and comment out the unconditional skip:
-   # integration_skip = pytest.mark.skip(reason="Integration tests are disabled by default")
-   integration_skip = pytest.mark.skipif(...)
-
-2. Set environment variables:
-   export OPHELOS_CLIENT_ID="your_client_id"
-   export OPHELOS_CLIENT_SECRET="your_client_secret"
-   export OPHELOS_AUDIENCE="your_audience"
-
-3. Run integration tests:
-   pytest tests/test_integration.py -v
-
-4. To skip tests that require existing data:
-   export OPHELOS_SKIP_DATA_TESTS=true
-
-Note: Integration tests are disabled by default to avoid API authentication failures
-during regular test runs. Enable them only when you have valid API credentials.
-"""
+#
+# Integration tests are DISABLED by default.
+#
+# To enable and run integration tests:
+#
+# 1. Uncomment the conditional skip logic and comment out the unconditional skip:
+#    # integration_skip = pytest.mark.skip(reason="Integration tests are disabled by default")
+#    integration_skip = pytest.mark.skipif(...)
+#
+# 2. Set environment variables:
+#    export OPHELOS_CLIENT_ID="your_client_id"
+#    export OPHELOS_CLIENT_SECRET="your_client_secret"
+#    export OPHELOS_AUDIENCE="your_audience"
+#
+# 3. Run integration tests:
+#    pytest tests/test_integration.py -v
+#
+# 4. To skip tests that require existing data:
+#    export OPHELOS_SKIP_DATA_TESTS=true
+#
+# Note: Integration tests are disabled by default to avoid API authentication failures
+# during regular test runs. Enable them only when you have valid API credentials.

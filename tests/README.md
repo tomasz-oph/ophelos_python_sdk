@@ -148,4 +148,4 @@ When adding new features:
 - **Model tests**: Place in `tests/models/` directory, one file per model
 - **Core functionality tests**: Place in `tests/` root directory
 - **Integration tests**: Keep in `test_integration.py`
-- **Shared fixtures**: Add to `conftest.py` 
+- **Shared fixtures**: Add to `conftest.py`

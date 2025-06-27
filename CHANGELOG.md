@@ -5,6 +5,13 @@ All notable changes to the Ophelos Python SDK will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.6] - 2025-01-03
+
+### Added
+- **Thread Safety**: HTTPClient is now fully thread-safe using thread-local storage
+  - Each thread gets its own `requests.Session` instance
+  - Eliminates connection pool corruption and race conditions
+
 ## [1.0.5] - 2025-01-03
 
 ### Added
@@ -12,8 +19,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Default version: `"2025-04-01"` for all new client instances
   - Custom version: Pass any version string (e.g., `version="2024-12-01"`)
   - No version: Set `version=None` to omit the `Ophelos-Version` header entirely
-  - Automatic header injection: `Ophelos-Version: {version}` added to all API requests
-  - Comprehensive test coverage for version header functionality
 
 ### Changed
 - **Default Behavior**: New clients now include `Ophelos-Version: 2025-04-01` header by default
@@ -46,7 +51,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **Access Token Authentication**: Direct access token support alongside OAuth2
 - **Model-First API**: `to_api_body()` method with intelligent field management
-- **Test Coverage**: 143 model tests and 254+ total tests
 
 ### Enhanced
 - **Model Organization**: Separate files for each model type
@@ -92,4 +96,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Async client support
 - Enhanced error messages
 - CLI tool for API testing
-- Performance optimizations 
+- Performance optimizations

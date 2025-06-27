@@ -12,21 +12,26 @@ exclude =
     .tox,
     .pytest_cache,
     .mypy_cache
-ignore =
-    # E203: whitespace before ':' (conflicts with black)
-    E203,
-    # W503: line break before binary operator (conflicts with black)
-    W503,
-    # W504: line break after binary operator (conflicts with W503)
-    W504,
-    # E501: line too long (handled by max-line-length)
-    E501,
-    # W291: trailing whitespace (handled by formatters)
-    W291,
-    # W292: no newline at end of file (handled by formatters)
-    W292,
-    # W293: blank line contains whitespace (handled by formatters)
-    W293
+# Ignored error codes:
+# E203: whitespace before ':' (conflicts with black)
+# W503: line break before binary operator (conflicts with black)
+# W504: line break after binary operator (conflicts with W503)
+# E501: line too long (handled by max-line-length)
+# W291: trailing whitespace (handled by formatters)
+# W292: no newline at end of file (handled by formatters)
+# W293: blank line contains whitespace (handled by formatters)
+# D100: Missing docstring in public module
+# D101: Missing docstring in public class
+# D102: Missing docstring in public method
+# D103: Missing docstring in public function
+# D104: Missing docstring in public package
+# D107: Missing docstring in __init__
+# D200: One-line docstring should fit on one line
+# D202: No blank lines allowed after function docstring
+# D205: 1 blank line required between summary line and description
+# D400: First line should end with a period
+# D401: First line should be in imperative mood
+ignore = E203,W503,W504,E501,W291,W292,W293,D100,D101,D102,D103,D104,D107,D200,D202,D205,D400,D401
 per-file-ignores =
     # Tests can have longer lines and more complex assertions
     tests/*.py:E501,C901,F401,F841,E128

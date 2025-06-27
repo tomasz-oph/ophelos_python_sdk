@@ -9,7 +9,7 @@ This guide shows how to install and use the Ophelos SDK from the local distribut
 Install directly from the built wheel file:
 
 ```bash
-pip install dist/ophelos_sdk-1.0.5-py3-none-any.whl
+pip install dist/ophelos_sdk-1.0.6-py3-none-any.whl
 ```
 
 ### Option 2: Install from Source Distribution
@@ -17,7 +17,7 @@ pip install dist/ophelos_sdk-1.0.5-py3-none-any.whl
 Install from the source distribution:
 
 ```bash
-pip install dist/ophelos-sdk-1.0.5.tar.gz
+pip install dist/ophelos-sdk-1.0.6.tar.gz
 ```
 
 ### Option 3: Development Installation
@@ -195,12 +195,12 @@ def create_tenant_client(tenant_id):
 # Create client on-demand
 def process_tenant_data(tenant_id, debt_ids):
     client = create_tenant_client(tenant_id)
-    
+
     results = []
     for debt_id in debt_ids:
         debt = client.debts.get(debt_id)  # Includes OPHELOS_TENANT_ID: {tenant_id}
         results.append(debt)
-    
+
     return results
 ```
 
@@ -211,15 +211,15 @@ from concurrent.futures import ThreadPoolExecutor
 
 def process_tenant_concurrently(tenant_configs):
     """Process multiple tenants concurrently with thread-safe authentication."""
-    
+
     def process_single_tenant(tenant_config):
         client = OphelosClient(
-            client_id="your_client_id", 
+            client_id="your_client_id",
             client_secret="your_client_secret",
             audience="your_audience",
             tenant_id=tenant_config["tenant_id"]
         )
-        
+
         # Process tenant data
         debts = client.debts.list(limit=100)
         return {
@@ -227,16 +227,16 @@ def process_tenant_concurrently(tenant_configs):
             "debt_count": len(debts.data),
             "status": "success"
         }
-    
+
     # Process tenants concurrently - authentication is thread-safe
     with ThreadPoolExecutor(max_workers=5) as executor:
         futures = [
-            executor.submit(process_single_tenant, config) 
+            executor.submit(process_single_tenant, config)
             for config in tenant_configs
         ]
-        
+
         results = [future.result() for future in futures]
-    
+
     return results
 
 # Usage
@@ -363,7 +363,7 @@ customer_model = Customer(
         ),
         ContactDetail(
             id="temp_cd_2",
-            type="phone", 
+            type="phone",
             value="+44987654321",
             usage="notifications"
         )
@@ -476,19 +476,19 @@ webhook_handler = WebhookHandler("your_webhook_secret")
 def handle_webhook(request):
     payload = request.body.decode('utf-8')
     signature = request.headers.get('Ophelos-Signature')
-    
+
     try:
         # Verify and parse the webhook event
         event = webhook_handler.verify_and_parse(payload, signature)
-        
+
         # Handle different event types
         if event.type == "debt.created":
             print(f"New debt created: {event.data['id']}")
         elif event.type == "payment.succeeded":
             print(f"Payment succeeded: {event.data['id']}")
-        
+
         return {"status": "success"}
-    
+
     except Exception as e:
         print(f"Webhook error: {e}")
         return {"status": "error"}, 400
@@ -500,7 +500,7 @@ def handle_webhook_simple(request):
         signature_header=request.headers.get('Ophelos-Signature'),
         webhook_secret="your_webhook_secret"
     )
-    
+
     # Process the event
     print(f"Received {event.type} event")
 ```
@@ -684,20 +684,20 @@ For processing large datasets, use generators to iterate through all pages:
 def iterate_all_debts(client):
     """Generator that yields all debts across all pages."""
     cursor = None
-    
+
     while True:
         params = {'limit': 100}
         if cursor:
             params['after'] = cursor
-            
+
         page = client.debts.list(**params)
-        
+
         for debt in page.data:
             yield debt
-        
+
         if not page.has_more:
             break
-            
+
         cursor = page.pagination['next']['after'] if page.pagination and 'next' in page.pagination else None
 
 # Use the generator
@@ -826,7 +826,7 @@ The SDK provides intelligent error handling with graceful fallbacks:
 try:
     # This might return either a Debt model or raw dict
     result = client.debts.get("some_debt_id")
-    
+
     if isinstance(result, Debt):
         print(f"Valid debt model: {result.id}")
         print(f"Amount: {result.summary.amount_total}")
@@ -835,7 +835,7 @@ try:
         # Handle raw data appropriately
         debt_id = result.get("id", "unknown")
         print(f"Debt ID from raw data: {debt_id}")
-    
+
 except OphelosAPIError as e:
     print(f"API error: {e.message}")
     if hasattr(e, 'response_data'):
@@ -891,7 +891,7 @@ def create_customer_model(first_name, last_name, email, phone=None):
             primary=True
         )
     ]
-    
+
     if phone:
         contact_details.append(
             ContactDetail(
@@ -901,7 +901,7 @@ def create_customer_model(first_name, last_name, email, phone=None):
                 usage="billing"
             )
         )
-    
+
     return Customer(
         id=f"temp_cust_{first_name.lower()}_{last_name.lower()}",
         first_name=first_name,
@@ -939,7 +939,7 @@ for data in customers_data:
             )
         ]
     )
-    
+
     created_customer = client.customers.create(customer_model)
     created_customers.append(created_customer)
 
@@ -980,7 +980,7 @@ debt_ids = ["debt_001", "debt_002", "debt_003", "debt_004", "debt_005"]
 with ThreadPoolExecutor(max_workers=5) as executor:
     # Submit all tasks
     futures = [executor.submit(fetch_debt_data, debt_id) for debt_id in debt_ids]
-    
+
     # Collect results
     results = [future.result() for future in futures]
 
@@ -994,7 +994,7 @@ for result in results:
 ```python
 # Get debt with expanded customer and payment information
 debt = client.debts.get(
-    "debt_123456789", 
+    "debt_123456789",
     expand=["customer", "payments", "organisation"]
 )
 
@@ -1139,4 +1139,4 @@ Development tools included:
 - **mypy**: Static type checking
 - **isort**: Import sorting and organization
 - **autoflake**: Remove unused imports and variables
-- **pre-commit**: Git hooks for code quality 
+- **pre-commit**: Git hooks for code quality

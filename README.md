@@ -14,10 +14,10 @@ pip install ophelos-sdk
 
 ```bash
 # Install from wheel (recommended)
-pip install dist/ophelos_sdk-1.0.5-py3-none-any.whl
+pip install dist/ophelos_sdk-1.0.6-py3-none-any.whl
 
-# Or install from source distribution  
-pip install dist/ophelos-sdk-1.0.5.tar.gz
+# Or install from source distribution
+pip install dist/ophelos-sdk-1.0.6.tar.gz
 
 # Or install in development mode
 pip install -e .
@@ -136,7 +136,7 @@ customer = Customer(
     contact_details=[
         ContactDetail(
             id="temp_cd_1",
-            type="email", 
+            type="email",
             value="john@example.com",
             primary=True
         )
@@ -163,7 +163,7 @@ api_body = customer.to_api_body()
 print(api_body)
 # Output: {
 #   "first_name": "John",
-#   "last_name": "Doe", 
+#   "last_name": "Doe",
 #   "contact_details": [
 #     {"type": "email", "value": "john@example.com", "primary": True}
 #   ]
@@ -235,7 +235,7 @@ You'll need:
 # OAuth2 authentication (automatic token management)
 client = OphelosClient(
     client_id="your_client_id",
-    client_secret="your_client_secret", 
+    client_secret="your_client_secret",
     audience="your_audience",
     environment="production",  # "development", "staging", or "production"
     version="2025-04-01"  # API version (default: "2025-04-01")
@@ -245,7 +245,7 @@ client = OphelosClient(
 client = OphelosClient(
     client_id="your_client_id",
     client_secret="your_client_secret",
-    audience="your_audience", 
+    audience="your_audience",
     environment="development",
     version="2024-12-01"  # Custom API version
 )
@@ -328,7 +328,7 @@ tenant_a_client = OphelosClient(
 )
 
 tenant_b_client = OphelosClient(
-    client_id="your_client_id", 
+    client_id="your_client_id",
     client_secret="your_client_secret",
     audience="your_audience",
     tenant_id="tenant_b"
@@ -348,11 +348,11 @@ debts = client.debts.list(limit=10)
 # Check pagination status
 if debts.has_more:
     print(f"Total count: {debts.total_count}")
-    
+
     # Access pagination cursors
     next_cursor = debts.pagination['next']['after'] if debts.pagination and 'next' in debts.pagination else None
     prev_cursor = debts.pagination['prev']['before'] if debts.pagination and 'prev' in debts.pagination else None
-    
+
     # Navigate using cursors
     next_page = client.debts.list(limit=10, after=next_cursor)
     prev_page = client.debts.list(limit=10, before=prev_cursor)
@@ -408,7 +408,7 @@ customer_model = Customer(
             primary=True
         ),
         ContactDetail(
-            id="temp_cd_2", 
+            id="temp_cd_2",
             type="phone",
             value="+44123456789",
             usage="billing"
@@ -487,10 +487,10 @@ try:
         payload=request.body,
         signature=request.headers.get("Ophelos-Signature")
     )
-    
+
     if event.type == "debt.created":
         print(f"New debt created: {event.data.id}")
-        
+
 except Exception as e:
     print(f"Webhook validation failed: {e}")
 ```
@@ -511,7 +511,7 @@ clients = {
     ),
     "tenant_b": OphelosClient(
         client_id="your_client_id",
-        client_secret="your_client_secret", 
+        client_secret="your_client_secret",
         audience="your_audience",
         tenant_id="tenant_b"
     )
@@ -530,7 +530,7 @@ with ThreadPoolExecutor(max_workers=5) as executor:
         executor.submit(process_tenant_debts, "tenant_a"),
         executor.submit(process_tenant_debts, "tenant_b")
     ]
-    
+
     for future in futures:
         result = future.result()
         print(result)
@@ -544,12 +544,12 @@ with ThreadPoolExecutor(max_workers=5) as executor:
 OphelosClient(
     # OAuth2 Authentication (Option 1)
     client_id: Optional[str] = None,
-    client_secret: Optional[str] = None, 
+    client_secret: Optional[str] = None,
     audience: Optional[str] = None,
-    
+
     # Direct Token Authentication (Option 2)
     access_token: Optional[str] = None,
-    
+
     # Common Configuration
     environment: str = "staging",  # "development", "staging", or "production"
     tenant_id: Optional[str] = None,  # For multi-tenant applications
@@ -573,7 +573,7 @@ OphelosClient(
 ### Resource Managers
 
 - `client.debts` - Debt management operations
-- `client.customers` - Customer management operations  
+- `client.customers` - Customer management operations
 - `client.organisations` - Organisation management operations
 - `client.payments` - Payment management operations
 - `client.invoices` - Invoice management operations
@@ -603,13 +603,13 @@ def iterate_all_debts():
     cursor = None
     while True:
         page = client.debts.list(limit=100, after=cursor)
-        
+
         for debt in page.data:
             yield debt
-            
+
         if not page.has_more:
             break
-            
+
         cursor = page.pagination['next']['after'] if page.pagination and 'next' in page.pagination else None
 
 # Use the generator
@@ -662,4 +662,4 @@ pytest --cov=ophelos_sdk tests/
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. 
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
