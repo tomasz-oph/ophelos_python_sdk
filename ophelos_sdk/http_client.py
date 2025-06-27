@@ -3,9 +3,11 @@ HTTP client for making authenticated requests to the Ophelos API.
 """
 
 import random
+import threading
 from typing import Any, Dict, Optional, Union
 
 import requests
+from requests import Session
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
@@ -42,7 +44,12 @@ class JitteredRetry(Retry):
 
 
 class HTTPClient:
-    """HTTP client for making authenticated requests to Ophelos API."""
+    """
+    Thread-safe HTTP client for making authenticated requests to Ophelos API.
+
+    Uses thread-local storage to ensure each thread gets its own requests.Session
+    instance, making it safe for concurrent usage across multiple threads.
+    """
 
     def __init__(
         self,
@@ -69,27 +76,46 @@ class HTTPClient:
         self.tenant_id = tenant_id
         self.timeout = timeout
         self.version = version
+        self.max_retries = max_retries
 
-        # Configure session with jittered retry strategy
-        self.session = requests.Session()
+        # Thread-local storage for sessions (thread-safe)
+        self._local = threading.local()
 
-        retry_strategy = JitteredRetry(
-            total=max_retries,
-            status_forcelist=[429, 500, 502, 503, 504],
-            allowed_methods=["HEAD", "GET", "OPTIONS"],
-            backoff_factor=1,
-        )
+    def _get_session(self) -> Session:
+        """
+        Get thread-local session instance.
 
-        adapter = HTTPAdapter(max_retries=retry_strategy)
-        self.session.mount("http://", adapter)
-        self.session.mount("https://", adapter)
+        Each thread gets its own requests.Session instance to ensure thread safety.
+        Sessions are configured with jittered retry strategy and connection pooling.
+
+        Returns:
+            Thread-local requests.Session instance
+        """
+        if not hasattr(self._local, "session"):
+            # Create new session for this thread
+            self._local.session = requests.Session()
+
+            # Configure session with jittered retry strategy
+            retry_strategy = JitteredRetry(
+                total=self.max_retries,
+                status_forcelist=[429, 500, 502, 503, 504],
+                allowed_methods=["HEAD", "GET", "OPTIONS"],
+                backoff_factor=1,
+            )
+
+            adapter = HTTPAdapter(max_retries=retry_strategy)
+            self._local.session.mount("http://", adapter)
+            self._local.session.mount("https://", adapter)
+
+        session: Session = self._local.session
+        return session
 
     def _prepare_headers(self, headers: Optional[Dict[str, str]] = None) -> Dict[str, str]:
         """Prepare headers for request including authentication."""
         request_headers = {
             "Content-Type": "application/json",
             "Accept": "application/json",
-            "User-Agent": "ophelos-python-sdk/1.0.5",
+            "User-Agent": "ophelos-python-sdk/1.0.6",
         }
 
         request_headers.update(self.authenticator.get_auth_headers())
@@ -276,8 +302,9 @@ class HTTPClient:
         """
         url = f"{self.base_url}/{path.lstrip('/')}"
         request_headers = self._prepare_headers(headers)
+        session = self._get_session()
 
-        response = self.session.get(url, params=params, headers=request_headers, timeout=self.timeout)
+        response = session.get(url, params=params, headers=request_headers, timeout=self.timeout)
 
         return self._handle_response(response)
 
@@ -302,8 +329,9 @@ class HTTPClient:
         """
         url = f"{self.base_url}/{path.lstrip('/')}"
         request_headers = self._prepare_headers(headers)
+        session = self._get_session()
 
-        response = self.session.post(url, json=data, params=params, headers=request_headers, timeout=self.timeout)
+        response = session.post(url, json=data, params=params, headers=request_headers, timeout=self.timeout)
 
         return self._handle_response(response)
 
@@ -328,8 +356,9 @@ class HTTPClient:
         """
         url = f"{self.base_url}/{path.lstrip('/')}"
         request_headers = self._prepare_headers(headers)
+        session = self._get_session()
 
-        response = self.session.put(url, json=data, params=params, headers=request_headers, timeout=self.timeout)
+        response = session.put(url, json=data, params=params, headers=request_headers, timeout=self.timeout)
 
         return self._handle_response(response)
 
@@ -354,8 +383,9 @@ class HTTPClient:
         """
         url = f"{self.base_url}/{path.lstrip('/')}"
         request_headers = self._prepare_headers(headers)
+        session = self._get_session()
 
-        response = self.session.patch(url, json=data, params=params, headers=request_headers, timeout=self.timeout)
+        response = session.patch(url, json=data, params=params, headers=request_headers, timeout=self.timeout)
 
         return self._handle_response(response)
 
@@ -378,7 +408,8 @@ class HTTPClient:
         """
         url = f"{self.base_url}/{path.lstrip('/')}"
         request_headers = self._prepare_headers(headers)
+        session = self._get_session()
 
-        response = self.session.delete(url, params=params, headers=request_headers, timeout=self.timeout)
+        response = session.delete(url, params=params, headers=request_headers, timeout=self.timeout)
 
         return self._handle_response(response)

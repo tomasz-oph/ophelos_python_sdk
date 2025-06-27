@@ -54,7 +54,7 @@ class TestHTTPClient:
         expected_headers = {
             "Content-Type": "application/json",
             "Accept": "application/json",
-            "User-Agent": "ophelos-python-sdk/1.0.5",
+            "User-Agent": "ophelos-python-sdk/1.0.6",
             "Authorization": "Bearer test_token",
         }
 
@@ -727,11 +727,14 @@ class TestJitteredRetry:
         """Test that HTTPClient uses JitteredRetry by default."""
         client = HTTPClient(authenticator=mock_authenticator, base_url="https://api.test.com", max_retries=3)
 
+        # Get the thread-local session (this will create it)
+        session = client._get_session()
+
         # Check that the session has the adapter with JitteredRetry
-        assert hasattr(client.session, "adapters")
+        assert hasattr(session, "adapters")
 
         # Get the adapter (should be for both http and https)
-        adapters = client.session.adapters
+        adapters = session.adapters
         assert len(adapters) >= 2  # Should have http:// and https:// adapters
 
         # Check one of the adapters
@@ -760,3 +763,43 @@ class TestJitteredRetry:
 
         # With backoff_factor=2, second retry base is 4.0, so jittered should be 4.0-5.5
         assert 4.0 <= backoff_time <= 5.5, f"Expected 4.0-5.5 with backoff_factor=2, got {backoff_time}"
+
+    def test_thread_local_sessions(self, mock_authenticator):
+        """Test that each thread gets its own session instance."""
+        import threading
+
+        client = HTTPClient(authenticator=mock_authenticator, base_url="https://api.test.com", max_retries=3)
+
+        # Store sessions from different threads
+        sessions = {}
+
+        def get_session_in_thread(thread_id):
+            sessions[thread_id] = client._get_session()
+
+        # Create multiple threads
+        threads = []
+        for i in range(3):
+            thread = threading.Thread(target=get_session_in_thread, args=(i,))
+            threads.append(thread)
+            thread.start()
+
+        # Wait for all threads to complete
+        for thread in threads:
+            thread.join()
+
+        # Get session from main thread
+        main_session = client._get_session()
+
+        # Each thread should have its own session instance
+        assert len(sessions) == 3
+        for thread_id, session in sessions.items():
+            assert session is not None
+            assert hasattr(session, "adapters")
+            # Sessions from different threads should be different instances
+            for other_id, other_session in sessions.items():
+                if thread_id != other_id:
+                    assert session is not other_session
+
+        # Main thread session should be different from all thread sessions
+        for session in sessions.values():
+            assert main_session is not session
