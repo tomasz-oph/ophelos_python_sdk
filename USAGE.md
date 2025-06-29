@@ -23,6 +23,27 @@ pip install dist/ophelos-sdk-1.1.0.tar.gz
 pip install -e ".[dev]"
 ```
 
+## Error Handling & Debugging
+
+The SDK provides comprehensive error handling with full request/response context for all error types:
+
+- **API Errors** (`OphelosAPIError`): Include request details, response time, and status codes
+- **Timeout Errors** (`TimeoutError`): Capture request context even when no response received
+- **Parse Errors** (`ParseError`): Show request details when response parsing fails
+- **Unexpected Errors** (`UnexpectedError`): Wrap any unexpected exceptions with request context
+
+All exceptions provide the same debugging interface: `request_info`, `response_info`, and `response_raw` properties for complete transparency.
+
+```python
+try:
+    debt = client.debts.get("invalid_id")
+except OphelosAPIError as e:
+    print(f"Request: {e.request_info['method']} {e.request_info['url']}")
+    print(f"Response: {e.response_info['status_code']} in {e.response_raw.elapsed.total_seconds()}s")
+except TimeoutError as e:
+    print(f"Timeout after: {e.request_info}")  # Available even without response
+```
+
 ## Authentication & Client Setup
 
 ### OAuth2 Authentication (Recommended)
@@ -651,41 +672,39 @@ def paginate_with_monitoring(client, resource_name, **kwargs):
 all_debts = paginate_with_monitoring(client, "debts", expand=["customer"])
 ```
 
-### Error Handling with Request Context
+### Comprehensive Error Handling with Request Context
 
 ```python
-from ophelos_sdk.exceptions import OphelosAPIError, AuthenticationError
+from ophelos_sdk.exceptions import (
+    OphelosAPIError, AuthenticationError, TimeoutError,
+    ParseError, UnexpectedError
+)
 
 def safe_api_call_with_context(operation_func, operation_name):
     """Execute API call with comprehensive error handling and context."""
     try:
         result = operation_func()
-
-        # Log successful operation
         print(f"✅ {operation_name} successful")
         print(f"   Request: {result.request_info['method']} {result.request_info['url']}")
         print(f"   Response: {result.response_info['status_code']} in {result.response_raw.elapsed.total_seconds():.3f}s")
-
         return result
 
     except OphelosAPIError as e:
-        print(f"❌ {operation_name} failed: {e.message}")
-        print(f"   Status: {e.status_code}")
-
-        if hasattr(e, 'response_data'):
-            print(f"   Response data: {e.response_data}")
-
-        if hasattr(e, 'request_info'):
-            print(f"   Request: {e.request_info}")
-
+        print(f"❌ {operation_name} API error: {e.message} (Status: {e.status_code})")
+        print(f"   Request: {e.request_info}")
+        print(f"   Response time: {e.response_raw.elapsed.total_seconds():.3f}s")
         raise
 
-    except AuthenticationError as e:
-        print(f"🔒 Authentication failed for {operation_name}: {e.message}")
+    except TimeoutError as e:
+        print(f"⏱️ {operation_name} timed out: {e.message}")
+        print(f"   Request details: {e.request_info}")  # Available even for timeouts
         raise
 
-    except Exception as e:
-        print(f"💥 Unexpected error in {operation_name}: {e}")
+    except (ParseError, UnexpectedError) as e:
+        print(f"💥 {operation_name} error: {e.message}")
+        print(f"   Request context: {e.request_info}")
+        if hasattr(e, 'original_error'):
+            print(f"   Original error: {e.original_error}")
         raise
 
 # Usage examples

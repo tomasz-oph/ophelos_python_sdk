@@ -20,6 +20,8 @@ from .exceptions import (
     OphelosAPIError,
     RateLimitError,
     ServerError,
+    TimeoutError,
+    UnexpectedError,
     ValidationError,
 )
 
@@ -50,6 +52,14 @@ class HTTPClient:
     Uses thread-local storage to ensure each thread gets its own requests.Session
     instance, making it safe for concurrent usage across multiple threads.
     """
+
+    # Timeout-related exceptions to catch
+    TIMEOUT_EXCEPTIONS = (
+        requests.exceptions.Timeout,
+        requests.exceptions.ConnectTimeout,
+        requests.exceptions.ReadTimeout,
+        requests.exceptions.ConnectionError,
+    )
 
     def __init__(
         self,
@@ -131,6 +141,58 @@ class HTTPClient:
 
         return request_headers
 
+    def _execute_request(self, method: str, url: str, headers: Dict[str, str], **kwargs: Any) -> requests.Response:
+        """
+        Execute HTTP request with comprehensive error handling.
+
+        Args:
+            method: HTTP method (GET, POST, etc.)
+            url: Request URL
+            headers: Request headers
+            **kwargs: Additional arguments for the request
+
+        Returns:
+            requests.Response object
+
+        Raises:
+            TimeoutError: If request times out
+            UnexpectedError: For unexpected errors during request processing
+        """
+        session = self._get_session()
+
+        # Build request info for debugging (before making the request)
+        body_data = kwargs.get("json") or kwargs.get("data")
+        body: Optional[str] = None
+        if body_data and kwargs.get("json"):
+            # Serialize JSON data to string for debugging
+            import json
+
+            body = json.dumps(body_data)
+        elif body_data is not None:
+            body = str(body_data)
+
+        request_info = {
+            "method": method,
+            "url": url,
+            "headers": dict(headers),
+            "body": body,
+            "params": kwargs.get("params"),
+        }
+
+        try:
+            response = session.request(method, url, headers=headers, timeout=self.timeout, **kwargs)
+            return response
+        except self.TIMEOUT_EXCEPTIONS as e:
+            # Check if it's a timeout-related error (including those wrapped in ConnectionError/RetryError)
+            if any(timeout_word in str(e).lower() for timeout_word in ["timeout", "timed out"]):
+                raise TimeoutError(f"Request timed out after {self.timeout} seconds: {e}", request_info=request_info)
+            else:
+                # Re-raise non-timeout connection errors as UnexpectedError
+                raise UnexpectedError(f"Connection error: {e}", original_error=e, request_info=request_info)
+        except Exception as e:
+            # Catch any other unexpected errors and wrap with debugging info
+            raise UnexpectedError(f"Unexpected error during request: {e}", original_error=e, request_info=request_info)
+
     def _handle_response(self, response: requests.Response) -> Dict[str, Any]:
         """
         Handle API response and raise appropriate exceptions for errors.
@@ -155,21 +217,25 @@ class HTTPClient:
 
             if response.status_code == 401:
                 self.authenticator.invalidate_token()
-                raise AuthenticationError(message, response_data=response_data)
+                raise AuthenticationError(message, response_data=response_data, response=response)
             elif response.status_code == 403:
-                raise ForbiddenError(message, response_data=response_data)
+                raise ForbiddenError(message, response_data=response_data, response=response)
             elif response.status_code == 404:
-                raise NotFoundError(message, response_data=response_data)
+                raise NotFoundError(message, response_data=response_data, response=response)
             elif response.status_code == 409:
-                raise ConflictError(message, response_data=response_data)
+                raise ConflictError(message, response_data=response_data, response=response)
             elif response.status_code == 422:
-                raise ValidationError(message, response_data=response_data)
+                raise ValidationError(message, response_data=response_data, response=response)
             elif response.status_code == 429:
-                raise RateLimitError(message, response_data=response_data)
+                raise RateLimitError(message, response_data=response_data, response=response)
             elif response.status_code >= 500:
-                raise ServerError(message, status_code=response.status_code, response_data=response_data)
+                raise ServerError(
+                    message, status_code=response.status_code, response_data=response_data, response=response
+                )
             else:
-                raise OphelosAPIError(message, status_code=response.status_code, response_data=response_data)
+                raise OphelosAPIError(
+                    message, status_code=response.status_code, response_data=response_data, response=response
+                )
 
         # Extract pagination information from headers for list responses
         if self._is_list_response(response_data):
@@ -304,10 +370,16 @@ class HTTPClient:
         """
         url = f"{self.base_url}/{path.lstrip('/')}"
         request_headers = self._prepare_headers(headers)
-        session = self._get_session()
 
-        response = session.get(url, params=params, headers=request_headers, timeout=self.timeout)
-        response_data = self._handle_response(response)
+        response = self._execute_request("GET", url, request_headers, params=params)
+
+        try:
+            response_data = self._handle_response(response)
+        except Exception as e:
+            # Catch response processing errors and wrap with debugging info
+            if not isinstance(e, (OphelosAPIError, TimeoutError, UnexpectedError)):
+                raise UnexpectedError(f"Error processing response: {e}", original_error=e, response=response)
+            raise
 
         if return_response:
             return response_data, response
@@ -336,10 +408,16 @@ class HTTPClient:
         """
         url = f"{self.base_url}/{path.lstrip('/')}"
         request_headers = self._prepare_headers(headers)
-        session = self._get_session()
 
-        response = session.post(url, json=data, params=params, headers=request_headers, timeout=self.timeout)
-        response_data = self._handle_response(response)
+        response = self._execute_request("POST", url, request_headers, json=data, params=params)
+
+        try:
+            response_data = self._handle_response(response)
+        except Exception as e:
+            # Catch response processing errors and wrap with debugging info
+            if not isinstance(e, (OphelosAPIError, TimeoutError, UnexpectedError)):
+                raise UnexpectedError(f"Error processing response: {e}", original_error=e, response=response)
+            raise
 
         if return_response:
             return response_data, response
@@ -368,10 +446,16 @@ class HTTPClient:
         """
         url = f"{self.base_url}/{path.lstrip('/')}"
         request_headers = self._prepare_headers(headers)
-        session = self._get_session()
 
-        response = session.put(url, json=data, params=params, headers=request_headers, timeout=self.timeout)
-        response_data = self._handle_response(response)
+        response = self._execute_request("PUT", url, request_headers, json=data, params=params)
+
+        try:
+            response_data = self._handle_response(response)
+        except Exception as e:
+            # Catch response processing errors and wrap with debugging info
+            if not isinstance(e, (OphelosAPIError, TimeoutError, UnexpectedError)):
+                raise UnexpectedError(f"Error processing response: {e}", original_error=e, response=response)
+            raise
 
         if return_response:
             return response_data, response
@@ -400,10 +484,16 @@ class HTTPClient:
         """
         url = f"{self.base_url}/{path.lstrip('/')}"
         request_headers = self._prepare_headers(headers)
-        session = self._get_session()
 
-        response = session.patch(url, json=data, params=params, headers=request_headers, timeout=self.timeout)
-        response_data = self._handle_response(response)
+        response = self._execute_request("PATCH", url, request_headers, json=data, params=params)
+
+        try:
+            response_data = self._handle_response(response)
+        except Exception as e:
+            # Catch response processing errors and wrap with debugging info
+            if not isinstance(e, (OphelosAPIError, TimeoutError, UnexpectedError)):
+                raise UnexpectedError(f"Error processing response: {e}", original_error=e, response=response)
+            raise
 
         if return_response:
             return response_data, response
@@ -430,10 +520,16 @@ class HTTPClient:
         """
         url = f"{self.base_url}/{path.lstrip('/')}"
         request_headers = self._prepare_headers(headers)
-        session = self._get_session()
 
-        response = session.delete(url, params=params, headers=request_headers, timeout=self.timeout)
-        response_data = self._handle_response(response)
+        response = self._execute_request("DELETE", url, request_headers, params=params)
+
+        try:
+            response_data = self._handle_response(response)
+        except Exception as e:
+            # Catch response processing errors and wrap with debugging info
+            if not isinstance(e, (OphelosAPIError, TimeoutError, UnexpectedError)):
+                raise UnexpectedError(f"Error processing response: {e}", original_error=e, response=response)
+            raise
 
         if return_response:
             return response_data, response

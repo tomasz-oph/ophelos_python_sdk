@@ -15,6 +15,8 @@ from .exceptions import (
     ParseError,
     RateLimitError,
     ServerError,
+    TimeoutError,
+    UnexpectedError,
     ValidationError,
 )
 from .webhooks import WebhookHandler, construct_event
@@ -36,6 +38,8 @@ __all__ = [
     "ConflictError",
     "ForbiddenError",
     "ServerError",
+    "TimeoutError",
+    "UnexpectedError",
     "ParseError",
     # Webhook handling
     "WebhookHandler",

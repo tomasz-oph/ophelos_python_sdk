@@ -161,7 +161,7 @@ class BaseResource:
 
         if not data:
             if strict:
-                raise ParseError("Empty response data")
+                raise ParseError("Empty response data", response=response_obj)
             return data
 
         if not self._is_valid_model_data(data, model_class):
@@ -175,6 +175,7 @@ class BaseResource:
                             list(model_class.model_fields.keys()) if hasattr(model_class, "model_fields") else "unknown"
                         ),
                     },
+                    response=response_obj,
                 )
             return data
 
@@ -192,6 +193,7 @@ class BaseResource:
                         "original_error": str(e),
                         "response_data": data,
                     },
+                    response=response_obj,
                 )
             return data
 

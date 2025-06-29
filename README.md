@@ -111,7 +111,7 @@ client.debts.ready(debt.id)
 - **Model-First Approach**: Create and pass Pydantic model instances directly to API calls
 - **Request/Response Transparency**: Access complete HTTP request and response details from any model instance
 - **Smart Field Management**: Automatic exclusion of server-generated fields and intelligent relationship handling
-- **Robust Error Handling**: Graceful fallback for invalid API responses
+- **Comprehensive Error Handling**: Full debugging context for all error types (API, timeout, parsing, unexpected)
 - **Authentication**: Automatic OAuth2 token management with thread-safe token caching
 - **Multi-Tenant Support**: Automatic tenant header injection
 - **Pagination**: Built-in pagination support with generators for memory-efficient iteration
@@ -159,8 +159,9 @@ print(f"List response status: {debts.response_info['status_code']}")
 ```
 
 This transparency enables:
-- **Request debugging**: See exactly what was sent to the API
+- **Request debugging**: See exactly what was sent to the API (works for errors too)
 - **Response monitoring**: Track response times, status codes, headers
+- **Error diagnosis**: Full request context available even for timeouts and failures
 - **Audit trails**: Log complete request/response details for compliance
 - **Performance analysis**: Monitor API response times and patterns
 
@@ -278,19 +279,27 @@ created_debt = client.debts.create(debt_model)
 print(f"Created debt with request: {created_debt.request_info}")
 ```
 
-### Error Handling
+### Error Handling with Request/Response Debugging
 
 ```python
-from ophelos_sdk.exceptions import OphelosAPIError, AuthenticationError
+from ophelos_sdk.exceptions import (
+    OphelosAPIError, AuthenticationError, TimeoutError,
+    ParseError, UnexpectedError
+)
 
 try:
     debt = client.debts.get("invalid_debt_id")
 except OphelosAPIError as e:
     print(f"API Error: {e.message} (Status: {e.status_code})")
-    if hasattr(e, 'response_data'):
-        print(f"Response: {e.response_data}")
-except AuthenticationError as e:
-    print(f"Authentication failed: {e.message}")
+    print(f"Request: {e.request_info}")  # Full request details
+    print(f"Response time: {e.response_raw.elapsed.total_seconds()}s")
+except TimeoutError as e:
+    print(f"Request timed out: {e.message}")
+    print(f"Request details: {e.request_info}")  # Available even for timeouts
+except UnexpectedError as e:
+    print(f"Unexpected error: {e.message}")
+    print(f"Original error: {e.original_error}")
+    print(f"Request context: {e.request_info}")
 ```
 
 ### Webhook Handling
