@@ -5,6 +5,20 @@ All notable changes to the Ophelos Python SDK will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2025-01-27
+
+### Added
+- **Comprehensive Error Handling**: Full request/response debugging interface for all error types
+  - `TimeoutError` with request context even when no response received
+  - `ParseError` with debugging details when response parsing fails
+  - `UnexpectedError` wrapping any unexpected exceptions with request context
+  - All exceptions now provide unified debugging interface: `request_info`, `response_info`, `response_raw`
+- **Enhanced HTTP Client**: Unified error handling
+  - Improved timeout detection and proper exception classification
+
+### Enhanced
+- **Error Transparency**: Request/response debugging now available for all error scenarios, not just successful requests
+
 ## [1.1.0] - 2025-06-29
 
 ### Added

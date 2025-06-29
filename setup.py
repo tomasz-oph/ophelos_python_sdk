@@ -8,7 +8,7 @@ with open("requirements.txt", "r", encoding="utf-8") as fh:
 
 setup(
     name="ophelos-sdk",
-    version="1.1.0",
+    version="1.2.0",
     author="Ophelos",
     author_email="support@ophelos.com",
     description="Python SDK for the Ophelos API",

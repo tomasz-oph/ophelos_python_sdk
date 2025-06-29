@@ -55,7 +55,7 @@ class TestHTTPClient:
         expected_headers = {
             "Content-Type": "application/json",
             "Accept": "application/json",
-            "User-Agent": "ophelos-python-sdk/1.1.0",
+            "User-Agent": "ophelos-python-sdk/1.2.0",
             "Authorization": "Bearer test_token",
         }
 
