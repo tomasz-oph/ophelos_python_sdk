@@ -12,7 +12,7 @@ This comprehensive example demonstrates:
 import os
 
 from ophelos_sdk import OphelosClient, WebhookHandler
-from ophelos_sdk.exceptions import AuthenticationError, OphelosAPIError
+from ophelos_sdk.exceptions import AuthenticationError, NotFoundError, TimeoutError, UnexpectedError, ValidationError
 
 
 def setup_client():
@@ -76,7 +76,7 @@ def debt_operations(client):
     try:
         # List debts
         print("--- Listing Debts ---")
-        debts = client.debts.list(limit=1, expand=["customer"])
+        debts = client.debts.list(limit=1, expand=["customer.contact_details", "organisation", "payments"])
         print(f"Found {len(debts.data)} debts (has_more: {debts.has_more})")
 
         for debt in debts.data:
@@ -91,7 +91,7 @@ def debt_operations(client):
         if debts.data:
             debt_id = debts.data[0].id
             print(f"\n--- Debt Details: {debt_id} ---")
-            debt = client.debts.get(debt_id, expand=["customer", "organisation", "payments"])
+            debt = client.debts.get(debt_id, expand=["customer.contact_details", "organisation", "payments"])
 
             print(f"Status: {debt.status.value}")
             print(f"Amount: ${debt.summary.amount_total / 100:.2f}")
@@ -100,26 +100,44 @@ def debt_operations(client):
 
             if debt.customer:
                 if isinstance(debt.customer, str):
+                    print("Customer is a string")
                     print(f"Customer ID: {debt.customer}")
                 else:
+                    print("Customer is a model object")
                     print(f"Customer: {debt.customer.full_name or 'N/A'}")
 
             if debt.organisation:
                 if isinstance(debt.organisation, str):
+                    print("Organisation is a string")
                     print(f"Organisation ID: {debt.organisation}")
                 else:
+                    print("Organisation is a model object")
                     print(f"Organisation: {debt.organisation.name}")
 
             if debt.payments:
                 print(f"Payments: {len(debt.payments)} payment(s)")
 
+            print(f"Request url: {debt.request_info['url']}")
+            print(f"Request method: {debt.request_info['method']}")
+            print(f"Request headers: {debt.request_info['headers']}")
+
+            print(f"Response raw json: {debt.response_raw.json()}")
+            print(f"Response status code: {debt.response_info['status_code']}")
+            print(f"Response headers: {debt.response_info['headers']}")
+            print(f"Response elapsed: {debt.response_info['elapsed_ms']}")
+            print(f"Response encoding: {debt.response_info['encoding']}")
+            print(f"Response url: {debt.response_info['url']}")
+            print(f"Response reason: {debt.response_info['reason']}")
+
         # Search debts
         print("\n--- Searching Debts ---")
         try:
-            search_results = client.debts.search("status:paying", limit=3)
-            print(f"Found {len(search_results.data)} paying debts")
+            search_results = client.debts.search("status:initializing", limit=3)
+            print(f"Request url: {search_results.request_info['url']}")
+
+            print(f"Found {len(search_results.data)} initializing debts")
             for debt in search_results.data:
-                print(f"  Paying debt {debt.id}: ${debt.summary.amount_total / 100:.2f}")
+                print(f"  initializing debt {debt.id}: ${debt.summary.amount_total / 100:.2f}")
         except Exception as e:
             print(f"Search not available: {e}")
 
@@ -253,7 +271,7 @@ def webhook_operations(client):
         print(f"❌ Webhook operations error: {e}")
 
 
-def demonstrate_error_handling(client):
+def demonstrate_api_error_handling(client):
     """Demonstrate proper error handling."""
     print("\n" + "=" * 50)
     print("⚠️ ERROR HANDLING EXAMPLES")
@@ -264,70 +282,155 @@ def demonstrate_error_handling(client):
     try:
         client.debts.get("non-existent-id")
         print("This shouldn't print")
-    except OphelosAPIError as e:
+    except NotFoundError as e:
         print(f"✅ Caught API error: {e}")
         print(f"   Status code: {e.status_code}")
+        print(f"   Error message: {e.message}")
+        print(f"   Error status code: {e.status_code}")
+        print(f"   Error response data: {e.response_data}")
+        print(f"   Error details: {e.details}")
+        print(f"   Error request info: {e.request_info}")
+        print(f"   Error response info: {e.response_info}")
+        print(f"   Error response raw: {e.response_raw.json()}")
+        print(f"   Error response url: {e.response_raw.url}")
+        print(f"   Error response status code: {e.response_raw.status_code}")
+        print(f"   Error response headers: {e.response_raw.headers}")
+        print(f"   Error response elapsed: {e.response_raw.elapsed}")
+        print(f"   Error response encoding: {e.response_raw.encoding}")
+        print(f"   Error response reason: {e.response_raw.reason}")
+        print(f"   Error response text: {e.response_raw.text}")
+        print(f"   Error request headers: {e.response_raw.request.headers}")
+        print(f"   Error request method: {e.response_raw.request.method}")
+        print(f"   Error request url: {e.response_raw.request.url}")
+        print(f"   Error request body: {e.response_raw.request.body}")
 
     # Try invalid search
     print("\n--- Handling Validation Error ---")
     try:
-        # This might cause a validation error depending on API
-        results = client.debts.search("invalid:query:format")
-    except OphelosAPIError as e:
+        client.debts.create({"invalid": "data"})
+    except ValidationError as e:
         print(f"✅ Caught validation error: {e}")
+        print(f"   Status code: {e.status_code}")
+        print(f"   Error message: {e.message}")
+        print(f"   Error status code: {e.status_code}")
+        print(f"   Error response data: {e.response_data}")
+        print(f"   Error details: {e.details}")
+        print(f"   Error request info: {e.request_info}")
+        print(f"   Error response info: {e.response_info}")
+        print(f"   Error response raw: {e.response_raw.json()}")
+        print(f"   Error response url: {e.response_raw.url}")
+        print(f"   Error response status code: {e.response_raw.status_code}")
+        print(f"   Error response headers: {e.response_raw.headers}")
+        print(f"   Error response elapsed: {e.response_raw.elapsed}")
+        print(f"   Error response encoding: {e.response_raw.encoding}")
+        print(f"   Error response reason: {e.response_raw.reason}")
+        print(f"   Error response text: {e.response_raw.text}")
+        print(f"   Error request headers: {e.response_raw.request.headers}")
+        print(f"   Error request method: {e.response_raw.request.method}")
+        print(f"   Error request url: {e.response_raw.request.url}")
+        print(f"   Error request body: {e.response_raw.request.body}")
     except Exception as e:
         print(f"Other error: {e}")
 
 
-def demonstrate_best_practices(client):
-    """Demonstrate SDK best practices."""
+def demonstrate_timeout_error_handling(client):
+    """Demonstrate timeout error handling."""
     print("\n" + "=" * 50)
-    print("✨ BEST PRACTICES")
+    print("⚠️ TIMEOUT ERROR HANDLING EXAMPLES")
     print("=" * 50)
 
-    _demonstrate_generators(client)
-    _demonstrate_expanded_data(client)
-    _demonstrate_filtering(client)
-    _demonstrate_cross_resource_iterators(client)
-    _demonstrate_additional_operations(client)
-
-
-def _demonstrate_generators(client):
-    """Show generator usage for large datasets."""
-    print("--- Using Generators for Large Datasets ---")
-    count = 0
-    for debt in client.debts.iterate(limit_per_page=10, max_pages=2):
-        count += 1
-        if count <= 3:  # Show first few
-            print(f"  Processing debt {debt.id}: {debt.status.value}")
-        elif count == 4:
-            print(f"  ... (processing {count}+ debts)")
-    print(f"Total processed: {count} debts")
-
-
-def _demonstrate_expanded_data(client):
-    """Show how to expand related data."""
-    print("\n--- Expanding Related Data ---")
-    debts = client.debts.list(limit=1, expand=["customer", "organisation", "payments"])
-    if debts.data:
-        debt = debts.data[0]
-        print(f"Debt {debt.id} with expanded data:")
-        print(f"  Customer loaded: {debt.customer is not None}")
-        print(f"  Organisation loaded: {debt.organisation is not None}")
-        print(f"  Payments loaded: {debt.payments is not None}")
-
-
-def _demonstrate_filtering(client):
-    """Show filtering and searching."""
-    print("\n--- Filtering and Searching ---")
+    print("\n--- Handling Timeout Error ---")
     try:
-        paying_debts = client.debts.search("status:paying", limit=3)
-        print(f"Found {len(paying_debts.data)} paying debts")
-    except Exception:
-        print("Search filtering not available")
+        # Use a valid but slow IP to simulate timeout (use httpbin.org delay endpoint)
+        original_timeout = client.http_client.timeout
+        original_max_retries = client.http_client.max_retries
+        original_base_url = client.http_client.base_url
+
+        client.http_client.base_url = "https://httpbin.org"  # Public testing service
+        client.http_client.timeout = 1  # 1 second timeout
+        client.http_client.max_retries = 0
+
+        # Clear cached session so new settings take effect
+        if hasattr(client.http_client._local, "session"):
+            delattr(client.http_client._local, "session")
+
+        # Use httpbin's delay endpoint - delays response by 3 seconds
+        client.http_client.get("/delay/3")  # This should timeout after 1 second
+        print("This shouldn't print")
+
+    except TimeoutError as e:
+        print(f"✅ Caught timeout error: {e}")
+        print(f"   Error message: {e.message}")
+        print(f"   Error details: {e.details}")
+        print(f"   Error request info: {e.request_info}")
+        print(f"   Error response info: {e.response_info}")
+        print(f"   Error response raw: {e.response_raw}")
+
+    except UnexpectedError as e:
+        print(f"✅ Caught unexpected error (may happen with httpbin): {e}")
+        print(f"   Error message: {e.message}")
+        print(f"   Original error: {e.original_error}")
+
+    except Exception as e:
+        print(f"❌ Caught different error type: {type(e).__name__}: {e}")
+
+    finally:
+        # Restore original settings
+        client.http_client.base_url = original_base_url
+        client.http_client.timeout = original_timeout
+        client.http_client.max_retries = original_max_retries
 
 
-def _demonstrate_cross_resource_iterators(client):
+def demonstrate_unexpected_error_handling(client):
+    """Demonstrate unexpected error handling."""
+    print("\n" + "=" * 50)
+    print("⚠️ UNEXPECTED ERROR HANDLING EXAMPLES")
+    print("=" * 50)
+
+    print("\n--- Handling Unexpected Error ---")
+    try:
+        # Save original settings
+        original_base_url = client.http_client.base_url
+        original_timeout = client.http_client.timeout
+        original_max_retries = client.http_client.max_retries
+
+        # Use localhost with a port that refuses connections (not timeout)
+        # This will cause a "Connection refused" error, not a timeout error
+        client.http_client.base_url = "http://127.0.0.1:1"  # Port 1 should refuse connections
+        client.http_client.timeout = 5  # Normal timeout
+        client.http_client.max_retries = 0
+
+        # Clear cached session so new settings take effect
+        if hasattr(client.http_client._local, "session"):
+            delattr(client.http_client._local, "session")
+
+        client.debts.get("any-id")  # This will trigger UnexpectedError
+        print("This shouldn't print")
+
+    except UnexpectedError as e:
+        print(f"✅ Caught unexpected error: {e}")
+        print(f"   Error type: {type(e)}")
+        print(f"   Error message: {e.message}")
+        print(f"   Original error: {e.original_error}")
+        print(f"   Request info: {e.request_info}")
+        print(f"   Response info: {e.response_info}")  # Will be None
+        print(f"   Response raw: {e.response_raw}")  # Will be None
+
+    except Exception as e:
+        print(f"❌ Caught different error type: {type(e).__name__}: {e}")
+
+    finally:
+        # Restore original settings
+        client.http_client.base_url = original_base_url
+        client.http_client.timeout = original_timeout
+        client.http_client.max_retries = original_max_retries
+
+        # Clear session again to restore original settings
+        if hasattr(client.http_client._local, "session"):
+            delattr(client.http_client._local, "session")
+
+
+def demonstrate_cross_resource_iterators(client):
     """Show consistent iterator API across resources."""
     print("\n--- Cross-Resource Iterators ---")
     print("All resources support the same iterator API:")
@@ -340,29 +443,15 @@ def _demonstrate_cross_resource_iterators(client):
     for name, resource in resources:
         try:
             count = 0
-            for item in resource.iterate(limit_per_page=3, max_pages=1):
+            for item in resource.iterate(limit_per_page=2, max_pages=2):
                 count += 1
-                if count == 1:
+                if count <= 3:
                     print(f"  {name}: {item.id}")
-                elif count == 2:
+                elif count == 4:
                     print(f"    ... ({count}+ items)")
                     break
         except Exception:
             print(f"  {name}: No data available")
-
-
-def _demonstrate_additional_operations(client):
-    """Show additional debt operations."""
-    print("\n--- Additional Debt Operations ---")
-    print("--- Filtering and Searching ---")
-    try:
-        all_debts = client.debts.list(limit=100, expand=["customer", "organisation", "payments"])
-        print(f"Total debts after filters: {len(all_debts.data)} (showing first {min(5, len(all_debts.data))})")
-        for debt in all_debts.data[:5]:
-            print(f"  Debt {debt.id}: {debt.status.value} - ${debt.summary.amount_total / 100:.2f}")
-            print(f"    Balance: ${debt.balance_amount / 100:.2f}")
-    except Exception as e:
-        print(f"❌ Debt filtering error: {e}")
 
 
 def main():
@@ -395,8 +484,10 @@ def main():
         customer_operations(client)
         payment_operations(client)
         webhook_operations(client)
-        demonstrate_error_handling(client)
-        demonstrate_best_practices(client)
+        demonstrate_api_error_handling(client)
+        demonstrate_timeout_error_handling(client)
+        demonstrate_unexpected_error_handling(client)
+        demonstrate_cross_resource_iterators(client)
 
         print("\n" + "=" * 50)
         print("🎉 All examples completed successfully!")
@@ -404,6 +495,7 @@ def main():
 
     except Exception as e:
         print(f"\n❌ Unexpected error: {e}")
+        print(f"Error type: {type(e)}")
 
 
 if __name__ == "__main__":
