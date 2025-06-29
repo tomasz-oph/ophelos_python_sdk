@@ -7,13 +7,13 @@ This guide shows comprehensive usage patterns for the Ophelos SDK, including adv
 ### Option 1: Install from Wheel (Recommended)
 
 ```bash
-pip install dist/ophelos_sdk-1.0.6-py3-none-any.whl
+pip install dist/ophelos_sdk-1.1.0-py3-none-any.whl
 ```
 
 ### Option 2: Install from Source Distribution
 
 ```bash
-pip install dist/ophelos-sdk-1.0.6.tar.gz
+pip install dist/ophelos-sdk-1.1.0.tar.gz
 ```
 
 ### Option 3: Development Installation

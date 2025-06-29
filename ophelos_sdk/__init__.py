@@ -19,7 +19,7 @@ from .exceptions import (
 )
 from .webhooks import WebhookHandler, construct_event
 
-__version__ = "1.0.6"
+__version__ = "1.1.0"
 __author__ = "Ophelos"
 __email__ = "support@ophelos.com"
 

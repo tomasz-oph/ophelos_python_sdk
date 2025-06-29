@@ -5,14 +5,22 @@ All notable changes to the Ophelos Python SDK will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.6] - 2025-01-03
+## [1.1.0] - 2025-06-29
+
+### Added
+- **Request/Response Transparency**: Access complete HTTP details on all model instances
+  - `model.request_info`, `model.response_info`, `model.response_raw`
+  - Enables debugging, performance monitoring, and audit trails
+
+
+## [1.0.6] - 2025-06-27
 
 ### Added
 - **Thread Safety**: HTTPClient is now fully thread-safe using thread-local storage
   - Each thread gets its own `requests.Session` instance
   - Eliminates connection pool corruption and race conditions
 
-## [1.0.5] - 2025-01-03
+## [1.0.5] - 2025-06-26
 
 ### Added
 - **API Versioning Support**: Added `version` parameter to `OphelosClient` constructor
@@ -24,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Default Behavior**: New clients now include `Ophelos-Version: 2025-04-01` header by default
 - **User-Agent**: Updated to `ophelos-python-sdk/1.0.5`
 
-## [1.0.4] - 2024-12-19
+## [1.0.4] - 2025-06-26
 
 ### Fixed
 - **Pagination Issue**: Fixed `has_more` always returning `False` in paginated responses
@@ -46,7 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **BREAKING CHANGE**: Package renamed from `ophelos` to `ophelos_sdk`
 - Import statements now use `from ophelos_sdk import OphelosClient`
 
-## [1.0.3] - 2024-06-24
+## [1.0.3] - 2025-06-24
 
 ### Added
 - **Access Token Authentication**: Direct access token support alongside OAuth2
@@ -62,7 +70,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Type Safety**: mypy annotation errors
 - **Import Organization**: Standardized across 60 files
 
-## [1.0.2] - 2024-06-14
+## [1.0.2] - 2025-06-14
 
 ### Added
 - **Multi-tenant Support**: `tenant_id` parameter with automatic header injection
@@ -74,7 +82,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Retry Logic**: Jittered retry with 0-1.5s additive jitter
 - **Documentation**: Multi-tenant usage patterns
 
-## [1.0.0] - 2024-01-15
+## [1.0.0] - 2025-06-09
 
 ### Added
 - Initial release with complete Ophelos API coverage
