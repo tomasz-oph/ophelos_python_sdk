@@ -2,7 +2,7 @@
 Organisations resource for Ophelos API.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, cast
 
 from ..models import Organisation, PaginatedResponse, Payment
 from .base import BaseResource
@@ -33,8 +33,8 @@ class OrganisationsResource(BaseResource):
             Paginated list of organisations
         """
         params = self._build_list_params(limit=limit, after=after, before=before, expand=expand, **kwargs)
-        response_data = self.http_client.get("organisations", params=params)
-        return self._parse_list_response(response_data, Organisation)
+        response_tuple = self.http_client.get("organisations", params=params, return_response=True)
+        return self._parse_list_response(response_tuple, Organisation)
 
     def get(self, org_id: str, expand: Optional[List[str]] = None) -> Organisation:
         """
@@ -48,8 +48,8 @@ class OrganisationsResource(BaseResource):
             Organisation instance
         """
         params = self._build_expand_params(expand)
-        response_data = self.http_client.get(f"organisations/{org_id}", params=params)
-        return self._parse_model_response(response_data, Organisation)
+        response_tuple = self.http_client.get(f"organisations/{org_id}", params=params, return_response=True)
+        return cast(Organisation, self._parse_response(response_tuple, Organisation))
 
     def create(self, data: Dict[str, Any], expand: Optional[List[str]] = None) -> Organisation:
         """
@@ -63,8 +63,8 @@ class OrganisationsResource(BaseResource):
             Created organisation instance
         """
         params = self._build_expand_params(expand)
-        response_data = self.http_client.post("organisations", data=data, params=params)
-        return self._parse_model_response(response_data, Organisation)
+        response_tuple = self.http_client.post("organisations", data=data, params=params, return_response=True)
+        return cast(Organisation, self._parse_response(response_tuple, Organisation))
 
     def update(self, org_id: str, data: Dict[str, Any], expand: Optional[List[str]] = None) -> Organisation:
         """
@@ -79,8 +79,10 @@ class OrganisationsResource(BaseResource):
             Updated organisation instance
         """
         params = self._build_expand_params(expand)
-        response_data = self.http_client.patch(f"organisations/{org_id}", data=data, params=params)
-        return self._parse_model_response(response_data, Organisation)
+        response_tuple = self.http_client.patch(
+            f"organisations/{org_id}", data=data, params=params, return_response=True
+        )
+        return cast(Organisation, self._parse_response(response_tuple, Organisation))
 
     def create_contact_detail(self, org_id: str, data: Dict[str, Any], **kwargs: Any) -> Dict[str, Any]:
         """
@@ -93,7 +95,11 @@ class OrganisationsResource(BaseResource):
         Returns:
             Created contact detail
         """
-        return self.http_client.post(f"organisations/{org_id}/contact_details", data=data)
+        response_tuple = self.http_client.post(
+            f"organisations/{org_id}/contact_details", data=data, return_response=True
+        )
+        response_data, _ = response_tuple
+        return cast(Dict[str, Any], response_data)
 
     def list_payments(
         self,
@@ -119,8 +125,8 @@ class OrganisationsResource(BaseResource):
             Paginated response with payment data
         """
         params = self._build_list_params(limit, after, before, expand, **kwargs)
-        response_data = self.http_client.get(f"organisations/{org_id}/payments", params=params)
-        return self._parse_list_response(response_data, Payment)
+        response_tuple = self.http_client.get(f"organisations/{org_id}/payments", params=params, return_response=True)
+        return self._parse_list_response(response_tuple, Payment)
 
     def search_payments(
         self,
@@ -144,8 +150,10 @@ class OrganisationsResource(BaseResource):
             Paginated response with payment data
         """
         params = self._build_search_params(query, limit, expand, **kwargs)
-        response_data = self.http_client.get(f"organisations/{org_id}/payments/search", params=params)
-        return self._parse_list_response(response_data, Payment)
+        response_tuple = self.http_client.get(
+            f"organisations/{org_id}/payments/search", params=params, return_response=True
+        )
+        return self._parse_list_response(response_tuple, Payment)
 
     def list_members(
         self,
@@ -171,8 +179,8 @@ class OrganisationsResource(BaseResource):
             Paginated list of organisation members
         """
         params = self._build_list_params(limit=limit, after=after, before=before, expand=expand, **kwargs)
-        response_data = self.http_client.get(f"organisations/{org_id}/members", params=params)
-        return self._parse_list_response(response_data)
+        response_tuple = self.http_client.get(f"organisations/{org_id}/members", params=params, return_response=True)
+        return self._parse_list_response(response_tuple)
 
     def invite_member(
         self, org_id: str, data: Dict[str, Any], expand: Optional[List[str]] = None, **kwargs: Any
@@ -191,4 +199,8 @@ class OrganisationsResource(BaseResource):
         """
         params = self._build_expand_params(expand)
         params.update(kwargs)
-        return self.http_client.post(f"organisations/{org_id}/members", data=data, params=params)
+        response_tuple = self.http_client.post(
+            f"organisations/{org_id}/members", data=data, params=params, return_response=True
+        )
+        response_data, _ = response_tuple
+        return cast(Dict[str, Any], response_data)

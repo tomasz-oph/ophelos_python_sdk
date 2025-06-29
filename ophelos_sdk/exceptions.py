@@ -78,3 +78,10 @@ class ServerError(OphelosAPIError):
         if "status_code" not in kwargs:
             kwargs["status_code"] = 500
         super().__init__(message, **kwargs)
+
+
+class ParseError(OphelosError):
+    """Exception raised when response parsing fails."""
+
+    def __init__(self, message: str = "Failed to parse response", **kwargs: Any):
+        super().__init__(message, **kwargs)

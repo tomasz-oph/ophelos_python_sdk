@@ -2,7 +2,7 @@
 Debts resource manager for Ophelos API.
 """
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, cast
 
 from ..models import Debt, PaginatedResponse, Payment
 from .base import BaseResource
@@ -33,8 +33,8 @@ class DebtsResource(BaseResource):
             Paginated response with debt data
         """
         params = self._build_list_params(limit, after, before, expand, **kwargs)
-        response_data = self.http_client.get("debts", params=params)
-        return self._parse_list_response(response_data, Debt)
+        response_tuple = self.http_client.get("debts", params=params, return_response=True)
+        return self._parse_list_response(response_tuple, Debt)
 
     def search(
         self,
@@ -56,8 +56,8 @@ class DebtsResource(BaseResource):
             Paginated response with debt data
         """
         params = self._build_search_params(query, limit, expand, **kwargs)
-        response_data = self.http_client.get("debts/search", params=params)
-        return self._parse_list_response(response_data, Debt)
+        response_tuple = self.http_client.get("debts/search", params=params, return_response=True)
+        return self._parse_list_response(response_tuple, Debt)
 
     def get(self, debt_id: str, expand: Optional[List[str]] = None) -> Debt:
         """
@@ -71,8 +71,8 @@ class DebtsResource(BaseResource):
             Debt instance
         """
         params = self._build_expand_params(expand)
-        response_data = self.http_client.get(f"debts/{debt_id}", params=params)
-        return self._parse_model_response(response_data, Debt)
+        response_tuple = self.http_client.get(f"debts/{debt_id}", params=params, return_response=True)
+        return cast(Debt, self._parse_response(response_tuple, Debt))
 
     def create(self, data: Union[Dict[str, Any], Debt], expand: Optional[List[str]] = None) -> Debt:
         """
@@ -93,10 +93,10 @@ class DebtsResource(BaseResource):
 
         if expand:
             params = self._build_expand_params(expand)
-            response_data = self.http_client.post("debts", data=api_data, params=params)
+            response_tuple = self.http_client.post("debts", data=api_data, params=params, return_response=True)
         else:
-            response_data = self.http_client.post("debts", data=api_data)
-        return self._parse_model_response(response_data, Debt)
+            response_tuple = self.http_client.post("debts", data=api_data, return_response=True)
+        return cast(Debt, self._parse_response(response_tuple, Debt))
 
     def update(self, debt_id: str, data: Union[Dict[str, Any], Debt], expand: Optional[List[str]] = None) -> Debt:
         """
@@ -118,10 +118,12 @@ class DebtsResource(BaseResource):
 
         if expand:
             params = self._build_expand_params(expand)
-            response_data = self.http_client.put(f"debts/{debt_id}", data=api_data, params=params)
+            response_tuple = self.http_client.put(
+                f"debts/{debt_id}", data=api_data, params=params, return_response=True
+            )
         else:
-            response_data = self.http_client.put(f"debts/{debt_id}", data=api_data)
-        return self._parse_model_response(response_data, Debt)
+            response_tuple = self.http_client.put(f"debts/{debt_id}", data=api_data, return_response=True)
+        return cast(Debt, self._parse_response(response_tuple, Debt))
 
     def delete(self, debt_id: str) -> Dict[str, Any]:
         """
@@ -133,7 +135,9 @@ class DebtsResource(BaseResource):
         Returns:
             Deletion response
         """
-        return self.http_client.delete(f"debts/{debt_id}")
+        response_tuple = self.http_client.delete(f"debts/{debt_id}", return_response=True)
+        response_data, _ = response_tuple
+        return cast(Dict[str, Any], response_data)
 
     def ready(self, debt_id: str, data: Optional[Dict[str, Any]] = None) -> Debt:
         """
@@ -146,8 +150,8 @@ class DebtsResource(BaseResource):
         Returns:
             Updated debt instance
         """
-        response_data = self.http_client.post(f"debts/{debt_id}/ready", data=data or {})
-        return self._parse_model_response(response_data, Debt)
+        response_tuple = self.http_client.post(f"debts/{debt_id}/ready", data=data or {}, return_response=True)
+        return cast(Debt, self._parse_response(response_tuple, Debt))
 
     def pause(self, debt_id: str, data: Optional[Dict[str, Any]] = None) -> Debt:
         """
@@ -160,8 +164,8 @@ class DebtsResource(BaseResource):
         Returns:
             Paused debt instance
         """
-        response_data = self.http_client.post(f"debts/{debt_id}/pause", data=data or {})
-        return self._parse_model_response(response_data, Debt)
+        response_tuple = self.http_client.post(f"debts/{debt_id}/pause", data=data or {}, return_response=True)
+        return cast(Debt, self._parse_response(response_tuple, Debt))
 
     def resume(self, debt_id: str, data: Optional[Dict[str, Any]] = None) -> Debt:
         """
@@ -174,8 +178,8 @@ class DebtsResource(BaseResource):
         Returns:
             Resumed debt instance
         """
-        response_data = self.http_client.post(f"debts/{debt_id}/resume", data=data or {})
-        return self._parse_model_response(response_data, Debt)
+        response_tuple = self.http_client.post(f"debts/{debt_id}/resume", data=data or {}, return_response=True)
+        return cast(Debt, self._parse_response(response_tuple, Debt))
 
     def settle(self, debt_id: str, data: Optional[Dict[str, Any]] = None) -> Debt:
         """
@@ -188,8 +192,8 @@ class DebtsResource(BaseResource):
         Returns:
             Settled debt instance
         """
-        response_data = self.http_client.post(f"debts/{debt_id}/settle", data=data or {})
-        return self._parse_model_response(response_data, Debt)
+        response_tuple = self.http_client.post(f"debts/{debt_id}/settle", data=data or {}, return_response=True)
+        return cast(Debt, self._parse_response(response_tuple, Debt))
 
     def withdraw(self, debt_id: str, data: Optional[Dict[str, Any]] = None) -> Debt:
         """
@@ -202,8 +206,8 @@ class DebtsResource(BaseResource):
         Returns:
             Updated debt instance
         """
-        response_data = self.http_client.post(f"debts/{debt_id}/withdraw", data=data or {})
-        return self._parse_model_response(response_data, Debt)
+        response_tuple = self.http_client.post(f"debts/{debt_id}/withdraw", data=data or {}, return_response=True)
+        return cast(Debt, self._parse_response(response_tuple, Debt))
 
     def dispute(self, debt_id: str, data: Optional[Dict[str, Any]] = None) -> Debt:
         """
@@ -216,8 +220,8 @@ class DebtsResource(BaseResource):
         Returns:
             Disputed debt instance
         """
-        response_data = self.http_client.post(f"debts/{debt_id}/dispute", data=data or {})
-        return self._parse_model_response(response_data, Debt)
+        response_tuple = self.http_client.post(f"debts/{debt_id}/dispute", data=data or {}, return_response=True)
+        return cast(Debt, self._parse_response(response_tuple, Debt))
 
     def resolve_dispute(self, debt_id: str, data: Optional[Dict[str, Any]] = None) -> Debt:
         """
@@ -230,8 +234,10 @@ class DebtsResource(BaseResource):
         Returns:
             Resolved debt instance
         """
-        response_data = self.http_client.post(f"debts/{debt_id}/resolve-dispute", data=data or {})
-        return self._parse_model_response(response_data, Debt)
+        response_tuple = self.http_client.post(
+            f"debts/{debt_id}/resolve-dispute", data=data or {}, return_response=True
+        )
+        return cast(Debt, self._parse_response(response_tuple, Debt))
 
     def get_summary(self, debt_id: str) -> Dict[str, Any]:
         """
@@ -243,7 +249,9 @@ class DebtsResource(BaseResource):
         Returns:
             Debt summary data
         """
-        return self.http_client.get(f"debts/{debt_id}/summary")
+        response_tuple = self.http_client.get(f"debts/{debt_id}/summary", return_response=True)
+        response_data, _ = response_tuple
+        return cast(Dict[str, Any], response_data)
 
     # Payment operations for debts
     def list_payments(
@@ -268,8 +276,8 @@ class DebtsResource(BaseResource):
             Paginated list of payments
         """
         params = self._build_list_params(limit, after, before, expand)
-        response_data = self.http_client.get(f"debts/{debt_id}/payments", params=params)
-        return self._parse_list_response(response_data, Payment)
+        response_tuple = self.http_client.get(f"debts/{debt_id}/payments", params=params, return_response=True)
+        return self._parse_list_response(response_tuple, Payment)
 
     def search_payments(
         self,
@@ -293,8 +301,8 @@ class DebtsResource(BaseResource):
             Paginated response with payment data
         """
         params = self._build_search_params(query, limit, expand, **kwargs)
-        response_data = self.http_client.get(f"debts/{debt_id}/payments/search", params=params)
-        return self._parse_list_response(response_data, Payment)
+        response_tuple = self.http_client.get(f"debts/{debt_id}/payments/search", params=params, return_response=True)
+        return self._parse_list_response(response_tuple, Payment)
 
     def create_payment(
         self, debt_id: str, data: Union[Dict[str, Any], Payment], expand: Optional[List[str]] = None
@@ -318,10 +326,12 @@ class DebtsResource(BaseResource):
 
         if expand:
             params = self._build_expand_params(expand)
-            response_data = self.http_client.post(f"debts/{debt_id}/payments", data=api_data, params=params)
+            response_tuple = self.http_client.post(
+                f"debts/{debt_id}/payments", data=api_data, params=params, return_response=True
+            )
         else:
-            response_data = self.http_client.post(f"debts/{debt_id}/payments", data=api_data)
-        return self._parse_model_response(response_data, Payment)
+            response_tuple = self.http_client.post(f"debts/{debt_id}/payments", data=api_data, return_response=True)
+        return cast(Payment, self._parse_response(response_tuple, Payment))
 
     def get_payment(self, debt_id: str, payment_id: str, expand: Optional[List[str]] = None) -> Payment:
         """
@@ -337,10 +347,12 @@ class DebtsResource(BaseResource):
         """
         if expand:
             params = self._build_expand_params(expand)
-            response_data = self.http_client.get(f"debts/{debt_id}/payments/{payment_id}", params=params)
+            response_tuple = self.http_client.get(
+                f"debts/{debt_id}/payments/{payment_id}", params=params, return_response=True
+            )
         else:
-            response_data = self.http_client.get(f"debts/{debt_id}/payments/{payment_id}")
-        return self._parse_model_response(response_data, Payment)
+            response_tuple = self.http_client.get(f"debts/{debt_id}/payments/{payment_id}", return_response=True)
+        return cast(Payment, self._parse_response(response_tuple, Payment))
 
     def update_payment(
         self,
@@ -368,8 +380,10 @@ class DebtsResource(BaseResource):
             api_data = data
 
         params = self._build_expand_params(expand)
-        response_data = self.http_client.patch(f"debts/{debt_id}/payments/{payment_id}", data=api_data, params=params)
-        return self._parse_model_response(response_data, Payment)
+        response_tuple = self.http_client.patch(
+            f"debts/{debt_id}/payments/{payment_id}", data=api_data, params=params, return_response=True
+        )
+        return cast(Payment, self._parse_response(response_tuple, Payment))
 
     def list_contact_details(
         self,
@@ -395,8 +409,8 @@ class DebtsResource(BaseResource):
             Paginated list of contact details
         """
         params = self._build_list_params(limit=limit, after=after, before=before, expand=expand, **kwargs)
-        response_data = self.http_client.get(f"debts/{debt_id}/contact-details", params=params)
-        return self._parse_list_response(response_data)
+        response_tuple = self.http_client.get(f"debts/{debt_id}/contact-details", params=params, return_response=True)
+        return self._parse_list_response(response_tuple)
 
     def create_contact_detail(
         self, debt_id: str, data: Dict[str, Any], expand: Optional[List[str]] = None, **kwargs: Any
@@ -415,4 +429,8 @@ class DebtsResource(BaseResource):
         """
         params = self._build_expand_params(expand)
         params.update(kwargs)
-        return self.http_client.post(f"debts/{debt_id}/contact-details", data=data, params=params)
+        response_tuple = self.http_client.post(
+            f"debts/{debt_id}/contact-details", data=data, params=params, return_response=True
+        )
+        response_data, _ = response_tuple
+        return cast(Dict[str, Any], response_data)

@@ -2,8 +2,11 @@
 Base resource class for Ophelos API resources.
 """
 
-from typing import Any, Dict, Generator, List, Optional, Type, TypeVar, Union, cast
+from typing import Any, Dict, Generator, List, Optional, Tuple, Type, TypeVar, Union
 
+import requests
+
+from ..exceptions import ParseError
 from ..http_client import HTTPClient
 from ..models import BaseOphelosModel, PaginatedResponse
 
@@ -30,12 +33,11 @@ class BaseResource:
             expand: List of fields to expand
 
         Returns:
-            Dictionary with expand parameters
+            Dictionary with expand parameters that will generate expand[]=value1&expand[]=value2
         """
         params: Dict[str, Any] = {}
         if expand:
-            for i, field in enumerate(expand):
-                params[f"expand[{i}]"] = field
+            params["expand[]"] = expand
         return params
 
     def _build_list_params(
@@ -129,86 +131,128 @@ class BaseResource:
         return True
 
     def _parse_response(
-        self, response_data: Dict[str, Any], model_class: Optional[Type[T]] = None
+        self,
+        response_data: Union[Dict[str, Any], Tuple[Dict[str, Any], requests.Response]],
+        model_class: Type[T],
+        strict: bool = False,
+        response_obj: Optional[requests.Response] = None,
     ) -> Union[T, Dict[str, Any]]:
         """
         Parse API response data into model instance.
 
         Args:
-            response_data: Raw response data from API
+            response_data: Raw response data from API (dict or tuple with response)
             model_class: Pydantic model class to parse into
+            strict: If True, raise ParseError on failure. If False, return raw data.
+            response_obj: Optional requests.Response object to attach to model
 
         Returns:
-            Parsed model instance or raw data
-        """
-        if model_class and response_data:
-            try:
-                # Check if this looks like valid model data
-                if not self._is_valid_model_data(response_data, model_class):
-                    return response_data
-                return model_class(**response_data)
-            except Exception:
-                # Fallback to raw data if parsing fails
-                return response_data
-        return response_data
+            Parsed model instance or raw data (if strict=False and parsing fails)
 
-    def _parse_model_response(self, response_data: Dict[str, Any], model_class: Type[T]) -> T:
+        Raises:
+            ParseError: If response data cannot be parsed and strict=True
         """
-        Parse API response data into model instance, ensuring correct type.
+        # Handle both old and new style responses
+        if isinstance(response_data, tuple):
+            data, response = response_data
+            response_obj = response
+        else:
+            data = response_data
 
-        Args:
-            response_data: Raw response data from API
-            model_class: Pydantic model class to parse into
+        if not data:
+            if strict:
+                raise ParseError("Empty response data")
+            return data
 
-        Returns:
-            Parsed model instance
-        """
-        result = self._parse_response(response_data, model_class)
-        return cast(T, result)
+        if not self._is_valid_model_data(data, model_class):
+            if strict:
+                raise ParseError(
+                    f"Response data is not valid for {model_class.__name__}",
+                    details={
+                        "model_class": model_class.__name__,
+                        "response_keys": (list(data.keys()) if isinstance(data, dict) else str(type(data))),
+                        "expected_fields": (
+                            list(model_class.model_fields.keys()) if hasattr(model_class, "model_fields") else "unknown"
+                        ),
+                    },
+                )
+            return data
+
+        try:
+            # Inject response object if available
+            if response_obj is not None:
+                data["_req_res"] = response_obj
+            return model_class(**data)
+        except Exception as e:
+            if strict:
+                raise ParseError(
+                    f"Failed to parse response data into {model_class.__name__}: {str(e)}",
+                    details={
+                        "model_class": model_class.__name__,
+                        "original_error": str(e),
+                        "response_data": data,
+                    },
+                )
+            return data
 
     def _parse_list_response(
-        self, response_data: Dict[str, Any], model_class: Optional[Type[BaseOphelosModel]] = None
+        self,
+        response_data: Union[Dict[str, Any], Tuple[Dict[str, Any], requests.Response]],
+        model_class: Optional[Type[BaseOphelosModel]] = None,
+        response_obj: Optional[requests.Response] = None,
     ) -> PaginatedResponse:
         """
         Parse paginated list response.
 
         Args:
-            response_data: Raw response data from API
+            response_data: Raw response data from API (dict or tuple with response)
             model_class: Pydantic model class for list items
+            response_obj: Optional requests.Response object to attach to items
 
         Returns:
             Paginated response with parsed items
         """
-        if not response_data:
-            return PaginatedResponse(data=[])
+        # Handle both old and new style responses
+        if isinstance(response_data, tuple):
+            data, response = response_data
+            response_obj = response
+        else:
+            data = response_data
 
-        items = response_data.get("data", [])
+        if not data:
+            result = PaginatedResponse(data=[])
+            if response_obj is not None:
+                object.__setattr__(result, "_req_res", response_obj)
+            return result
+
+        items = data.get("data", [])
 
         if model_class:
             parsed_items: List[Union[Dict[str, Any], BaseOphelosModel]] = []
             for i, item in enumerate(items):
                 try:
                     if isinstance(item, dict):
-                        # Check if this looks like valid model data
-                        if not self._is_valid_model_data(item, model_class):
-                            parsed_items.append(item)
-                        else:
-                            parsed_items.append(model_class(**item))
+                        # Use non-strict parsing for individual items in lists
+                        parsed_item = self._parse_response(item, model_class, strict=False, response_obj=response_obj)
+                        parsed_items.append(parsed_item)
                     else:
-                        # Already a model object
+                        # Already a model object - attach response if available
+                        if response_obj is not None and hasattr(item, "__setattr__"):
+                            object.__setattr__(item, "_req_res", response_obj)
                         parsed_items.append(item)
-                except Exception as e:
-                    # Better error handling - print debug info
-                    print(f"Warning: Failed to parse item {i} to {model_class.__name__}: {e}")
-                    print(f"Item data: {item}")
+                except Exception:
                     # Fallback to raw data if parsing fails
                     parsed_items.append(item)
 
-            parsed_response = response_data.copy()
+            parsed_response = data.copy()
             parsed_response["data"] = parsed_items
+            if response_obj is not None:
+                parsed_response["_req_res"] = response_obj
             return PaginatedResponse(**parsed_response)
 
-        return PaginatedResponse(**response_data)
+        if response_obj is not None:
+            data["_req_res"] = response_obj
+        return PaginatedResponse(**data)
 
     def iterate(
         self,

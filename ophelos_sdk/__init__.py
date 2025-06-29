@@ -12,29 +12,10 @@ from .exceptions import (
     NotFoundError,
     OphelosAPIError,
     OphelosError,
+    ParseError,
     RateLimitError,
     ServerError,
     ValidationError,
-)
-from .models import (
-    BaseOphelosModel,
-    Communication,
-    ContactDetailType,
-    Currency,
-    Customer,
-    Debt,
-    DebtStatus,
-    Invoice,
-    LineItem,
-    Organisation,
-    PaginatedResponse,
-    Payment,
-    PaymentPlan,
-    PaymentStatus,
-    Payout,
-    Tenant,
-    Webhook,
-    WebhookEvent,
 )
 from .webhooks import WebhookHandler, construct_event
 
@@ -43,6 +24,7 @@ __author__ = "Ophelos"
 __email__ = "support@ophelos.com"
 
 __all__ = [
+    # Core client
     "OphelosClient",
     # Exceptions
     "OphelosError",
@@ -54,27 +36,8 @@ __all__ = [
     "ConflictError",
     "ForbiddenError",
     "ServerError",
+    "ParseError",
     # Webhook handling
     "WebhookHandler",
     "construct_event",
-    # Models
-    "BaseOphelosModel",
-    "Debt",
-    "Customer",
-    "Organisation",
-    "Payment",
-    "PaymentPlan",
-    "Invoice",
-    "LineItem",
-    "Communication",
-    "Webhook",
-    "WebhookEvent",
-    "Tenant",
-    "Payout",
-    "PaginatedResponse",
-    # Enums
-    "DebtStatus",
-    "PaymentStatus",
-    "ContactDetailType",
-    "Currency",
 ]

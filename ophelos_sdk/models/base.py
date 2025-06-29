@@ -2,9 +2,12 @@ from __future__ import annotations
 
 from datetime import date, datetime
 from enum import Enum
-from typing import Any, Dict, Optional, Set
+from typing import TYPE_CHECKING, Any, Dict, Optional, Set
 
 from pydantic import BaseModel, ConfigDict
+
+if TYPE_CHECKING:
+    import requests
 
 
 class BaseOphelosModel(BaseModel):
@@ -13,6 +16,22 @@ class BaseOphelosModel(BaseModel):
         extra="allow",
         use_enum_values=True,
     )
+
+    def __init__(self, **data: Any) -> None:
+        # Extract the response object if provided
+        _req_res = data.pop("_req_res", None)
+        super().__init__(**data)
+
+        # Store the response object as a private attribute
+        if _req_res is not None:
+            object.__setattr__(self, "_req_res", _req_res)
+
+    def __setattr__(self, name: str, value: Any) -> None:
+        # Allow setting _req_res even if model is frozen
+        if name == "_req_res":
+            object.__setattr__(self, name, value)
+        else:
+            super().__setattr__(name, value)
 
     @classmethod
     def _get_api_body_fields(cls) -> Optional[Set[str]]:
@@ -68,6 +87,59 @@ class BaseOphelosModel(BaseModel):
 
         else:
             return value
+
+    @property
+    def request_info(self) -> Optional[Dict[str, Any]]:
+        """
+        Get request information from the Response object.
+
+        Returns:
+            Dictionary with request details or None if no response available
+        """
+        if not hasattr(self, "_req_res") or self._req_res is None:
+            return None
+
+        response = self._req_res
+        request = response.request
+
+        return {
+            "method": request.method,
+            "url": request.url,
+            "headers": dict(request.headers),
+            "body": request.body.decode("utf-8") if request.body else None,
+        }
+
+    @property
+    def response_info(self) -> Optional[Dict[str, Any]]:
+        """
+        Get response information from the Response object.
+
+        Returns:
+            Dictionary with response details or None if no response available
+        """
+        if not hasattr(self, "_req_res") or self._req_res is None:
+            return None
+
+        response = self._req_res
+
+        return {
+            "status_code": response.status_code,
+            "headers": dict(response.headers),
+            "elapsed_ms": response.elapsed.total_seconds() * 1000,
+            "encoding": response.encoding,
+            "url": response.url,
+            "reason": response.reason,
+        }
+
+    @property
+    def response_raw(self) -> Optional["requests.Response"]:
+        """
+        Get the raw requests.Response object.
+
+        Returns:
+            The original requests.Response object or None
+        """
+        return getattr(self, "_req_res", None)
 
 
 class Currency(str, Enum):

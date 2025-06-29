@@ -2,7 +2,7 @@
 Customers resource manager for Ophelos API.
 """
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, cast
 
 from ..models import Customer, PaginatedResponse
 from .base import BaseResource
@@ -33,8 +33,8 @@ class CustomersResource(BaseResource):
             Paginated response with customer data
         """
         params = self._build_list_params(limit, after, before, expand, **kwargs)
-        response_data = self.http_client.get("customers", params=params)
-        return self._parse_list_response(response_data, Customer)
+        response_tuple = self.http_client.get("customers", params=params, return_response=True)
+        return self._parse_list_response(response_tuple, Customer)
 
     def search(
         self,
@@ -56,8 +56,8 @@ class CustomersResource(BaseResource):
             Paginated response with customer data
         """
         params = self._build_search_params(query, limit, expand, **kwargs)
-        response_data = self.http_client.get("customers/search", params=params)
-        return self._parse_list_response(response_data, Customer)
+        response_tuple = self.http_client.get("customers/search", params=params, return_response=True)
+        return self._parse_list_response(response_tuple, Customer)
 
     def get(self, customer_id: str, expand: Optional[List[str]] = None) -> Customer:
         """
@@ -71,8 +71,9 @@ class CustomersResource(BaseResource):
             Customer instance
         """
         params = self._build_expand_params(expand)
-        response_data = self.http_client.get(f"customers/{customer_id}", params=params)
-        return self._parse_model_response(response_data, Customer)
+        response_tuple = self.http_client.get(f"customers/{customer_id}", params=params, return_response=True)
+        result = self._parse_response(response_tuple, Customer)
+        return cast(Customer, result)
 
     def create(self, data: Union[Dict[str, Any], Customer], expand: Optional[List[str]] = None) -> Customer:
         """
@@ -93,10 +94,11 @@ class CustomersResource(BaseResource):
 
         if expand:
             params = self._build_expand_params(expand)
-            response_data = self.http_client.post("customers", data=api_data, params=params)
+            response_tuple = self.http_client.post("customers", data=api_data, params=params, return_response=True)
         else:
-            response_data = self.http_client.post("customers", data=api_data)
-        return self._parse_model_response(response_data, Customer)
+            response_tuple = self.http_client.post("customers", data=api_data, return_response=True)
+        result = self._parse_response(response_tuple, Customer)
+        return cast(Customer, result)
 
     def update(
         self,
@@ -123,7 +125,10 @@ class CustomersResource(BaseResource):
 
         if expand:
             params = self._build_expand_params(expand)
-            response_data = self.http_client.put(f"customers/{customer_id}", data=api_data, params=params)
+            response_tuple = self.http_client.put(
+                f"customers/{customer_id}", data=api_data, params=params, return_response=True
+            )
         else:
-            response_data = self.http_client.put(f"customers/{customer_id}", data=api_data)
-        return self._parse_model_response(response_data, Customer)
+            response_tuple = self.http_client.put(f"customers/{customer_id}", data=api_data, return_response=True)
+        result = self._parse_response(response_tuple, Customer)
+        return cast(Customer, result)

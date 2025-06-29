@@ -2,7 +2,7 @@
 Tenants resource manager for Ophelos API.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, cast
 
 from ..models import Tenant
 from .base import BaseResource
@@ -22,8 +22,8 @@ class TenantsResource(BaseResource):
             Current tenant instance
         """
         params = self._build_expand_params(expand)
-        response_data = self.http_client.get("tenants/me", params=params)
-        return self._parse_model_response(response_data, Tenant)
+        response_tuple = self.http_client.get("tenants/me", params=params, return_response=True)
+        return cast(Tenant, self._parse_response(response_tuple, Tenant))
 
     def update_me(self, data: Dict[str, Any], expand: Optional[List[str]] = None) -> Tenant:
         """
@@ -37,5 +37,5 @@ class TenantsResource(BaseResource):
             Updated tenant instance
         """
         params = self._build_expand_params(expand)
-        response_data = self.http_client.patch("tenants/me", data=data, params=params)
-        return self._parse_model_response(response_data, Tenant)
+        response_tuple = self.http_client.patch("tenants/me", data=data, params=params, return_response=True)
+        return cast(Tenant, self._parse_response(response_tuple, Tenant))

@@ -4,7 +4,7 @@ HTTP client for making authenticated requests to the Ophelos API.
 
 import random
 import threading
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Tuple, Union
 
 import requests
 from requests import Session
@@ -288,7 +288,8 @@ class HTTPClient:
         path: str,
         params: Optional[Dict[str, Any]] = None,
         headers: Optional[Dict[str, str]] = None,
-    ) -> Dict[str, Any]:
+        return_response: bool = False,
+    ) -> Union[Dict[str, Any], Tuple[Dict[str, Any], requests.Response]]:
         """
         Make GET request.
 
@@ -296,17 +297,21 @@ class HTTPClient:
             path: API endpoint path
             params: Query parameters
             headers: Additional headers
+            return_response: If True, return (data, response) tuple
 
         Returns:
-            Response data
+            Response data or (data, response) tuple
         """
         url = f"{self.base_url}/{path.lstrip('/')}"
         request_headers = self._prepare_headers(headers)
         session = self._get_session()
 
         response = session.get(url, params=params, headers=request_headers, timeout=self.timeout)
+        response_data = self._handle_response(response)
 
-        return self._handle_response(response)
+        if return_response:
+            return response_data, response
+        return response_data
 
     def post(
         self,
@@ -314,7 +319,8 @@ class HTTPClient:
         data: Optional[Dict[str, Any]] = None,
         params: Optional[Dict[str, Any]] = None,
         headers: Optional[Dict[str, str]] = None,
-    ) -> Dict[str, Any]:
+        return_response: bool = False,
+    ) -> Union[Dict[str, Any], Tuple[Dict[str, Any], requests.Response]]:
         """
         Make POST request.
 
@@ -323,17 +329,21 @@ class HTTPClient:
             data: Request body data
             params: Query parameters
             headers: Additional headers
+            return_response: If True, return (data, response) tuple
 
         Returns:
-            Response data
+            Response data or (data, response) tuple
         """
         url = f"{self.base_url}/{path.lstrip('/')}"
         request_headers = self._prepare_headers(headers)
         session = self._get_session()
 
         response = session.post(url, json=data, params=params, headers=request_headers, timeout=self.timeout)
+        response_data = self._handle_response(response)
 
-        return self._handle_response(response)
+        if return_response:
+            return response_data, response
+        return response_data
 
     def put(
         self,
@@ -341,7 +351,8 @@ class HTTPClient:
         data: Optional[Dict[str, Any]] = None,
         params: Optional[Dict[str, Any]] = None,
         headers: Optional[Dict[str, str]] = None,
-    ) -> Dict[str, Any]:
+        return_response: bool = False,
+    ) -> Union[Dict[str, Any], Tuple[Dict[str, Any], requests.Response]]:
         """
         Make PUT request.
 
@@ -350,17 +361,21 @@ class HTTPClient:
             data: Request body data
             params: Query parameters
             headers: Additional headers
+            return_response: If True, return (data, response) tuple
 
         Returns:
-            Response data
+            Response data or (data, response) tuple
         """
         url = f"{self.base_url}/{path.lstrip('/')}"
         request_headers = self._prepare_headers(headers)
         session = self._get_session()
 
         response = session.put(url, json=data, params=params, headers=request_headers, timeout=self.timeout)
+        response_data = self._handle_response(response)
 
-        return self._handle_response(response)
+        if return_response:
+            return response_data, response
+        return response_data
 
     def patch(
         self,
@@ -368,7 +383,8 @@ class HTTPClient:
         data: Optional[Dict[str, Any]] = None,
         params: Optional[Dict[str, Any]] = None,
         headers: Optional[Dict[str, str]] = None,
-    ) -> Dict[str, Any]:
+        return_response: bool = False,
+    ) -> Union[Dict[str, Any], Tuple[Dict[str, Any], requests.Response]]:
         """
         Make PATCH request.
 
@@ -377,24 +393,29 @@ class HTTPClient:
             data: Request body data
             params: Query parameters
             headers: Additional headers
+            return_response: If True, return (data, response) tuple
 
         Returns:
-            Response data
+            Response data or (data, response) tuple
         """
         url = f"{self.base_url}/{path.lstrip('/')}"
         request_headers = self._prepare_headers(headers)
         session = self._get_session()
 
         response = session.patch(url, json=data, params=params, headers=request_headers, timeout=self.timeout)
+        response_data = self._handle_response(response)
 
-        return self._handle_response(response)
+        if return_response:
+            return response_data, response
+        return response_data
 
     def delete(
         self,
         path: str,
         params: Optional[Dict[str, Any]] = None,
         headers: Optional[Dict[str, str]] = None,
-    ) -> Dict[str, Any]:
+        return_response: bool = False,
+    ) -> Union[Dict[str, Any], Tuple[Dict[str, Any], requests.Response]]:
         """
         Make DELETE request.
 
@@ -402,14 +423,18 @@ class HTTPClient:
             path: API endpoint path
             params: Query parameters
             headers: Additional headers
+            return_response: If True, return (data, response) tuple
 
         Returns:
-            Response data
+            Response data or (data, response) tuple
         """
         url = f"{self.base_url}/{path.lstrip('/')}"
         request_headers = self._prepare_headers(headers)
         session = self._get_session()
 
         response = session.delete(url, params=params, headers=request_headers, timeout=self.timeout)
+        response_data = self._handle_response(response)
 
-        return self._handle_response(response)
+        if return_response:
+            return response_data, response
+        return response_data

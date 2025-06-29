@@ -2,7 +2,7 @@
 Invoices resource manager for Ophelos API.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, cast
 
 from ..models import Invoice, PaginatedResponse
 from .base import BaseResource
@@ -24,8 +24,10 @@ class InvoicesResource(BaseResource):
             Invoice instance
         """
         params = self._build_expand_params(expand)
-        response_data = self.http_client.get(f"debts/{debt_id}/invoices/{invoice_id}", params=params)
-        return self._parse_model_response(response_data, Invoice)
+        response_tuple = self.http_client.get(
+            f"debts/{debt_id}/invoices/{invoice_id}", params=params, return_response=True
+        )
+        return cast(Invoice, self._parse_response(response_tuple, Invoice))
 
     def create(self, debt_id: str, data: Dict[str, Any]) -> Invoice:
         """
@@ -38,8 +40,8 @@ class InvoicesResource(BaseResource):
         Returns:
             Created invoice instance
         """
-        response_data = self.http_client.post(f"debts/{debt_id}/invoices", data=data)
-        return self._parse_model_response(response_data, Invoice)
+        response_tuple = self.http_client.post(f"debts/{debt_id}/invoices", data=data, return_response=True)
+        return cast(Invoice, self._parse_response(response_tuple, Invoice))
 
     def update(self, debt_id: str, invoice_id: str, data: Dict[str, Any]) -> Invoice:
         """
@@ -53,8 +55,8 @@ class InvoicesResource(BaseResource):
         Returns:
             Updated invoice instance
         """
-        response_data = self.http_client.put(f"debts/{debt_id}/invoices/{invoice_id}", data=data)
-        return self._parse_model_response(response_data, Invoice)
+        response_tuple = self.http_client.put(f"debts/{debt_id}/invoices/{invoice_id}", data=data, return_response=True)
+        return cast(Invoice, self._parse_response(response_tuple, Invoice))
 
     def search(
         self,
@@ -78,5 +80,5 @@ class InvoicesResource(BaseResource):
             Paginated response with invoice data
         """
         params = self._build_search_params(query, limit, expand, **kwargs)
-        response_data = self.http_client.get(f"debts/{debt_id}/invoices/search", params=params)
-        return self._parse_list_response(response_data, Invoice)
+        response_tuple = self.http_client.get(f"debts/{debt_id}/invoices/search", params=params, return_response=True)
+        return self._parse_list_response(response_tuple, Invoice)

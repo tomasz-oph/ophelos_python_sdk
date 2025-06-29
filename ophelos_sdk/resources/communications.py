@@ -33,5 +33,5 @@ class CommunicationsResource(BaseResource):
             Paginated response with communication data
         """
         params = self._build_list_params(limit, after, before, expand, **kwargs)
-        response_data = self.http_client.get("communications", params=params)
-        return self._parse_list_response(response_data, Communication)
+        response_tuple = self.http_client.get("communications", params=params, return_response=True)
+        return self._parse_list_response(response_tuple, Communication)
