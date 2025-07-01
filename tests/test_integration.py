@@ -119,8 +119,8 @@ class TestIntegrationDebts:
 
     def test_search_debts_empty_result(self, ophelos_client):
         """Test searching debts with query that should return no results."""
-        # Search for a very specific non-existent reference
-        results = ophelos_client.debts.search(f"reference_code:NONEXISTENT_{datetime.now().timestamp()}")
+        # Search for a very specific non-existent account number
+        results = ophelos_client.debts.search(f"account_number:NONEXISTENT_{datetime.now().timestamp()}")
 
         assert results.object == "list"
         assert len(results.data) == 0

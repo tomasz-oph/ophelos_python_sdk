@@ -8,7 +8,14 @@ Models are organized by domain for better maintainability.
 # Import all models for backward compatibility
 from .base import BaseOphelosModel, Currency
 from .communication import Communication, CommunicationTemplate
-from .customer import ContactDetail, ContactDetailSource, ContactDetailType, ContactDetailUsage, Customer
+from .customer import (
+    ContactDetail,
+    ContactDetailSource,
+    ContactDetailStatus,
+    ContactDetailType,
+    ContactDetailUsage,
+    Customer,
+)
 from .debt import Debt, DebtStatus, DebtSummary, StatusObject, SummaryBreakdown
 from .invoice import Invoice, LineItem, LineItemKind
 from .organisation import Organisation, PaymentOptionsConfiguration
@@ -38,6 +45,7 @@ __all__ = [
     "ContactDetailType",
     "ContactDetailUsage",
     "ContactDetailSource",
+    "ContactDetailStatus",
     # Debt
     "Debt",
     "DebtStatus",

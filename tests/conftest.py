@@ -43,7 +43,6 @@ def sample_debt_data():
         "id": "debt_123456789",
         "object": "debt",
         "account_number": "ACC-001",
-        "reference_code": "REF-001",
         "currency": "GBP",
         "status": {
             "value": "prepared",

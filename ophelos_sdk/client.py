@@ -8,6 +8,7 @@ from .auth import OAuth2Authenticator, StaticTokenAuthenticator
 from .http_client import HTTPClient
 from .resources import (
     CommunicationsResource,
+    ContactDetailsResource,
     CustomersResource,
     DebtsResource,
     InvoicesResource,
@@ -121,6 +122,7 @@ class OphelosClient:
         )
         self.debts = DebtsResource(self.http_client)
         self.customers = CustomersResource(self.http_client)
+        self.contact_details = ContactDetailsResource(self.http_client)
         self.organisations = OrganisationsResource(self.http_client)
         self.payments = PaymentsResource(self.http_client)
         self.invoices = InvoicesResource(self.http_client)

@@ -27,7 +27,7 @@ class ContactDetailUsage(str, Enum):
     WORK = "work"
     SUPPLY_ADDRESS = "supply_address"
     DELIVERY_ADDRESS = "delivery_address"
-    OTHER = "other"
+    TEMPORARY = "temporary"
 
 
 class ContactDetailSource(str, Enum):
@@ -37,6 +37,15 @@ class ContactDetailSource(str, Enum):
     CUSTOMER = "customer"
     SUPPORT_AGENT = "support_agent"
     OTHER = "other"
+
+
+class ContactDetailStatus(str, Enum):
+    """Contact detail status enumeration."""
+
+    UNVERIFIED = "unverified"
+    VERIFIED = "verified"
+    UNDELIVERABLE = "undeliverable"
+    DELETED = "deleted"
 
 
 class ContactDetail(BaseOphelosModel):

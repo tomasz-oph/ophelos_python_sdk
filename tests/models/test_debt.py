@@ -62,7 +62,6 @@ class TestDebtModel:
         debt = Debt(**minimal_data)
         assert debt.id == "debt_123"
         assert debt.account_number is None
-        assert debt.reference_code is None
         assert debt.metadata is None
 
     def test_debt_to_api_body_basic(self):
@@ -300,7 +299,6 @@ class TestDebtModel:
             object="debt",
             status={"value": "prepared", "whodunnit": "system", "updated_at": datetime.now()},
             kind="credit_card",
-            reference_code="REF-001",
             account_number="ACC-001",
             customer="cust_123",
             organisation="org_123",
@@ -317,7 +315,6 @@ class TestDebtModel:
         api_body = debt.to_api_body()
 
         assert api_body["kind"] == "credit_card"
-        assert api_body["reference_code"] == "REF-001"
         assert api_body["account_number"] == "ACC-001"
         assert api_body["currency"] == "GBP"
         assert api_body["tags"] == ["urgent", "vip"]
@@ -609,7 +606,6 @@ class TestDebtModelEnhanced:
             customer="cust_123",
             organisation="org_123",
             currency=Currency.EUR,
-            reference_code="REF-2024-001",
             account_number="ACC-123456",
             tags=["priority", "vip"],
             metadata={"source": "api", "channel": "web"},
@@ -619,7 +615,6 @@ class TestDebtModelEnhanced:
 
         assert api_body["kind"] == "personal_loan"
         assert api_body["currency"] == "EUR"  # Enum serialized as string
-        assert api_body["reference_code"] == "REF-2024-001"
         assert api_body["account_number"] == "ACC-123456"
         # String IDs converted to _id fields
         assert api_body["customer_id"] == "cust_123"
@@ -683,7 +678,6 @@ class TestDebtModelEnhanced:
             organisation="org_456",
             currency=Currency.GBP,
             start_at=date(2024, 2, 1),
-            reference_code="REF-DATE-001",
             metadata={"created_by": "api", "test_date": True},
         )
 

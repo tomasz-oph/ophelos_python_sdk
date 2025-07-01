@@ -7,13 +7,13 @@ This guide shows comprehensive usage patterns for the Ophelos SDK, including adv
 ### Option 1: Install from Wheel (Recommended)
 
 ```bash
-pip install dist/ophelos_sdk-1.2.0-py3-none-any.whl
+pip install dist/ophelos_sdk-1.3.0-py3-none-any.whl
 ```
 
 ### Option 2: Install from Source Distribution
 
 ```bash
-pip install dist/ophelos-sdk-1.2.0.tar.gz
+pip install dist/ophelos-sdk-1.3.0.tar.gz
 ```
 
 ### Option 3: Development Installation
@@ -298,7 +298,7 @@ debt = Debt(
     customer="cust_123",  # String ID - preserved as-is
     organisation=existing_org_model,  # Model instance - becomes ID reference
     currency="GBP",
-    reference_code="DEBT-001"
+    account_number="ACC-001"
 )
 
 api_body = debt.to_api_body()
@@ -385,6 +385,7 @@ def preview_and_create_debt(customer_id, org_id, amount_total, currency="GBP"):
         organisation=org_id,
         currency=currency,
         total_amount=amount_total,
+        account_number="ACC-PREVIEW",
         kind="purchased"
     )
 
@@ -443,7 +444,7 @@ debt_model = Debt(
     customer="cust_123",
     organisation="org_456",
     currency="GBP",
-    reference_code="DEBT-2024-001",
+    account_number="ACC-2024-001",
     kind="purchased",
     metadata={"created_via": "sdk", "priority": "normal"}
 )
@@ -525,6 +526,61 @@ updated_customer = client.customers.update(created_customer.id, update_data)
 
 print(f"Update request body: {updated_customer.request_info['body']}")
 print(f"Update response: {updated_customer.response_info['status_code']}")
+```
+
+### Contact Details Management
+
+```python
+from ophelos_sdk.models import ContactDetail
+
+# Create contact details for a customer
+contact_detail_model = ContactDetail(
+    id="temp_contact",
+    type="email",
+    value="john.doe@example.com",
+    primary=True,
+    usage="billing",
+    metadata={"verified": True, "source": "user_input"}
+)
+
+# Create contact detail
+created_contact = client.contact_details.create(
+    "cust_123",
+    contact_detail_model,
+    expand=["customer"]
+)
+
+print(f"Contact detail created: {created_contact.id}")
+print(f"Request details: {created_contact.request_info}")
+print(f"Response time: {created_contact.response_raw.elapsed}")
+
+# Get specific contact detail
+contact_detail = client.contact_details.get("cust_123", "cd_456")
+
+print(f"Get contact detail request: {contact_detail.request_info}")
+print(f"Contact type: {contact_detail.type}, Value: {contact_detail.value}")
+
+# Update contact detail
+update_data = {
+    "usage": "notifications",
+    "metadata": {"updated_reason": "preference_change"}
+}
+
+updated_contact = client.contact_details.update("cust_123", "cd_456", update_data)
+
+print(f"Update request: {updated_contact.request_info}")
+print(f"Updated usage: {updated_contact.usage}")
+
+# List all contact details for customer
+contact_details = client.contact_details.list("cust_123", limit=10)
+
+print(f"Found {len(contact_details.data)} contact details")
+print(f"List request time: {contact_details.response_raw.elapsed}")
+
+# Soft delete contact detail
+delete_response = client.contact_details.delete("cust_123", "cd_456")
+
+print(f"Delete response: {delete_response}")
 ```
 
 ### Payment Operations

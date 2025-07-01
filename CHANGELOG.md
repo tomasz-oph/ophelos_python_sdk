@@ -5,6 +5,19 @@ All notable changes to the Ophelos Python SDK will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2025-01-27
+
+### Added
+- **ContactDetailsResource**: New resource manager for customer contact information management
+  - `create()` - Create new contact details for customers
+  - `get()` - Retrieve specific contact details by ID
+  - `update()` - Update existing contact details
+  - `list()` - List all contact details for a customer with pagination
+  - `delete()` - Soft delete contact details (mark as deleted)
+
+### Enhanced
+- **Examples**: All debt examples now use `account_number` instead of `reference_code`
+
 ## [1.2.0] - 2025-01-27
 
 ### Added

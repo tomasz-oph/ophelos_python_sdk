@@ -101,7 +101,6 @@ class Debt(BaseOphelosModel):
     object: Optional[str] = "debt"
     status: Optional[StatusObject] = None
     kind: Optional[str] = None
-    reference_code: Optional[str] = None
     account_number: Optional[str] = None
     customer: Optional[Union[str, "Customer"]] = None  # Can be customer ID or expanded customer object
     customer_id: Optional[str] = None  # Used for API POST or PUT requests
@@ -125,7 +124,6 @@ class Debt(BaseOphelosModel):
     # Define which fields can be sent in API create/update requests
     __api_body_fields__ = {
         "kind",
-        "reference_code",
         "account_number",
         "customer",
         "customer_id",

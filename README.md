@@ -14,10 +14,10 @@ pip install ophelos-sdk
 
 ```bash
 # Install from wheel (recommended)
-pip install dist/ophelos_sdk-1.2.0-py3-none-any.whl
+pip install dist/ophelos_sdk-1.3.0-py3-none-any.whl
 
 # Or install from source distribution
-pip install dist/ophelos-sdk-1.2.0.tar.gz
+pip install dist/ophelos-sdk-1.3.0.tar.gz
 
 # Or install in development mode
 pip install -e .
@@ -92,7 +92,7 @@ debt_model = Debt(
     customer=customer.id,  # Use real customer ID
     organisation="org_123",
     currency="GBP",
-    reference_code="DEBT-001",
+    account_number="ACC-001",
     kind="purchased"
 )
 
@@ -269,7 +269,7 @@ debt_model = Debt(
     customer="cust_123",
     organisation="org_123",
     currency="GBP",
-    reference_code="DEBT-001",
+    account_number="ACC-001",
     kind="purchased"
 )
 
@@ -277,6 +277,35 @@ created_debt = client.debts.create(debt_model)
 
 # Access creation request details
 print(f"Created debt with request: {created_debt.request_info}")
+```
+
+### Working with Contact Details
+
+```python
+from ophelos_sdk.models import ContactDetail
+
+# Create contact detail for a customer
+contact = client.contact_details.create("cust_123", {
+    "type": "email",
+    "value": "john.doe@example.com",
+    "primary": True,
+    "usage": "billing"
+})
+
+# Get specific contact detail
+contact_detail = client.contact_details.get("cust_123", contact.id)
+
+# Update contact detail
+updated_contact = client.contact_details.update("cust_123", contact.id, {
+    "usage": "notifications"
+})
+
+# List all contact details for customer
+contacts = client.contact_details.list("cust_123")
+
+# Access request/response details
+print(f"Contact creation time: {contact.response_raw.elapsed.total_seconds()}s")
+print(f"List request: {contacts.request_info['url']}")
 ```
 
 ### Error Handling with Request/Response Debugging
@@ -328,6 +357,7 @@ except Exception as e:
 
 - **Debts**: Create, update, and manage debts with lifecycle operations
 - **Customers**: Customer CRUD operations with contact detail management
+- **Contact Details**: Manage customer contact information (email, phone, address)
 - **Payments**: Payment processing and tracking
 - **Organisations**: Organisation setup and configuration
 - **Invoices**: Invoice creation and management
