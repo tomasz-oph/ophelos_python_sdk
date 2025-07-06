@@ -54,7 +54,7 @@ class ContactDetail(BaseOphelosModel):
     id: Optional[str] = None
     object: Optional[str] = "contact_detail"
     type: ContactDetailType
-    value: str
+    value: Union[str, Dict[str, Any]]
     primary: Optional[bool] = None
     usage: Optional[ContactDetailUsage] = None
     source: Optional[ContactDetailSource] = None

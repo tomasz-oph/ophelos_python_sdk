@@ -205,10 +205,10 @@ class TestContactDetailEnums:
         assert ContactDetailUsage.WORK == "work"
         assert ContactDetailUsage.SUPPLY_ADDRESS == "supply_address"
         assert ContactDetailUsage.DELIVERY_ADDRESS == "delivery_address"
-        assert ContactDetailUsage.OTHER == "other"
+        assert ContactDetailUsage.TEMPORARY == "temporary"
 
         # Test all enum values are defined
-        expected_usages = {"permanent", "work", "supply_address", "delivery_address", "other"}
+        expected_usages = {"permanent", "work", "supply_address", "delivery_address", "temporary"}
         actual_usages = {member.value for member in ContactDetailUsage}
         assert actual_usages == expected_usages
 
