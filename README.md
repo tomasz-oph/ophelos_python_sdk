@@ -14,10 +14,10 @@ pip install ophelos-sdk
 
 ```bash
 # Install from wheel (recommended)
-pip install dist/ophelos_sdk-1.3.1-py3-none-any.whl
+pip install dist/ophelos_sdk-1.4.0-py3-none-any.whl
 
 # Or install from source distribution
-pip install dist/ophelos-sdk-1.3.1.tar.gz
+pip install dist/ophelos-sdk-1.4.0.tar.gz
 
 # Or install in development mode
 pip install -e .

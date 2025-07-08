@@ -5,12 +5,19 @@ All notable changes to the Ophelos Python SDK will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.3.1] - 2025-01-27
+## [1.4.0] - 2025-07-08
+
+### Added
+- **LineItemsResource**: New resource manager for debt line items management
+  - `list()` - List all line items for a debt with pagination and filtering
+  - `create()` - Create new line items for debts (debt, interest, fee, VAT, credit, etc.)
+
+## [1.3.1] - 2025-07-06
 
 ### Fixed
 - Fixed ContactDetail.value field to accept both string and dictionary values from API responses
 
-## [1.3.0] - 2025-01-27
+## [1.3.0] - 2025-07-02
 
 ### Added
 - **ContactDetailsResource**: New resource manager for customer contact information management
@@ -23,7 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Enhanced
 - **Examples**: All debt examples now use `account_number` instead of `reference_code`
 
-## [1.2.0] - 2025-01-27
+## [1.2.0] - 2025-06-29
 
 ### Added
 - **Comprehensive Error Handling**: Full request/response debugging interface for all error types
