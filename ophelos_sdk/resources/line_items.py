@@ -2,7 +2,7 @@
 Line Items resource manager for Ophelos API.
 """
 
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, Dict, List, Optional, Union, cast
 
 from ..models import LineItem, PaginatedResponse
 from .base import BaseResource
@@ -38,16 +38,22 @@ class LineItemsResource(BaseResource):
         response_tuple = self.http_client.get(f"debts/{debt_id}/line_items", params=params, return_response=True)
         return self._parse_list_response(response_tuple, LineItem)
 
-    def create(self, debt_id: str, data: Dict[str, Any]) -> LineItem:
+    def create(self, debt_id: str, data: Union[Dict[str, Any], LineItem]) -> LineItem:
         """
         Create a new line item for a debt.
 
         Args:
             debt_id: Debt ID
-            data: Line item data
+            data: Line item data (dictionary) or LineItem model instance
 
         Returns:
             Created line item instance
         """
-        response_tuple = self.http_client.post(f"debts/{debt_id}/line_items", data=data, return_response=True)
+        # Prepare data (handles both dict and model instances)
+        if hasattr(data, "to_api_body"):
+            api_data = data.to_api_body()
+        else:
+            api_data = data
+
+        response_tuple = self.http_client.post(f"debts/{debt_id}/line_items", data=api_data, return_response=True)
         return cast(LineItem, self._parse_response(response_tuple, LineItem))

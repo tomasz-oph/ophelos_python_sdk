@@ -7,7 +7,7 @@ from unittest.mock import Mock
 import pytest
 
 from ophelos_sdk.http_client import HTTPClient
-from ophelos_sdk.models import LineItem, PaginatedResponse
+from ophelos_sdk.models import Currency, LineItem, LineItemKind, PaginatedResponse
 from ophelos_sdk.resources import LineItemsResource
 
 
@@ -230,7 +230,7 @@ class TestLineItemsResource:
         """Test creating a line item with minimal required data."""
         create_data = {
             "kind": "debt",
-            "amount": 100000,
+            "amount": 50000,
         }
 
         minimal_line_item_data = {
@@ -238,7 +238,7 @@ class TestLineItemsResource:
             "object": "line_item",
             "debt_id": "debt_123",
             "kind": "debt",
-            "amount": 100000,
+            "amount": 50000,
         }
 
         mock_response = Mock()
@@ -252,4 +252,168 @@ class TestLineItemsResource:
         )
         assert isinstance(result, LineItem)
         assert result.kind == "debt"
-        assert result.amount == 100000
+        assert result.amount == 50000
+
+    def test_create_line_item_with_model_instance(self, line_items_resource, mock_http_client, sample_line_item_data):
+        """Test creating a line item using a LineItem model instance."""
+        # Create a LineItem model instance
+        line_item = LineItem(
+            kind=LineItemKind.INTEREST,
+            description="Test interest charge",
+            amount=1500,
+            currency=Currency.GBP,
+            metadata={"rate": "5.5%"},
+        )
+
+        # Create mock response data
+        mock_response_data = sample_line_item_data.copy()
+        mock_response_data.update(
+            {
+                "kind": "interest",
+                "description": "Test interest charge",
+                "amount": 1500,
+                "currency": "GBP",
+                "metadata": {"rate": "5.5%"},
+            }
+        )
+
+        mock_response = Mock()
+        mock_response.status_code = 201
+        mock_http_client.post.return_value = (mock_response_data, mock_response)
+
+        # Pass the LineItem instance directly
+        result = line_items_resource.create("debt_123", line_item)
+
+        # Verify the API was called with the serialized data
+        expected_data = {
+            "kind": "interest",
+            "description": "Test interest charge",
+            "amount": 1500,
+            "currency": "GBP",
+            "metadata": {"rate": "5.5%"},
+        }
+        mock_http_client.post.assert_called_once_with(
+            "debts/debt_123/line_items", data=expected_data, return_response=True
+        )
+        assert isinstance(result, LineItem)
+        assert result.kind == "interest"
+        assert result.description == "Test interest charge"
+        assert result.amount == 1500
+        assert result.currency == "GBP"
+
+    def test_create_line_item_with_transaction_at(self, line_items_resource, mock_http_client, sample_line_item_data):
+        """Test creating a line item using a LineItem model instance with transaction_at field."""
+        from datetime import datetime
+
+        # Create a specific datetime for testing
+        transaction_time = datetime(2023, 7, 8, 14, 30, 45)
+
+        # Create a LineItem model instance with transaction_at
+        line_item = LineItem(
+            kind=LineItemKind.FEE,
+            description="Processing fee with timestamp",
+            amount=2500,
+            currency=Currency.GBP,
+            transaction_at=transaction_time,
+            metadata={"fee_type": "processing"},
+        )
+
+        # Create mock response data
+        mock_response_data = sample_line_item_data.copy()
+        mock_response_data.update(
+            {
+                "kind": "fee",
+                "description": "Processing fee with timestamp",
+                "amount": 2500,
+                "currency": "GBP",
+                "transaction_at": "2023-07-08T14:30:45",
+                "metadata": {"fee_type": "processing"},
+            }
+        )
+
+        mock_response = Mock()
+        mock_response.status_code = 201
+        mock_http_client.post.return_value = (mock_response_data, mock_response)
+
+        # Pass the LineItem instance directly
+        result = line_items_resource.create("debt_123", line_item)
+
+        # Verify the API was called with the serialized data including transaction_at
+        call_args = mock_http_client.post.call_args
+        actual_data = call_args[1]["data"]
+
+        assert actual_data["kind"] == "fee"
+        assert actual_data["description"] == "Processing fee with timestamp"
+        assert actual_data["amount"] == 2500
+        assert actual_data["currency"] == "GBP"
+        assert actual_data["transaction_at"] == "2023-07-08T14:30:45"  # ISO format
+        assert actual_data["metadata"] == {"fee_type": "processing"}
+
+        mock_http_client.post.assert_called_once_with(
+            "debts/debt_123/line_items", data=actual_data, return_response=True
+        )
+        assert isinstance(result, LineItem)
+        assert result.kind == "fee"
+        assert result.description == "Processing fee with timestamp"
+        assert result.amount == 2500
+        assert result.currency == "GBP"
+
+    def test_create_line_item_with_string_transaction_at(
+        self, line_items_resource, mock_http_client, sample_line_item_data
+    ):
+        """Test creating a line item using a LineItem model instance with string transaction_at."""
+        from datetime import datetime
+
+        # Create a LineItem model instance with string transaction_at
+        line_item = LineItem(
+            kind=LineItemKind.INTEREST,
+            description="Interest with string timestamp",
+            amount=1200,
+            currency=Currency.GBP,
+            transaction_at="2023-07-08T14:30:45.123456",  # String input
+            metadata={"rate": "4.5%"},
+        )
+
+        # Verify the string was automatically converted to datetime
+        assert isinstance(line_item.transaction_at, datetime)
+        assert line_item.transaction_at == datetime(2023, 7, 8, 14, 30, 45, 123456)
+
+        # Create mock response data
+        mock_response_data = sample_line_item_data.copy()
+        mock_response_data.update(
+            {
+                "kind": "interest",
+                "description": "Interest with string timestamp",
+                "amount": 1200,
+                "currency": "GBP",
+                "transaction_at": "2023-07-08T14:30:45.123456",
+                "metadata": {"rate": "4.5%"},
+            }
+        )
+
+        mock_response = Mock()
+        mock_response.status_code = 201
+        mock_http_client.post.return_value = (mock_response_data, mock_response)
+
+        # Pass the LineItem instance directly
+        result = line_items_resource.create("debt_123", line_item)
+
+        # Verify the API was called with the serialized data including transaction_at
+        call_args = mock_http_client.post.call_args
+        actual_data = call_args[1]["data"]
+
+        assert actual_data["kind"] == "interest"
+        assert actual_data["description"] == "Interest with string timestamp"
+        assert actual_data["amount"] == 1200
+        assert actual_data["currency"] == "GBP"
+        assert actual_data["transaction_at"] == "2023-07-08T14:30:45.123456"  # ISO format
+        assert actual_data["metadata"] == {"rate": "4.5%"}
+
+        mock_http_client.post.assert_called_once_with(
+            "debts/debt_123/line_items", data=actual_data, return_response=True
+        )
+        assert isinstance(result, LineItem)
+        assert result.kind == "interest"
+        assert result.description == "Interest with string timestamp"
+        assert result.amount == 1200
+        assert result.currency == "GBP"
