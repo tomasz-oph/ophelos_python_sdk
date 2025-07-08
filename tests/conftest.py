@@ -129,6 +129,25 @@ def sample_payment_data():
 
 
 @pytest.fixture
+def sample_line_item_data():
+    """Sample line item data for testing."""
+    return {
+        "id": "li_123456789",
+        "object": "line_item",
+        "debt_id": "debt_123456789",
+        "invoice_id": "inv_123456789",
+        "kind": "debt",
+        "description": "Principal amount",
+        "amount": 100000,  # Amount in cents (£1000.00)
+        "currency": "GBP",
+        "transaction_at": datetime.now().isoformat(),
+        "created_at": datetime.now().isoformat(),
+        "updated_at": datetime.now().isoformat(),
+        "metadata": {"category": "principal", "reference": "REF-001"},
+    }
+
+
+@pytest.fixture
 def sample_paginated_response():
     """Sample paginated response structure."""
     return {"object": "list", "data": [], "has_more": False, "total_count": 0}

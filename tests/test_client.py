@@ -58,6 +58,7 @@ class TestOphelosClient:
         assert hasattr(client, "debts")
         assert hasattr(client, "customers")
         assert hasattr(client, "organisations")
+        assert hasattr(client, "line_items")
 
     @patch("ophelos_sdk.client.OAuth2Authenticator")
     @patch("ophelos_sdk.client.HTTPClient")
@@ -152,6 +153,7 @@ class TestOphelosClient:
         assert client.debts.http_client == mock_http_instance
         assert client.customers.http_client == mock_http_instance
         assert client.payments.http_client == mock_http_instance
+        assert client.line_items.http_client == mock_http_instance
 
         # Verify the HTTP client was initialized with the tenant_id
         args, kwargs = mock_http_client.call_args

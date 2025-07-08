@@ -8,6 +8,7 @@ from .contact_details import ContactDetailsResource
 from .customers import CustomersResource
 from .debts import DebtsResource
 from .invoices import InvoicesResource
+from .line_items import LineItemsResource
 from .organisations import OrganisationsResource
 from .payment_plans import PaymentPlansResource
 from .payments import PaymentsResource
@@ -23,6 +24,7 @@ __all__ = [
     "OrganisationsResource",
     "PaymentsResource",
     "InvoicesResource",
+    "LineItemsResource",
     "WebhooksResource",
     "PaymentPlansResource",
     "CommunicationsResource",

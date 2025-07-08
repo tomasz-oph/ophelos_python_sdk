@@ -12,6 +12,7 @@ from .resources import (
     CustomersResource,
     DebtsResource,
     InvoicesResource,
+    LineItemsResource,
     OrganisationsResource,
     PaymentPlansResource,
     PaymentsResource,
@@ -126,6 +127,7 @@ class OphelosClient:
         self.organisations = OrganisationsResource(self.http_client)
         self.payments = PaymentsResource(self.http_client)
         self.invoices = InvoicesResource(self.http_client)
+        self.line_items = LineItemsResource(self.http_client)
         self.webhooks = WebhooksResource(self.http_client)
         self.payment_plans = PaymentPlansResource(self.http_client)
         self.communications = CommunicationsResource(self.http_client)
