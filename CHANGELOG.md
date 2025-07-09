@@ -5,6 +5,19 @@ All notable changes to the Ophelos Python SDK will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2025-07-09
+
+### Added
+- **PaymentsResource**: New `create()` and `update()` methods for payment management
+  - `create(debt_id, data, expand=None)` - Create payments for debts
+  - `update(debt_id, payment_id, data, expand=None)` - Update existing payments
+  - Both methods accept dictionary data or Payment model instances with automatic serialization
+
+### Enhanced
+- **Payment Model**: All API body fields now optional for flexible partial updates
+  - Supports metadata-only updates and selective field modifications
+  - Improved model serialization excludes None values from API requests
+
 ## [1.4.1] - 2025-07-08
 
 ### Fixed
