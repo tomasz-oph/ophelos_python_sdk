@@ -29,9 +29,9 @@ class Payment(BaseOphelosModel):
     object: Optional[str] = "payment"
     debt: Optional[Union[str, "Debt"]] = None  # Can be debt ID or expanded debt object
     status: Optional[PaymentStatus] = None
-    transaction_at: datetime
-    transaction_ref: str
-    amount: int  # Amount in cents
+    transaction_at: Optional[datetime] = None
+    transaction_ref: Optional[str] = None
+    amount: Optional[int] = None  # Amount in cents
     currency: Optional[Currency] = None
     payment_provider: Optional[str] = None
     payment_plan: Optional[Union[str, "PaymentPlan"]] = None  # Can be payment_plan ID or expanded object

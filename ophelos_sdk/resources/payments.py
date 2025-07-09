@@ -2,7 +2,7 @@
 Payments resource for Ophelos API.
 """
 
-from typing import Any, List, Optional, cast
+from typing import Any, Dict, List, Optional, Union, cast
 
 from ..models import PaginatedResponse, Payment
 from .base import BaseResource
@@ -72,4 +72,67 @@ class PaymentsResource(BaseResource):
         """
         params = self._build_expand_params(expand)
         response_tuple = self.http_client.get(f"payments/{payment_id}", params=params, return_response=True)
+        return cast(Payment, self._parse_response(response_tuple, Payment))
+
+    def create(self, debt_id: str, data: Union[Dict[str, Any], Payment], expand: Optional[List[str]] = None) -> Payment:
+        """
+        Create a payment for a debt.
+
+        Args:
+            debt_id: Debt ID
+            data: Payment data (dictionary) or Payment model instance
+            expand: List of fields to expand
+
+        Returns:
+            Created payment instance
+        """
+        # Prepare data (handles both dict and model instances)
+        if hasattr(data, "to_api_body"):
+            api_data = data.to_api_body()
+        else:
+            api_data = data
+
+        if expand:
+            params = self._build_expand_params(expand)
+            response_tuple = self.http_client.post(
+                f"debts/{debt_id}/payments", data=api_data, params=params, return_response=True
+            )
+        else:
+            response_tuple = self.http_client.post(f"debts/{debt_id}/payments", data=api_data, return_response=True)
+        return cast(Payment, self._parse_response(response_tuple, Payment))
+
+    def update(
+        self,
+        debt_id: str,
+        payment_id: str,
+        data: Union[Dict[str, Any], Payment],
+        expand: Optional[List[str]] = None,
+    ) -> Payment:
+        """
+        Update a payment for a debt.
+
+        Args:
+            debt_id: Debt ID
+            payment_id: Payment ID
+            data: Updated payment data (dictionary) or Payment model instance
+            expand: List of fields to expand
+
+        Returns:
+            Updated payment instance
+        """
+        # Prepare data (handles both dict and model instances)
+        if hasattr(data, "to_api_body"):
+            api_data = data.to_api_body()
+        else:
+            api_data = data
+
+        if expand:
+            params = self._build_expand_params(expand)
+            response_tuple = self.http_client.put(
+                f"debts/{debt_id}/payments/{payment_id}", data=api_data, params=params, return_response=True
+            )
+        else:
+            response_tuple = self.http_client.put(
+                f"debts/{debt_id}/payments/{payment_id}", data=api_data, return_response=True
+            )
         return cast(Payment, self._parse_response(response_tuple, Payment))

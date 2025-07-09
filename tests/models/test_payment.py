@@ -63,6 +63,100 @@ class TestPaymentModel:
         assert "payment_provider" not in api_body
         assert "payment_plan" not in api_body
 
+    def test_payment_creation_with_optional_fields(self):
+        """Test payment creation with all fields optional."""
+        # Should be able to create with no fields
+        payment_empty = Payment()
+        assert payment_empty.id is None
+        assert payment_empty.transaction_at is None
+        assert payment_empty.transaction_ref is None
+        assert payment_empty.amount is None
+        assert payment_empty.currency is None
+        assert payment_empty.metadata is None
+
+        # Should be able to create with only some fields
+        payment_partial = Payment(metadata={"source": "test"}, transaction_ref="PARTIAL-REF")
+        assert payment_partial.metadata == {"source": "test"}
+        assert payment_partial.transaction_ref == "PARTIAL-REF"
+        assert payment_partial.amount is None
+        assert payment_partial.currency is None
+
+    def test_payment_partial_update_metadata_only(self):
+        """Test payment model for metadata-only updates."""
+        payment = Payment(metadata={"status": "verified", "notes": "Updated"})
+
+        api_body = payment.to_api_body()
+
+        # Should only contain metadata
+        assert "metadata" in api_body
+        assert api_body["metadata"] == {"status": "verified", "notes": "Updated"}
+
+        # Should not contain other fields
+        assert "transaction_at" not in api_body
+        assert "transaction_ref" not in api_body
+        assert "amount" not in api_body
+        assert "currency" not in api_body
+
+    def test_payment_partial_update_transaction_ref_only(self):
+        """Test payment model for transaction_ref-only updates."""
+        payment = Payment(transaction_ref="UPDATED-REF-123")
+
+        api_body = payment.to_api_body()
+
+        # Should only contain transaction_ref
+        assert "transaction_ref" in api_body
+        assert api_body["transaction_ref"] == "UPDATED-REF-123"
+
+        # Should not contain other fields
+        assert "metadata" not in api_body
+        assert "transaction_at" not in api_body
+        assert "amount" not in api_body
+        assert "currency" not in api_body
+
+    def test_payment_partial_update_multiple_fields(self):
+        """Test payment model for partial updates with multiple fields."""
+        payment = Payment(transaction_ref="MULTI-REF-456", amount=15000, metadata={"source": "partial_update"})
+
+        api_body = payment.to_api_body()
+
+        # Should contain provided fields
+        assert api_body["transaction_ref"] == "MULTI-REF-456"
+        assert api_body["amount"] == 15000
+        assert api_body["metadata"] == {"source": "partial_update"}
+
+        # Should not contain unprovided fields
+        assert "transaction_at" not in api_body
+        assert "currency" not in api_body
+
+    def test_payment_empty_api_body(self):
+        """Test payment model with no fields set produces empty API body."""
+        payment = Payment()
+
+        api_body = payment.to_api_body()
+
+        # Should be empty
+        assert api_body == {}
+
+    def test_payment_api_body_excludes_none_values(self):
+        """Test that to_api_body() excludes None values."""
+        payment = Payment(
+            transaction_ref="TEST-REF",
+            amount=None,  # Explicitly set to None
+            currency=Currency.GBP,
+            metadata=None,  # Explicitly set to None
+        )
+
+        api_body = payment.to_api_body()
+
+        # Should include non-None fields
+        assert api_body["transaction_ref"] == "TEST-REF"
+        assert api_body["currency"] == "GBP"
+
+        # Should exclude None fields
+        assert "amount" not in api_body
+        assert "metadata" not in api_body
+        assert "transaction_at" not in api_body
+
 
 class TestPaymentStatusEnum:
     """Test cases for PaymentStatus enum."""
@@ -186,6 +280,36 @@ class TestPaymentModelEnhanced:
         # Datetime should be serialized as ISO format string
         assert isinstance(api_body["transaction_at"], str)
         assert "2024-03-15T14:30:00" in api_body["transaction_at"]
+
+    def test_payment_full_create_vs_partial_update_scenarios(self):
+        """Test the difference between full create and partial update scenarios."""
+        # Full create scenario
+        payment_create = Payment(
+            transaction_at=datetime(2023, 12, 1, 10, 30, 0),
+            transaction_ref="CREATE-REF-789",
+            amount=20000,
+            currency=Currency.GBP,
+            metadata={"source": "create_operation"},
+        )
+
+        create_body = payment_create.to_api_body()
+
+        # Should contain all provided fields
+        assert "transaction_at" in create_body
+        assert "transaction_ref" in create_body
+        assert "amount" in create_body
+        assert "currency" in create_body
+        assert "metadata" in create_body
+
+        # Partial update scenario
+        payment_update = Payment(metadata={"source": "update_operation"})
+
+        update_body = payment_update.to_api_body()
+
+        # Should only contain metadata
+        assert "metadata" in update_body
+        assert len(update_body) == 1
+        assert update_body["metadata"] == {"source": "update_operation"}
 
 
 class TestPaymentPlan:
