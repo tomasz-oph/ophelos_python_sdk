@@ -35,8 +35,8 @@ ignore = E203,W503,W504,E501,W291,W292,W293,D100,D101,D102,D103,D104,D107,D200,D
 per-file-ignores =
     # Tests can have longer lines and more complex assertions
     tests/*.py:E501,C901,F401,F841,E128
-    # Examples may have unused variables for demonstration
-    examples/*.py:F401,F841
+    # Examples may have unused variables and complex functions for demonstration
+    examples/*.py:F401,F841,C901
     # Init files can have many imports
     __init__.py:F401
     # Resource files may have unused imports for future use
