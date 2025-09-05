@@ -145,7 +145,7 @@ class DebtsResource(BaseResource):
 
         Args:
             debt_id: Debt ID
-            data: Optional additional data
+            data: Optional additional data (i.e. reason)
 
         Returns:
             Updated debt instance
@@ -159,7 +159,7 @@ class DebtsResource(BaseResource):
 
         Args:
             debt_id: Debt ID
-            data: Optional pause data
+            data: Optional pause data (i.e. reason, end_at)
 
         Returns:
             Paused debt instance
@@ -173,7 +173,7 @@ class DebtsResource(BaseResource):
 
         Args:
             debt_id: Debt ID
-            data: Optional resume data
+            data: Optional resume data (i.e. reason)
 
         Returns:
             Resumed debt instance
@@ -201,7 +201,7 @@ class DebtsResource(BaseResource):
 
         Args:
             debt_id: Debt ID
-            data: Optional withdrawal data (e.g., reason)
+            data: Optional withdrawal data (e.g., info)
 
         Returns:
             Updated debt instance

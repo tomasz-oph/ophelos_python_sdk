@@ -134,7 +134,7 @@ class TestDebtsResource:
         mock_http_client.post.assert_called_with("debts/debt_123/resume", data={}, return_response=True)
 
         # Test withdraw operation
-        withdraw_data = {"reason": "fraud"}
+        withdraw_data = {"info": "fraud"}
         result = debts_resource.withdraw("debt_123", withdraw_data)
         mock_http_client.post.assert_called_with("debts/debt_123/withdraw", data=withdraw_data, return_response=True)
 

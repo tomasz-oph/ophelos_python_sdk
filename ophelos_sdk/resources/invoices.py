@@ -2,7 +2,7 @@
 Invoices resource manager for Ophelos API.
 """
 
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, Dict, List, Optional, Union, cast
 
 from ..models import Invoice, PaginatedResponse
 from .base import BaseResource
@@ -29,33 +29,63 @@ class InvoicesResource(BaseResource):
         )
         return cast(Invoice, self._parse_response(response_tuple, Invoice))
 
-    def create(self, debt_id: str, data: Dict[str, Any]) -> Invoice:
+    def create(self, debt_id: str, data: Union[Dict[str, Any], Invoice], expand: Optional[List[str]] = None) -> Invoice:
         """
         Create a new invoice for a debt.
 
         Args:
             debt_id: Debt ID
-            data: Invoice data
+            data: Invoice data (dictionary) or Invoice model instance
+            expand: List of fields to expand
 
         Returns:
             Created invoice instance
         """
-        response_tuple = self.http_client.post(f"debts/{debt_id}/invoices", data=data, return_response=True)
+        # Prepare data (handles both dict and model instances)
+        if hasattr(data, "to_api_body"):
+            api_data = data.to_api_body()
+        else:
+            api_data = data
+
+        if expand:
+            params = self._build_expand_params(expand)
+            response_tuple = self.http_client.post(
+                f"debts/{debt_id}/invoices", data=api_data, params=params, return_response=True
+            )
+        else:
+            response_tuple = self.http_client.post(f"debts/{debt_id}/invoices", data=api_data, return_response=True)
         return cast(Invoice, self._parse_response(response_tuple, Invoice))
 
-    def update(self, debt_id: str, invoice_id: str, data: Dict[str, Any]) -> Invoice:
+    def update(
+        self, debt_id: str, invoice_id: str, data: Union[Dict[str, Any], Invoice], expand: Optional[List[str]] = None
+    ) -> Invoice:
         """
         Update an invoice.
 
         Args:
             debt_id: Debt ID
             invoice_id: Invoice ID
-            data: Updated invoice data
+            data: Updated invoice data (dictionary) or Invoice model instance
+            expand: List of fields to expand
 
         Returns:
             Updated invoice instance
         """
-        response_tuple = self.http_client.put(f"debts/{debt_id}/invoices/{invoice_id}", data=data, return_response=True)
+        # Prepare data (handles both dict and model instances)
+        if hasattr(data, "to_api_body"):
+            api_data = data.to_api_body()
+        else:
+            api_data = data
+
+        if expand:
+            params = self._build_expand_params(expand)
+            response_tuple = self.http_client.put(
+                f"debts/{debt_id}/invoices/{invoice_id}", data=api_data, params=params, return_response=True
+            )
+        else:
+            response_tuple = self.http_client.put(
+                f"debts/{debt_id}/invoices/{invoice_id}", data=api_data, return_response=True
+            )
         return cast(Invoice, self._parse_response(response_tuple, Invoice))
 
     def search(
